@@ -17,6 +17,9 @@ var effects := true
 
 
 func _ready() -> void:
+	# Wersja Web: domyślnie gra offline (serwer w przeglądarce).
+	if OS.has_feature("web"):
+		server_url = "offline"
 	load_settings()
 
 
@@ -44,7 +47,7 @@ func save_settings() -> void:
 ## Uzupełnia adres wpisany przez gracza: "192.168.1.5" -> "ws://192.168.1.5:7171".
 static func normalize_url(text: String) -> String:
 	var u := text.strip_edges()
-	if u.is_empty():
+	if u.is_empty() or u == "offline":
 		return u
 	if not (u.begins_with("ws://") or u.begins_with("wss://")):
 		u = "ws://" + u

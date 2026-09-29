@@ -3,7 +3,7 @@
  * Depozyt to lista pozycji {przedmiot, jakość, liczba} – te same przedmioty się łączą.
  * Zapisywany do bazy przy każdej zmianie.
  */
-import { Database } from '../../db/database';
+import type { GameDatabase as Database } from '../../db/types';
 import { ItemStack, sanitizeStack } from '../inventory';
 import { getItem } from '../data/items';
 

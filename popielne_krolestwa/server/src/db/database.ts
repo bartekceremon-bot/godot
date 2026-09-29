@@ -8,46 +8,9 @@ import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export interface AccountRow {
-  id: number;
-  name: string;
-  pass_hash: string;
-  created_at: number;
-}
+import type { AccountRow, CharacterRow, MarketOrderRow, GameDatabase } from './types';
 
-export interface CharacterRow {
-  id: number;
-  account_id: number;
-  name: string;
-  x: number;
-  y: number;
-  level: number;
-  exp: number;
-  hp: number;
-  mp: number;
-  look: number;
-  /** JSON: Skills */
-  skills: string;
-  /** JSON: { bag, equipment } */
-  inventory: string;
-  /** JSON: Specs (drzewko specjalizacji) */
-  specs: string;
-  updated_at: number;
-}
-
-export interface MarketOrderRow {
-  id: number;
-  city: string;
-  char_id: number;
-  char_name: string;
-  side: 'buy' | 'sell';
-  item: string;
-  /** Sprzedaż: jakość przedmiotu; kupno: minimalna akceptowana jakość. */
-  quality: number;
-  price: number;
-  amount: number;
-  created_at: number;
-}
+export type { AccountRow, CharacterRow, MarketOrderRow, GameDatabase };
 
 /** Kolejne migracje schematu – dopisujemy nowe na końcu, nigdy nie zmieniamy starych. */
 const MIGRATIONS: string[] = [
@@ -95,7 +58,7 @@ const MIGRATIONS: string[] = [
    CREATE INDEX market_orders_city_item ON market_orders (city, item);`,
 ];
 
-export class Database {
+export class Database implements GameDatabase {
   private db: DatabaseSync;
 
   constructor(file: string) {

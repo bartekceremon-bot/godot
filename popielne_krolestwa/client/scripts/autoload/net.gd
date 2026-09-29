@@ -8,14 +8,31 @@ signal disconnected(reason: String)
 signal message(msg: Dictionary)
 
 var _ws: WebSocketPeer = null
+## Tryb offline (wersja Web): serwer gry działa w tej samej karcie przeglądarki
+## (window.PK z pakietu server/dist-web/pk_offline.js), zamiast WebSocketa.
+var _js = null
+var _js_open := false
 var _was_open := false
 var _ping_timer := 0.0
 ## Ostatnio zmierzony ping w ms (do wyświetlenia w HUD).
 var latency_ms := 0
 
 
+## Czy w tej wersji dostępny jest serwer offline (gra w przeglądarce).
+func offline_available() -> bool:
+	return OS.has_feature("web") and JavaScriptBridge.get_interface("PK") != null
+
+
 func connect_to(url: String) -> Error:
 	close()
+	if url == "offline":
+		if not offline_available():
+			return ERR_UNAVAILABLE
+		_js = JavaScriptBridge.get_interface("PK")
+		_js.connect()
+		_js_open = true
+		connected.emit.call_deferred()
+		return OK
 	_ws = WebSocketPeer.new()
 	_ws.inbound_buffer_size = 1 << 20
 	_was_open = false
@@ -23,6 +40,10 @@ func connect_to(url: String) -> Error:
 
 
 func close() -> void:
+	if _js:
+		_js.close()
+		_js = null
+		_js_open = false
 	if _ws:
 		_ws.close()
 	_ws = null
@@ -30,15 +51,30 @@ func close() -> void:
 
 
 func is_open() -> bool:
-	return _ws != null and _ws.get_ready_state() == WebSocketPeer.STATE_OPEN
+	return _js_open or (_ws != null and _ws.get_ready_state() == WebSocketPeer.STATE_OPEN)
 
 
 func send(msg: Dictionary) -> void:
+	if _js_open:
+		_js.send(JSON.stringify(msg))
+		return
 	if is_open():
 		_ws.send_text(JSON.stringify(msg))
 
 
 func _process(delta: float) -> void:
+	if _js_open:
+		var text = _js.poll()
+		if text is String and not text.is_empty():
+			var list = JSON.parse_string(text)
+			if list is Array:
+				for data in list:
+					# Obsługa wiadomości może zamknąć połączenie (wylogowanie).
+					if not _js_open:
+						break
+					if data is Dictionary:
+						message.emit(data)
+		return
 	if _ws == null:
 		return
 	var ws := _ws

@@ -10,7 +10,7 @@
  * Klasa nie dotyka plecaków – robi to warstwa świata (EconomySystem), która
  * opakowuje całą operację w jedną transakcję bazy.
  */
-import { Database, MarketOrderRow } from '../../db/database';
+import type { GameDatabase as Database, MarketOrderRow } from '../../db/types';
 
 export type Order = MarketOrderRow;
 

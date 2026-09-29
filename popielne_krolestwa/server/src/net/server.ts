@@ -10,31 +10,8 @@ import type { IncomingMessage } from 'node:http';
 import { config } from '../config';
 import { World } from '../game/world';
 import { Player, Connection } from '../game/entities';
-import { Inventory } from '../game/inventory';
-import { defaultSkills, maxHpForLevel, maxMpForLevel, Skills } from '../game/progression';
-import { defaultSpecs, loadSpecs } from '../game/specs';
+import { createAccountWithCharacter, playerFromRow } from '../game/session';
 import { hashPassword, verifyPassword, validateName, validatePassword } from '../auth';
-import { randInt } from '../util/rng';
-
-/**
- * Ekwipunek startowy nowej postaci – broń wręcz i łuk (oba style walki)
- * oraz narzędzia T1, żeby od razu zacząć zbieractwo.
- */
-function starterInventory(): Inventory {
-  const inv = new Inventory([], {
-    weapon: { item: 'sword_t1', count: 1 },
-    shield: { item: 'shield_t1', count: 1 },
-    body: { item: 'leather_body_t1', count: 1 },
-  });
-  inv.add('bow_t1');
-  inv.add('woodaxe_t1');
-  inv.add('pickaxe_t1');
-  inv.add('sickle_t1');
-  inv.add('hp_potion', 3);
-  inv.add('mp_potion', 2);
-  inv.add('gold', 30);
-  return inv;
-}
 
 class WsConnection implements Connection {
   constructor(private ws: WebSocket) {}
@@ -152,22 +129,7 @@ export class GameServer {
     let account = db.findAccount(name);
     if (msg.t === 'register') {
       if (account) return fail('Ta nazwa jest już zajęta.');
-      const accountId = db.createAccount(name, hashPassword(pass as string));
-      const t = this.world.map.temple;
-      db.createCharacter({
-        account_id: accountId,
-        name,
-        x: t.x,
-        y: t.y,
-        level: 1,
-        exp: 0,
-        hp: maxHpForLevel(1),
-        mp: maxMpForLevel(1),
-        look: randInt(0, 7),
-        skills: JSON.stringify(defaultSkills()),
-        inventory: JSON.stringify(starterInventory().toJSON()),
-        specs: JSON.stringify(defaultSpecs()),
-      });
+      createAccountWithCharacter(db, name, hashPassword(pass as string), this.world.map.temple);
       account = db.findAccount(name)!;
       console.log(`[auth] nowe konto: ${name}`);
     } else if (!account || !verifyPassword(pass as string, account.pass_hash)) {
@@ -185,24 +147,6 @@ export class GameServer {
       existing.conn.close('relog');
     }
 
-    const inv = JSON.parse(row.inventory);
-    const skills = { ...defaultSkills(), ...(JSON.parse(row.skills) as Skills) };
-    const inventory = new Inventory(inv.bag, inv.equipment);
-    // Postać z ETAPU 1 (brak specjalizacji) dostaje jednorazowo narzędzia T1 do zbieractwa.
-    if (!row.specs || row.specs === '{}') for (const tool of ['woodaxe_t1', 'pickaxe_t1', 'sickle_t1']) inventory.add(tool);
-    return new Player({
-      charId: row.id,
-      name: row.name,
-      conn,
-      x: row.x,
-      y: row.y,
-      hp: row.hp,
-      mp: row.mp,
-      exp: row.exp,
-      look: row.look,
-      skills,
-      specs: loadSpecs(JSON.parse(row.specs || '{}')),
-      inventory,
-    });
+    return playerFromRow(row, conn);
   }
 }

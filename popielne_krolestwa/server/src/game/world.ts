@@ -6,7 +6,7 @@
  * serwer sprawdza czy są dozwolone i rozsyła wynik.
  */
 import { config } from '../config';
-import { Database } from '../db/database';
+import type { GameDatabase } from '../db/types';
 import { GameMap, generateWorld } from './map';
 import { MONSTERS } from './data/monsters';
 import { ITEM_LIST, getItem, EquipSlot, EQUIP_SLOTS, SkillName, rawId, QUALITY_NAMES } from './data/items';
@@ -55,7 +55,7 @@ type Fx = { x: number; y: number; [k: string]: unknown };
 
 export class World {
   readonly map: GameMap;
-  readonly db: Database;
+  readonly db: GameDatabase;
   readonly players = new Map<number, Player>();
   readonly monsters = new Map<number, Monster>();
   readonly groundItems = new Map<number, GroundItem>();
@@ -70,7 +70,7 @@ export class World {
   private timer: NodeJS.Timeout | null = null;
   private lastAutosave = Date.now();
 
-  constructor(db: Database, map: GameMap = generateWorld()) {
+  constructor(db: GameDatabase, map: GameMap = generateWorld()) {
     this.db = db;
     this.map = map;
     this.depots = new DepotStore(db);

@@ -43,7 +43,9 @@ func _ready() -> void:
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(sub)
 
-	box.add_child(UiTheme.label("Adres serwera", 18))
+	var offline := OS.has_feature("web")
+	var srv_label := UiTheme.label("Adres serwera  (offline = gra w przeglądarce)" if offline else "Adres serwera", 18)
+	box.add_child(srv_label)
 	var srv_row := HBoxContainer.new()
 	box.add_child(srv_row)
 	_server = _line_edit(Config.server_url, "ws://192.168.1.10:7171")
@@ -51,6 +53,7 @@ func _ready() -> void:
 	srv_row.add_child(_server)
 	var lan := UiTheme.button("Szukaj w LAN")
 	lan.pressed.connect(_start_discovery)
+	lan.visible = not offline  # UDP niedostępne w przeglądarce
 	srv_row.add_child(lan)
 
 	box.add_child(UiTheme.label("Nazwa postaci", 18))
@@ -155,6 +158,8 @@ func _submit(action: String) -> void:
 	if url.is_empty():
 		set_status("Podaj adres serwera.")
 		return
+	if url == "offline" and _pass.text.length() < 4:
+		_pass.text = "offline"
 	if _name.text.strip_edges().length() < 3 or _pass.text.length() < 4:
 		set_status("Podaj nazwę (min. 3 znaki) i hasło (min. 4 znaki).")
 		return
