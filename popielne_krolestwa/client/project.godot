@@ -6,7 +6,7 @@ config_version=5
 
 config/name="Popielne Królestwa"
 config/description="Mobilne MMORPG: klimat Tibii + gospodarka Albionu."
-config/version="0.4.0"
+config/version="0.5.0"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.png"
@@ -41,6 +41,7 @@ pointing/emulate_touch_from_mouse=true
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
+anti_aliasing/quality/msaa_3d=2
 renderer/rendering_method.mobile="gl_compatibility"
 textures/canvas_textures/default_texture_filter=0
 textures/vram_compression/import_etc2_astc=true

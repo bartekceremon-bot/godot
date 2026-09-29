@@ -17,6 +17,12 @@ var _t := 0.0
 
 
 func _ready() -> void:
+	if scenario == "login":
+		# Tylko zrzut ekranu logowania (scenka 3D w tle).
+		await get_tree().create_timer(4.0).timeout
+		await _shot("00_logowanie")
+		get_tree().quit(0)
+		return
 	Net.message.connect(_on_message)
 	Net.connected.connect(func(): Net.send({"t": _mode, "v": Config.PROTOCOL_VERSION, "name": account, "pass": password}))
 	Net.connect_to(url)
@@ -53,6 +59,8 @@ func _process(delta: float) -> void:
 		_started = true
 		if scenario == "etap1":
 			_steps = _scenario_etap1(game)
+		elif scenario == "widoki":
+			_steps = _scenario_views(game)
 		elif scenario == "etap3":
 			_steps = _scenario_etap3(game)
 		else:
@@ -155,6 +163,19 @@ func _scenario_etap3(game: Node) -> Array:
 		func(): await _shot("04_strefa_czerwona"); return 0.3,
 		func(): hud._toggle(hud._character); await _shot("05_postac"); return 0.3,
 	]
+
+
+## Przegląd świata 3D: kamera przelatuje nad jeziorem, Popieliskiem i krawędzią mapy (zrzuty).
+func _scenario_views(game: Node) -> Array:
+	var spots := [["01_jezioro", Vector2i(72, 66)], ["02_popielisko", Vector2i(80, 30)], ["03_krawedz", Vector2i(4, 60)], ["04_brama", Vector2i(48, 58)], ["05_rynek", Vector2i(52, 45)]]
+	var steps: Array = []
+	for s in spots:
+		steps.append(func():
+			game.me.snap_to(s[1])
+			game.camera.position = Vector3.ZERO
+			return 2.0)
+		steps.append(func(): await _shot(s[0]); return 0.1)
+	return steps
 
 
 func _bag_slot(hud: Node, item_prefix: String) -> int:

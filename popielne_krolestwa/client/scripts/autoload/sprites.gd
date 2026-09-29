@@ -1,6 +1,6 @@
 extends Node
-## Dostęp do grafik gry: atlasy PNG z res://assets/ (generowane przez tools/build_assets.sh,
-## można je podmienić ręcznie narysowanymi) opisane w res://assets/atlas_index.json.
+## Grafiki interfejsu: ikony przedmiotów i HUD z res://assets/ (generowane przez tools/build_assets.sh,
+## można je podmienić ręcznie narysowanymi), opisane w res://assets/atlas_index.json.
 
 const TS := 32
 
@@ -13,56 +13,13 @@ const QUALITY_COLORS := [Color.TRANSPARENT, Color(0, 0, 0, 0), Color("7ac060"), 
 const UI_ICONS := ["bag", "character", "specs", "people", "menu", "chat", "attack", "heal", "skull_white", "skull_red"]
 
 var index: Dictionary = {}
-var layers_tex: Texture2D
-var beasts_tex: Texture2D
-var nodes_tex: Texture2D
 var items_tex: Texture2D
-var objects_tex: Texture2D
 var _cache: Dictionary = {}
 
 
 func _ready() -> void:
 	index = JSON.parse_string(FileAccess.get_file_as_string("res://assets/atlas_index.json"))
-	layers_tex = load("res://assets/characters/layers.png")
-	beasts_tex = load("res://assets/characters/beasts.png")
-	nodes_tex = load("res://assets/world/nodes.png")
 	items_tex = load("res://assets/items/items.png")
-	objects_tex = load("res://assets/world/objects.png")
-
-
-func tileset() -> TileSet:
-	return load("res://assets/world/objects_tileset.tres")
-
-
-## Współrzędne obiektu w atlasie TileSetu (kolumna, wiersz).
-func object_coords(name: String) -> Vector2i:
-	var o: Array = index.objects.get(name, [0, 2])
-	return Vector2i(int(o[0]), int(o[1]))
-
-
-## Region klatki warstwy postaci: dir 0=N 1=E 2=S 3=W, frame 0–3.
-func layer_region(layer: String, dir: int, frame: int) -> Rect2:
-	var p: Array = index.layers.get(layer, index.layers["body_0"])
-	return Rect2(float(p[0]) + frame * TS, float(p[1]) + dir * TS, TS, TS)
-
-
-func has_layer(layer: String) -> bool:
-	return index.layers.has(layer)
-
-
-func is_beast(look: String) -> bool:
-	return index.beasts.has(look)
-
-
-## Zwierzęta mają tylko widok z boku: facing_right wybiera wiersz.
-func beast_region(look: String, facing_right: bool, frame: int) -> Rect2:
-	var p: Array = index.beasts[look]
-	return Rect2(float(p[0]) + frame * TS, float(p[1]) + (0 if facing_right else TS), TS, TS)
-
-
-func node_region(look: String) -> Rect2:
-	var p: Array = index.nodes.get(look, [0, 0, 64, 64])
-	return Rect2(p[0], p[1], p[2], p[3])
 
 
 ## Ikona przedmiotu (32x32) dla nazwy ikony i tieru.
@@ -90,16 +47,3 @@ func icon(name: String) -> Texture2D:
 	if n in UI_ICONS:
 		return load("res://assets/ui/icon_%s.png" % n)
 	return item_icon(name, 0)
-
-
-## Tekstura obiektu z atlasu (np. pochodnia) jako AtlasTexture.
-func object_texture(name: String) -> Texture2D:
-	var key := "obj_" + name
-	if _cache.has(key):
-		return _cache[key]
-	var o: Array = index.objects[name]
-	var at := AtlasTexture.new()
-	at.atlas = objects_tex
-	at.region = Rect2(int(o[0]) * TS, int(o[1]) * TS, int(o[2]) * TS, int(o[3]) * TS)
-	_cache[key] = at
-	return at

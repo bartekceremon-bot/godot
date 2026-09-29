@@ -1,47 +1,50 @@
-extends Node2D
-## Scena gry: mapa, istoty, loot, efekty, kamera, sterowanie i obsługa pakietów serwera.
+extends Node3D
+## Scena gry 3D: świat low-poly, istoty, loot, efekty, kamera, słońce i pora dnia, sterowanie
+## oraz obsługa pakietów serwera.
 ##
 ## Ruch własnej postaci jest PRZEWIDYWANY po stronie klienta (natychmiastowa reakcja),
 ## ale serwer ma ostatnie słowo – przy odrzuceniu kroku przysyła "pos" i klient się koryguje.
 
-const EntityView := preload("res://scripts/game/entity_view.gd")
-const EntityScene := preload("res://scenes/entity.tscn")
-const TorchScene := preload("res://scenes/torch.tscn")
-const FxLayer := preload("res://scripts/game/fx_layer.gd")
-const GroundLayer := preload("res://scripts/game/ground_layer.gd")
 const Hud := preload("res://scripts/ui/hud.gd")
 
-## Identyfikatory terenu dla shadera (world_ground.gdshader).
-const TERRAIN := {".": 0, ",": 1, "s": 2, "a": 3, "f": 4, "x": 5, "~": 6}
 ## Cykl dnia i nocy (sekundy czasu rzeczywistego) – wspólny dla wszystkich graczy.
 const DAY_CYCLE := 1440.0
-const NIGHT_COLOR := Color(0.34, 0.37, 0.58)
-
-const TS := 32
 const TAP_MAX_MOVE := 24.0
+## Kamera: przesunięcie względem postaci (widok z góry pod kątem, jak w Albionie).
+const CAM_OFFSET := Vector3(0.0, 9.2, 6.4)
+const ZOOM_MIN := 0.6
+const ZOOM_MAX := 1.5
 ## Kody kierunków z protokołu: N, E, S, W, NE, SE, SW, NW.
 const DIRS: Array[Vector2i] = [
 	Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0),
 	Vector2i(1, -1), Vector2i(1, 1), Vector2i(-1, 1), Vector2i(-1, -1),
 ]
+## Nastrój stref: kolor mgły/powietrza.
+const ZONE_FOG := {"g": Color(0.66, 0.74, 0.8), "y": Color(0.8, 0.72, 0.55), "r": Color(0.46, 0.3, 0.26)}
 
-@onready var ground_rect: ColorRect = $Ground
-@onready var ground: GroundLayer = $GroundItems
-@onready var creatures: Node2D = $World
-@onready var objects: TileMapLayer = $World/Objects
-@onready var fx: FxLayer = $Fx
-@onready var night_modulate: CanvasModulate = $Night
-@onready var camera: Camera2D = $Camera
 var hud: Hud
-var _torches: Array = []
+var world: WorldBuilder
+var fx: Fx3D
+var ground: GroundItems3D
+var overlay: Overlay2D
+var camera: Camera3D
+var sun: DirectionalLight3D
+var env: Environment
+var creatures: Node3D
+var _fires: Array = []
+var _ash: CPUParticles3D
+var _embers: CPUParticles3D
 var _shake := 0.0
+var _zoom := 1.0
 ## 0 = dzień, 1 = pełna noc.
 var night := 0.0
 var _night_ready := false
+var _fog_col := ZONE_FOG["g"]
+var _recent_deaths: Dictionary = {}
 
-## id -> EntityView
+## id -> Entity3D
 var entities: Dictionary = {}
-var me: EntityView = null
+var me: Entity3D = null
 var my_pos := Vector2i.ZERO
 var my_dir := 2
 var step_ms := 300
@@ -57,21 +60,123 @@ var _pending_action: Dictionary = {}
 var _talking_npc := 0
 var _astar := AStarGrid2D.new()
 var _touch_start: Dictionary = {}
+var _touches: Dictionary = {}
+var _pinch_dist := 0.0
 
 
 func _ready() -> void:
-	camera.make_current()
+	_setup_scene()
 	hud = Hud.new()
 	hud.game = self
 	hud.layer = 2
 	add_child(hud)
 	_build_map()
-	apply_effects()
 	me = _create_entity(GameData.my_id)
 	me.is_me = true
 	me.kind = "p"
 	me.display_name = GameData.my_name
+	apply_effects()
 	Net.message.connect(_on_message)
+
+
+## Środowisko, słońce, kamera, warstwy świata.
+func _setup_scene() -> void:
+	env = Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = ZONE_FOG["g"]
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color(0.62, 0.66, 0.78)
+	env.ambient_light_energy = 0.42
+	env.tonemap_mode = Environment.TONE_MAPPER_ACES
+	env.tonemap_exposure = 0.95
+	env.tonemap_white = 6.0
+	env.fog_enabled = true
+	env.fog_mode = Environment.FOG_MODE_DEPTH
+	env.fog_light_color = ZONE_FOG["g"]
+	env.fog_depth_begin = 14.0
+	env.fog_depth_end = 34.0
+	env.fog_density = 1.0
+	env.glow_enabled = true
+	env.glow_intensity = 0.45
+	env.glow_bloom = 0.0
+	env.glow_hdr_threshold = 1.1
+	env.adjustment_enabled = true
+	env.adjustment_saturation = 1.08
+	env.adjustment_contrast = 1.05
+	var we := WorldEnvironment.new()
+	we.environment = env
+	add_child(we)
+	sun = DirectionalLight3D.new()
+	sun.rotation_degrees = Vector3(-52, -38, 0)
+	sun.light_color = Color(1.0, 0.95, 0.86)
+	sun.light_energy = 1.05
+	sun.shadow_enabled = true
+	sun.shadow_bias = 0.04
+	sun.shadow_normal_bias = 1.2
+	sun.shadow_blur = 1.5
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	sun.directional_shadow_max_distance = 30.0
+	add_child(sun)
+	camera = Camera3D.new()
+	camera.fov = 40.0
+	camera.near = 0.5
+	camera.far = 80.0
+	add_child(camera)
+	camera.make_current()
+	world = WorldBuilder.new()
+	world.name = "World"
+	add_child(world)
+	ground = GroundItems3D.new()
+	add_child(ground)
+	creatures = Node3D.new()
+	creatures.name = "Creatures"
+	add_child(creatures)
+	fx = Fx3D.new()
+	add_child(fx)
+	var ol := CanvasLayer.new()
+	ol.layer = 1
+	add_child(ol)
+	overlay = Overlay2D.new()
+	overlay.camera = camera
+	overlay.entities = entities
+	ol.add_child(overlay)
+	fx.overlay = overlay
+	ground.overlay = overlay
+	_ash = _make_weather(Color(0.6, 0.58, 0.57), 60, -0.5, 0.03)
+	_embers = _make_weather(Color(1.0, 0.45, 0.12), 30, 0.6, 0.03)
+	_embers.amount = 30
+
+
+## Opadający popiół i unoszący się żar wokół kamery.
+func _make_weather(col: Color, amount: int, vy: float, size: float) -> CPUParticles3D:
+	var p := CPUParticles3D.new()
+	p.amount = amount
+	p.lifetime = 6.0
+	p.preprocess = 6.0
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	p.emission_box_extents = Vector3(12, 2.5, 9)
+	p.direction = Vector3(0.3, vy, 0.1)
+	p.spread = 30
+	p.initial_velocity_min = 0.2
+	p.initial_velocity_max = 0.6
+	p.gravity = Vector3(0.1, vy * 0.3, 0)
+	var sm := SphereMesh.new()
+	sm.radius = size
+	sm.height = size * 2.0
+	sm.radial_segments = 4
+	sm.rings = 2
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.albedo_color = col
+	if vy > 0:
+		m.emission_enabled = true
+		m.emission = col
+		m.emission_energy_multiplier = 3.0
+	sm.material = m
+	p.mesh = sm
+	p.local_coords = false
+	add_child(p)
+	return p
 
 
 func _build_map() -> void:
@@ -81,126 +186,32 @@ func _build_map() -> void:
 	_astar.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	_astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	_astar.update()
-	# Mapa typów terenu dla shadera (1 piksel = 1 kafelek).
-	var terrain := Image.create(GameData.map_w, GameData.map_h, false, Image.FORMAT_RG8)
 	for y in GameData.map_h:
 		var row: String = GameData.map_rows[y]
 		for x in GameData.map_w:
-			var ch := row[x]
-			var zone := {"g": 0.0, "y": 0.5, "r": 1.0}.get(GameData.zone_at(x, y), 0.0) as float
-			terrain.set_pixel(x, y, Color(_terrain_under(ch, x, y) / 255.0, zone, 0))
-			if not GameData.WALKABLE.contains(ch):
+			if not GameData.WALKABLE.contains(row[x]):
 				_astar.set_point_solid(Vector2i(x, y), true)
-			_place_object(ch, x, y)
-	var mat := ground_rect.material as ShaderMaterial
-	mat.set_shader_parameter("map_tex", ImageTexture.create_from_image(terrain))
-	mat.set_shader_parameter("map_size", Vector2(GameData.map_w, GameData.map_h))
-	ground_rect.size = Vector2(GameData.map_w, GameData.map_h) * TS
-	_place_torches()
+	world.build(Vector2i(48, 46))
+	for spot in world.fire_spots:
+		var f := Fire3D.new()
+		f.kind = spot.kind
+		f.position = spot.pos
+		world.add_child(f)
+		_fires.append(f)
 
 
-## Teren pod obiektem (drzewo stoi na trawie albo popiele, mur na bruku...).
-func _terrain_under(ch: String, x: int, y: int) -> int:
-	if TERRAIN.has(ch):
-		return TERRAIN[ch]
-	if ch in ["#", "D", "M", "K", "W", "P"]:
-		return 4
-	# Drzewa i skały: najczęstszy teren w sąsiedztwie.
-	var counts := {}
-	for dy in range(-1, 2):
-		for dx in range(-1, 2):
-			var c := GameData.tile_at(x + dx, y + dy)
-			if _is_ground(c):
-				counts[c] = counts.get(c, 0) + 1
-	var best := "."
-	for c in counts:
-		if counts[c] > counts.get(best, 0):
-			best = c
-	return TERRAIN.get(best, 0)
-
-
-static func _is_ground(c: String) -> bool:
-	return c in [".", "a", "s", ","]
-
-
-func _hash(x: int, y: int) -> int:
-	return absi((x * 73856093) ^ (y * 19349663))
-
-
-## Obiekty świata w TileMapLayer (sortowanie Y z postaciami).
-func _place_object(ch: String, x: int, y: int) -> void:
-	var name := ""
-	match ch:
-		"T":
-			name = "tree_%d" % (_hash(x, y) % 4)
-		"r":
-			var ash := GameData.tile_at(x - 1, y) == "a" or GameData.tile_at(x + 1, y) == "a" or GameData.tile_at(x, y + 1) == "a"
-			name = ("rock_ash_%d" if ash else "rock_%d") % (_hash(x, y) % 2)
-		"#":
-			var front := GameData.tile_at(x, y + 1) != "#"
-			name = ("wall_front_%d" if front else "wall_inner_%d") % (_hash(x, y) % 3)
-		"D":
-			name = "chest"
-		"M":
-			name = "stall"
-		"K":
-			name = "anvil"
-		"W":
-			name = "workbench"
-		"P":
-			name = "furnace"
-	if name != "":
-		objects.set_cell(Vector2i(x, y), 0, Sprites.object_coords(name))
-
-
-## Pochodnie przy bramach miasta, w narożnikach świątyni i ogień w piecu rafinerii.
-func _place_torches() -> void:
-	## [pozycja, czy pokazać sprite pochodni]
-	var spots: Array = []
-	for y in GameData.map_h:
-		for x in GameData.map_w:
-			var ch := GameData.tile_at(x, y)
-			if ch == "#":
-				# Mur przy bramie (poziomej lub pionowej).
-				for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
-					var g: Vector2i = Vector2i(x, y) + d
-					var gc := GameData.tile_at(g.x, g.y)
-					var horizontal: bool = d.y == 0
-					var is_gate := GameData.is_walkable(g.x, g.y) and gc != "#"
-					if is_gate and horizontal and GameData.tile_at(g.x, g.y - 1) != "#" and GameData.tile_at(g.x, g.y + 1) != "#" \
-							and GameData.tile_at(x, y + 1) != "#":
-						spots.append([Vector2(x, y) * TS + Vector2(0, -14), true])
-						break
-			elif ch == "P":
-				# Palenisko pieca rafinerii: sam ogień i światło.
-				spots.append([Vector2(x, y) * TS + Vector2(-0.5, 14), false])
-			elif ch == "x" and GameData.tile_at(x - 1, y) != "x" and GameData.tile_at(x, y - 1) != "x":
-				spots.append([Vector2(x - 1, y - 1) * TS, true])
-			elif ch == "x" and GameData.tile_at(x + 1, y) != "x" and GameData.tile_at(x, y - 1) != "x":
-				spots.append([Vector2(x + 1, y - 1) * TS, true])
-	for sp in spots:
-		var t := TorchScene.instantiate()
-		t.position = sp[0]
-		t.show_sprite = sp[1]
-		creatures.add_child(t)
-		_torches.append(t)
-
-
-## Włącza/wyłącza efekty (cząsteczki, światła, winieta) – ustawienie w menu.
+## Włącza/wyłącza efekty (cząsteczki, cienie, poświata) – ustawienie w menu.
 func apply_effects() -> void:
 	var on := Config.effects
-	$Camera/Ash.emitting = on
-	$Camera/Ash.visible = on
-	$Camera/Embers.emitting = on
-	$Camera/Embers.visible = on
-	$Vignette.visible = on
-	for t in _torches:
-		t.get_node("Fire").emitting = on
-		t.night = night
+	sun.shadow_enabled = on
+	env.glow_enabled = on
+	for f in _fires:
+		f.effects = on
+	_update_weather()
 
 
-func _create_entity(id: int) -> EntityView:
-	var e: EntityView = EntityScene.instantiate()
+func _create_entity(id: int) -> Entity3D:
+	var e := Entity3D.new()
 	e.id = id
 	creatures.add_child(e)
 	entities[id] = e
@@ -228,10 +239,11 @@ func _on_message(msg: Dictionary) -> void:
 			step_ms = int(msg.step)
 			_set_target(int(msg.target))
 			me.gathering = int(msg.get("gather", 0)) != 0
-			me.queue_redraw()
 			hud.update_stats(msg)
 		"npc_dialog":
 			_talking_npc = int(msg.id)
+			if entities.has(_talking_npc):
+				me.face_tile(entities[_talking_npc].tile)
 			hud.show_npc_dialog(msg)
 		"shop":
 			hud.show_shop(msg)
@@ -247,13 +259,12 @@ func _on_message(msg: Dictionary) -> void:
 			for f in msg.l:
 				fx.spawn(f)
 				_fx_sound(f)
-				if f.k == "num" and f.c == "dmg":
-					_on_damage(Vector2i(int(f.x), int(f.y)))
+				_fx_animate(f)
 		"chat":
 			hud.add_chat("[color=#f0e070]%s:[/color] %s" % [msg.from, _escape(str(msg.text))])
 			if entities.has(int(msg.id)):
-				var e: EntityView = entities[int(msg.id)]
-				fx.say(e.tile.x, e.tile.y, str(msg.from), str(msg.text))
+				var e: Entity3D = entities[int(msg.id)]
+				overlay.say(e.position, str(msg.from), str(msg.text))
 		"sys":
 			hud.add_chat("[color=#a0d0ff]%s[/color]" % _escape(str(msg.text)))
 		"online":
@@ -272,19 +283,57 @@ func _on_snapshot(msg: Dictionary) -> void:
 	for e in msg.e:
 		var id := int(e.i)
 		seen[id] = true
-		var view: EntityView = entities.get(id)
+		var view: Entity3D = entities.get(id)
 		if view == null:
 			view = _create_entity(id)
-			view.snap_to(Vector2i(int(e.x), int(e.y)))
 		view.apply(e, id == GameData.my_id)
+	var now := Time.get_ticks_msec()
 	for id in entities.keys():
 		if not seen.has(id) and id != GameData.my_id:
-			entities[id].vanish()
+			var e: Entity3D = entities[id]
+			var died: bool = now - int(_recent_deaths.get(e.tile, -100000)) < 1500
+			e.vanish(died)
 			entities.erase(id)
 	ground.set_items(msg.g)
 	_set_target(target_id)
 	_update_labels()
 	_update_minimap()
+
+
+## Animacje ataku wywnioskowane z efektów (serwer nie wysyła osobnego pakietu „atak”).
+func _fx_animate(f: Dictionary) -> void:
+	var k := str(f.k)
+	var t := Vector2i(int(f.x), int(f.y))
+	match k:
+		"num", "miss", "block":
+			if k == "num" and f.c != "dmg":
+				return
+			if k == "num":
+				_on_damage(t)
+			# Trafiono nasz cel – to my atakujemy (wręcz).
+			if entities.has(target_id) and entities[target_id].tile == t and _dist(t, my_pos) <= 1:
+				me.face_tile(t)
+				me.play_attack()
+			# Trafiono nas – atakują sąsiednie potwory.
+			if t == my_pos:
+				for id in entities:
+					var e: Entity3D = entities[id]
+					if e.kind == "m" and _dist(e.tile, my_pos) <= 1:
+						e.face_tile(my_pos)
+						e.play_attack()
+		"shot":
+			var src := t
+			var dst := Vector2i(int(f.tx), int(f.ty))
+			for id in entities:
+				var e: Entity3D = entities[id]
+				if e.tile == src and e.kind != "r":
+					e.face_tile(dst)
+					e.play_attack("bow")
+					break
+		"death":
+			_recent_deaths[t] = Time.get_ticks_msec()
+		"gather":
+			me.play_attack("melee")
 
 
 var _zone := ""
@@ -298,12 +347,23 @@ func _update_zone() -> void:
 	var first := _zone == ""
 	_zone = z
 	hud.set_zone(z, not first)
+	_update_weather()
+
+
+func _update_weather() -> void:
+	var on := Config.effects
+	var red := _zone == "r"
+	_ash.emitting = on
+	_ash.visible = on
+	_ash.amount = 110 if red else 40
+	_embers.emitting = on and red
+	_embers.visible = on and red
 
 
 func _update_minimap() -> void:
 	var dots := []
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if e.is_me or e.kind == "r":
 			continue
 		var col := Color(0.4, 1, 0.4)
@@ -320,14 +380,11 @@ func _update_minimap() -> void:
 ## Nazwy złóż widoczne tylko w pobliżu; okna NPC zamykane po odejściu od NPC.
 func _update_labels() -> void:
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if e.kind == "r":
-			var near := _dist(e.tile, my_pos) <= 3
-			if near != e.show_label:
-				e.show_label = near
-				e.queue_redraw()
+			e.show_label = _dist(e.tile, my_pos) <= 3
 	if _talking_npc != 0:
-		var n: EntityView = entities.get(_talking_npc)
+		var n: Entity3D = entities.get(_talking_npc)
 		if n == null or _dist(n.tile, my_pos) > 3:
 			_talking_npc = 0
 			hud.close_npc_windows()
@@ -336,7 +393,7 @@ func _update_labels() -> void:
 ## Trafienie: błysk istoty na kafelku, wstrząs kamery gdy trafiono nas.
 func _on_damage(t: Vector2i) -> void:
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if e.tile == t and e.kind != "r":
 			e.flash()
 	if t == my_pos:
@@ -346,11 +403,9 @@ func _on_damage(t: Vector2i) -> void:
 func _set_target(id: int) -> void:
 	if entities.has(target_id):
 		entities[target_id].targeted = false
-		entities[target_id].queue_redraw()
 	target_id = id
 	if entities.has(id):
 		entities[id].targeted = true
-		entities[id].queue_redraw()
 
 
 func _fx_sound(f: Dictionary) -> void:
@@ -383,24 +438,27 @@ func attack(id: int) -> void:
 		id = 0
 	Net.send({"t": "attack", "id": id})
 	_set_target(id)
+	if entities.has(id):
+		me.face_tile(entities[id].tile)
 
 
 ## Przycisk „Atak”: wybiera najbliższego potwora (kolejne naciśnięcia – następnego).
 func attack_nearest() -> void:
 	var monsters: Array = []
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if e.kind == "m":
 			monsters.append(e)
 	if monsters.is_empty():
 		hud.add_chat("[color=#a0a0a0]Brak potworów w pobliżu.[/color]")
 		return
 	monsters.sort_custom(func(a, b): return _dist(a.tile, my_pos) < _dist(b.tile, my_pos))
-	var pick: EntityView = monsters[0]
+	var pick: Entity3D = monsters[0]
 	if target_id != 0 and monsters.size() > 1 and pick.id == target_id:
 		pick = monsters[1]
 	Net.send({"t": "attack", "id": pick.id})
 	_set_target(pick.id)
+	me.face_tile(pick.tile)
 
 
 static func _dist(a: Vector2i, b: Vector2i) -> int:
@@ -408,23 +466,67 @@ static func _dist(a: Vector2i, b: Vector2i) -> int:
 
 
 # ============================================================================
-# Sterowanie: dotyk (tap-to-move / atak / podnoszenie), joystick, klawiatura
+# Sterowanie: dotyk (tap-to-move / atak / podnoszenie), szczypanie (zoom), joystick, klawiatura
 # ============================================================================
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			_touch_start[event.index] = event.position
-		elif _touch_start.has(event.index):
-			var start: Vector2 = _touch_start[event.index]
-			_touch_start.erase(event.index)
-			if start.distance_to(event.position) < TAP_MAX_MOVE:
-				_on_tap(_screen_to_tile(event.position))
+			_touches[event.index] = event.position
+			if _touches.size() == 2:
+				_pinch_dist = _touches.values()[0].distance_to(_touches.values()[1])
+		else:
+			_touches.erase(event.index)
+			if _touch_start.has(event.index):
+				var start: Vector2 = _touch_start[event.index]
+				_touch_start.erase(event.index)
+				if start.distance_to(event.position) < TAP_MAX_MOVE and _touches.is_empty() and _pinch_dist == 0.0:
+					_on_tap(_screen_to_tile(event.position))
+			if _touches.is_empty():
+				_pinch_dist = 0.0
+	elif event is InputEventScreenDrag and _touches.size() >= 2:
+		_touches[event.index] = event.position
+		var d: float = _touches.values()[0].distance_to(_touches.values()[1])
+		if _pinch_dist > 0.0:
+			_set_zoom(_zoom * _pinch_dist / maxf(d, 1.0))
+		_pinch_dist = d
+	elif event is InputEventMagnifyGesture:
+		_set_zoom(_zoom / event.factor)
+	elif event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_set_zoom(_zoom * 0.9)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_set_zoom(_zoom * 1.1)
 
 
+func _set_zoom(z: float) -> void:
+	_zoom = clampf(z, ZOOM_MIN, ZOOM_MAX)
+
+
+## Kafelek pod punktem ekranu: najpierw istoty (ich sylwetki), potem teren.
 func _screen_to_tile(screen_pos: Vector2) -> Vector2i:
-	var world := get_canvas_transform().affine_inverse() * screen_pos
-	return Vector2i(floori(world.x / TS), floori(world.y / TS))
+	var best := -1
+	var best_d := 42.0
+	for id in entities:
+		var e: Entity3D = entities[id]
+		if e.is_me:
+			continue
+		var h := 0.5 if e.kind != "r" else 0.4
+		var sp := camera.unproject_position(e.global_position + Vector3(0, h, 0))
+		var d := sp.distance_to(screen_pos)
+		if d < best_d:
+			best_d = d
+			best = id
+	if best >= 0:
+		return entities[best].tile
+	var from := camera.project_ray_origin(screen_pos)
+	var dir := camera.project_ray_normal(screen_pos)
+	if absf(dir.y) < 0.0001:
+		return my_pos
+	var t := -from.y / dir.y
+	var hit := from + dir * t
+	return Vector2i(floori(hit.x), floori(hit.z))
 
 
 func _on_tap(tile: Vector2i) -> void:
@@ -432,19 +534,19 @@ func _on_tap(tile: Vector2i) -> void:
 	_pending_action = {}
 	# 1. Potwór na kafelku -> atak (drugi tap – przerwanie ataku).
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if e.kind == "m" and e.tile == tile:
 			attack(id)
 			return
 	# 1a. Inny gracz -> atak (PvP; serwer sprawdza strefę i zasady).
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if e.kind == "p" and not e.is_me and e.tile == tile:
 			attack(id)
 			return
 	# 1b. NPC -> rozmowa (podejdź, jeśli daleko).
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if e.kind == "n" and e.tile == tile:
 			_pending_action = {"type": "npc", "id": id, "tile": tile, "range": 3}
 			if _dist(tile, my_pos) > 3:
@@ -452,7 +554,7 @@ func _on_tap(tile: Vector2i) -> void:
 			return
 	# 1c. Złoże surowca -> zbieraj (podejdź na sąsiednie pole).
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if e.kind == "r" and e.tile == tile:
 			_pending_action = {"type": "gather", "id": id, "tile": tile, "range": 1}
 			if _dist(tile, my_pos) > 1 or tile == my_pos:
@@ -482,7 +584,7 @@ func _find_path(to: Vector2i, stop_adjacent: bool) -> Array[Vector2i]:
 	# Potwory traktujemy jako przeszkody na czas liczenia ścieżki.
 	var blocked: Array[Vector2i] = []
 	for id in entities:
-		var e: EntityView = entities[id]
+		var e: Entity3D = entities[id]
 		if (e.kind == "m" or e.kind == "n") and e.tile != to and _astar.region.has_point(e.tile) and not _astar.is_point_solid(e.tile):
 			_astar.set_point_solid(e.tile, true)
 			blocked.append(e.tile)
@@ -504,13 +606,8 @@ func _find_path(to: Vector2i, stop_adjacent: bool) -> Array[Vector2i]:
 func _process(delta: float) -> void:
 	if me == null:
 		return
-	camera.position = me.position + Vector2(TS / 2.0, TS / 2.0)
+	_update_camera(delta)
 	_update_day_night(delta)
-	if _shake > 0.0:
-		_shake -= delta
-		camera.offset = Vector2(randf_range(-3, 3), randf_range(-3, 3)) * (_shake / 0.25)
-	else:
-		camera.offset = Vector2.ZERO
 	_move_cooldown -= delta
 	if _move_cooldown > 0.0:
 		return
@@ -539,6 +636,7 @@ func _process(delta: float) -> void:
 		var a := _pending_action
 		_pending_action = {}
 		if _dist(a.tile, my_pos) <= int(a.range) and a.tile != my_pos:
+			me.face_tile(a.tile)
 			if a.type == "npc":
 				Net.send({"t": "npc", "id": a.id, "word": "witaj"})
 			else:
@@ -556,16 +654,36 @@ func _process(delta: float) -> void:
 	_chase_target()
 
 
+func _update_camera(delta: float) -> void:
+	var focus := me.position + Vector3(0, 0.5, 0)
+	var want := focus + CAM_OFFSET * _zoom
+	if camera.position == Vector3.ZERO:
+		camera.position = want
+	camera.position = camera.position.lerp(want, minf(1.0, delta * 10.0))
+	camera.look_at(camera.position - CAM_OFFSET, Vector3.UP)
+	if _shake > 0.0:
+		_shake -= delta
+		camera.position += Vector3(randf_range(-1, 1), randf_range(-1, 1), 0) * 0.08 * (_shake / 0.25)
+	world.focus = me.tile
+	_ash.position = me.position + Vector3(0, 4.0, 0)
+	_embers.position = me.position + Vector3(0, 0.5, 0)
+	# Mgła dopasowana do strefy (płynnie).
+	var want_fog: Color = ZONE_FOG.get(_zone if _zone != "" else "g", ZONE_FOG["g"])
+	_fog_col = _fog_col.lerp(want_fog, minf(1.0, delta * 1.5))
+
+
 ## Automatyczne podchodzenie do celu (wręcz: na sąsiednie pole, łuk: na zasięg strzału).
 func _chase_target() -> void:
 	if target_id == 0 or not entities.has(target_id):
 		return
-	var t: EntityView = entities[target_id]
+	var t: Entity3D = entities[target_id]
 	var weapon_range := 1
 	var weapon = hud.equipped("weapon")
 	if weapon:
 		weapon_range = int(GameData.item_def(str(weapon.item)).get("range", 1))
 	if _dist(t.tile, my_pos) <= weapon_range:
+		if not me.is_moving():
+			me.face_tile(t.tile)
 		return
 	var path := _find_path(t.tile, true)
 	if not path.is_empty():
@@ -610,14 +728,14 @@ func _try_step(step: Vector2i, from_path: bool) -> bool:
 	var free := GameData.is_walkable(dest.x, dest.y)
 	if free:
 		for id in entities:
-			var e: EntityView = entities[id]
+			var e: Entity3D = entities[id]
 			if (e.kind == "m" or e.kind == "n") and e.tile == dest:
 				free = false
 				break
 	var dir := _facing(step)
 	if not free:
 		me.dir = dir
-		me.queue_redraw()
+		me.face_tile(dest)
 		if from_path:
 			# Ścieżka zablokowana (np. przez potwora) – przelicz.
 			var goal: Vector2i = _path.back() if not _path.is_empty() else dest
@@ -656,24 +774,40 @@ func _update_day_night(_delta: float) -> void:
 	elif t > 0.92:
 		n = 1.0 - (t - 0.92) / 0.08
 	n = smoothstep(0.0, 1.0, n)
-	# Podgląd pory dnia (testy / zrzuty): argument --night albo --day.
-	if "--night" in OS.get_cmdline_user_args():
+	# Podgląd pory dnia (testy / zrzuty): argument --night, --dusk albo --day.
+	var args := OS.get_cmdline_user_args()
+	if "--night" in args:
 		n = 1.0
-	elif "--day" in OS.get_cmdline_user_args():
+	elif "--dusk" in args:
+		n = 0.45
+	elif "--day" in args:
 		n = 0.0
-	if _night_ready and absf(n - night) < 0.002:
-		return
-	_night_ready = true
 	night = n
-	var evening := Color(1.0, 0.82, 0.7)
-	var c := Color.WHITE.lerp(evening, clampf(n * 2.0, 0.0, 1.0)).lerp(NIGHT_COLOR, clampf(n * 1.5 - 0.5, 0.0, 1.0))
-	night_modulate.color = c
-	for tr in _torches:
-		tr.night = n
+	var dusk := clampf(1.0 - absf(n - 0.4) / 0.4, 0.0, 1.0)
+	var deep := clampf(n * 1.6 - 0.6, 0.0, 1.0)
+	# Słońce: biało-złote w dzień, pomarańczowe o zmierzchu, chłodny księżyc w nocy.
+	var sun_col := Color(1.0, 0.95, 0.86).lerp(Color(1.0, 0.66, 0.42), dusk).lerp(Color(0.55, 0.62, 1.0), deep)
+	sun.light_color = sun_col
+	sun.light_energy = lerpf(lerpf(1.05, 0.8, dusk), 0.25, deep)
+	sun.rotation_degrees = Vector3(lerpf(-52.0, -28.0, dusk * (1.0 - deep)), -38.0 + dusk * 25.0, 0)
+	env.ambient_light_color = Color(0.62, 0.66, 0.78).lerp(Color(0.7, 0.6, 0.6), dusk).lerp(Color(0.22, 0.27, 0.5), deep)
+	env.ambient_light_energy = lerpf(0.42, 0.4, deep)
+	var fog := _fog_col.lerp(Color(0.85, 0.5, 0.35), dusk * 0.5).lerp(Color(0.05, 0.07, 0.14), deep)
+	env.fog_light_color = fog
+	env.background_color = fog
+	env.fog_depth_begin = lerpf(14.0, 10.0, deep) if _zone != "r" else lerpf(10.0, 8.0, deep)
+	if absf(n - _last_night) > 0.01 or not _night_ready:
+		_night_ready = true
+		_last_night = n
+		for f in _fires:
+			f.night = n
+		hud.set_time_of_day(n)
 	if me:
-		me.light.enabled = n > 0.05 and Config.effects
-		me.light.energy = 0.9 * n
-	hud.set_time_of_day(n)
+		me.light.visible = n > 0.3 and Config.effects
+		me.light.light_energy = 0.9 * n
+
+
+var _last_night := -1.0
 
 
 func logout() -> void:

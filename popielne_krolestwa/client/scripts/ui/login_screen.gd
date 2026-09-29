@@ -18,8 +18,10 @@ func _ready() -> void:
 	theme = UiTheme.get_theme()
 	_build_background()
 
+	# Panel po prawej – po lewej widać scenkę 3D.
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.anchor_left = 0.42
 	add_child(center)
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(620, 0)
@@ -83,7 +85,7 @@ func _ready() -> void:
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_status)
 
-	var ver := UiTheme.label("v%s  •  ETAP 3" % ProjectSettings.get_setting("application/config/version"), 14, Color(0.5, 0.45, 0.4))
+	var ver := UiTheme.label("v%s  •  ETAP 3 • 3D" % ProjectSettings.get_setting("application/config/version"), 14, Color(0.5, 0.45, 0.4))
 	ver.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	ver.position = Vector2(-180, -30)
 	add_child(ver)
@@ -93,15 +95,17 @@ func _ready() -> void:
 
 
 func _build_background() -> void:
-	# Tło: spalona ziemia (tekstura terenu), unoszący się popiół i żar, winieta.
-	var bg := TextureRect.new()
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.stretch_mode = TextureRect.STRETCH_TILE
-	var img: Image = load("res://assets/world/terrain/ash.png").get_image()
-	img.resize(256, 256, Image.INTERPOLATE_NEAREST)
-	bg.texture = ImageTexture.create_from_image(img)
-	bg.modulate = Color(0.75, 0.68, 0.66)
-	add_child(bg)
+	# Tło: scenka 3D (obozowisko o zmierzchu), unoszący się popiół i żar, winieta.
+	var svc := SubViewportContainer.new()
+	svc.set_anchors_preset(Control.PRESET_FULL_RECT)
+	svc.stretch = true
+	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(svc)
+	var vp := SubViewport.new()
+	vp.msaa_3d = Viewport.MSAA_2X
+	vp.own_world_3d = true
+	svc.add_child(vp)
+	vp.add_child(LoginBackdrop.new())
 	var dot: Texture2D = load("res://assets/fx/soft_dot.png")
 	for kind in ["ash", "ember"]:
 		var p := CPUParticles2D.new()
@@ -132,7 +136,7 @@ func _build_background() -> void:
 	vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://shaders/vignette.gdshader")
-	mat.set_shader_parameter("strength", 0.8)
+	mat.set_shader_parameter("strength", 0.55)
 	vig.material = mat
 	add_child(vig)
 

@@ -7,7 +7,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 3 – PvP, strefy ryzyka i umiejętności broni** (wersja 0.4.0) (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 3 – PvP, strefy ryzyka i umiejętności broni + nowa oprawa 3D low-poly** (wersja 0.5.0) (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
@@ -105,40 +105,32 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 - Nowa NPC **Kapłanka Wiesława** (słowa: „błogosławieństwo”, „śmierć”, „strefy”, „czaszki”), ikony czaszek nad
   graczami, ekran śmierci z listą strat, efekty umiejętności.
 
-## Oprawa graficzna (Godot 4.5)
+## Oprawa graficzna – 3D low-poly (Godot 4.5)
 
-Klient korzysta z narzędzi silnika Godot, a nie tylko z rysowania w kodzie:
+Od wersji 0.5.0 świat jest **trójwymiarowy** (styl low-poly, kamera z góry pod kątem jak w Albionie).
+Serwer, protokół i mechaniki się nie zmieniły – świat 3D powstaje z tej samej mapy kafelków (1 kafelek = 1 jednostka).
 
-| Element | Jak zrobiony w Godocie |
-|---------|------------------------|
-| Teren | **Shader** `shaders/world_ground.gdshader` na całą mapę: tekstury terenu 128×128 bez szwów, miękkie organiczne przejścia (trawa → droga → piasek → woda), animowana woda z pianą przy brzegu |
-| Drzewa, mury, stragany, piec | **TileSet** `assets/world/objects_tileset.tres` + `TileMapLayer` z **sortowaniem Y** (postać chowa się za drzewem/murem), drzewa kołyszą się (shader wiatru) |
-| Postacie | Scena `scenes/entity.tscn`: warstwy **paperdoll** – ciało + hełm, zbroja, nogi, buty, broń, tarcza zależnie od założonego ekwipunku (płyta/skóra/płótno, kolory tierów), animacja chodu 4 kierunki × 4 klatki, cień, biały błysk przy trafieniu (shader) |
-| Światło | `CanvasModulate` + `PointLight2D`: **cykl dnia i nocy** (24 min, wspólny dla wszystkich), pochodnie przy bramach i świątyni migoczą, piec rafinerii żarzy się, gracz nosi światło w nocy |
-| Cząsteczki | `CPUParticles2D`: opadający popiół i unoszący się żar (klimat świata), ogień pochodni, iskry trafień, wybuch przy awansie, drobiny przy zbieraniu |
-| Kamera | `Camera2D` z wygładzaniem i wstrząsem przy otrzymaniu obrażeń, winieta (shader) |
-| Interfejs | Motyw z teksturami **9-patch** (kamienne ramki z brązem, przyciski, sloty, paski HP/MP/EXP), ikony HUD, **minimapa**, joystick, ekran logowania z logo i popiołem |
+| Element | Jak zrobiony |
+|---------|--------------|
+| Teren | Siatki generowane w kodzie (`scripts/world3d/world_builder.gd`) w kawałkach 16×16: płaskie cieniowanie, łagodne przejścia kolorów, trawa zmienia się wraz ze strefą (zielona → złota → wypalona), bruk miasta, marmur świątyni ze świecącym kręgiem run, żarzące się szczeliny Popieliska, wzgórza i las poza mapą |
+| Woda | Shader `lowpoly_water.gdshader`: fale w wierzchołkach, fasetki, piana przy brzegu, połysk |
+| Obiekty | Drzewa (liściaste, iglaste, jesienne, wypalone – kołyszą się na wietrze), skały, mury z blankami i chorągwiami, wieże z dachami przy bramach i narożnikach, stragany, skrzynie, kowadło, stół, piec z ogniem |
+| Postacie | `character_model.gd`: modele z części animowane w kodzie (chód, oddech, cios, strzał z łuku, zbieranie, śmierć). **Wygląd zależy od ekwipunku**: hełm/zbroja/nogi/buty (płyta/skóra/płótno, kolor i materiał tieru), miecz/topór/buława/łuk, tarcza okrągła lub migdałowa z herbem. Każdy NPC ma własny strój |
+| Potwory i złoża | Szczur, dzik, wilk, płonący ogar (świecące oczy, żar), szkielet; złoża T1–T4 wyglądają inaczej (brzoza, kasztanowiec, sosna, cedr, żyły miedzi…tytanu, len…ognista pokrzywa) i maleją w miarę wydobycia |
+| Światło | Słońce z cieniami, **cykl dnia i nocy** (zachód słońca, księżyc), pochodnie i kosze ogniowe z migoczącym światłem, gracz niesie światło nocą, poświata (glow) ognia i żaru |
+| Atmosfera | Mgła w kolorze strefy (błękitna / złota / czerwono-dymna), opadający popiół, w czerwonej strefie unoszący się żar |
+| Efekty | Krew i iskry przy trafieniu, lecące strzały, słup światła przy awansie i leczeniu, fale umiejętności, gwiazdki ogłuszenia, znacznik dotknięcia |
+| Interfejs | Imiona, paski życia i liczby obrażeń jako ostra nakładka 2D; HUD, okna i minimapa w stylu pixel-art (9-patch); ekran logowania ze scenką 3D (ognisko o zmierzchu) |
+| Kamera | Płynne podążanie, wstrząs przy trafieniu, **przybliżanie** dwoma palcami / kółkiem myszy |
 
-Sceny `scenes/game.tscn`, `scenes/entity.tscn`, `scenes/torch.tscn` można otwierać i edytować w edytorze Godota.
-W menu gry: **„Efekty graficzne: wysokie/niskie”** – wyłącza cząsteczki, światła i winietę na słabszych telefonach.
+Dalsze kawałki świata budują się w tle (limit 5 ms na klatkę), zaczynając od najbliższych graczowi.
+W menu gry: **„Efekty graficzne: wysokie/niskie”** – wyłącza cienie, poświatę i cząsteczki na słabszych telefonach.
 
-### Grafiki (PNG) i ich podmiana
+### Grafiki interfejsu (PNG)
 
-Wszystkie grafiki leżą w `client/assets/` jako zwykłe pliki PNG (atlasy) opisane w `assets/atlas_index.json`.
-Tworzy je generator pixel artu `client/tools/build_art.gd` (kod w `client/tools/art/`: paleta, cieniowanie z ditheringiem,
-szum bez szwów) – licencja CC0. Po zmianie generatora:
-
-```bash
-tools/build_assets.sh        # PNG + TileSet + import do projektu
-```
-
-Grafika może zostać podmieniona na ręcznie narysowaną: wystarczy zachować rozmiary i układ atlasów
-(np. `characters/layers.png`: arkusze 128×128, kolumny = klatki chodu, wiersze = kierunek N/E/S/W).
-Podgląd atlasów: `godot --headless --path client --script res://tools/preview_art.gd -- podglad.png`.
-
-> Dlaczego generator, a nie gotowa paczka grafik? Środowisko, w którym powstaje projekt, nie ma dostępu do serwisów
-> z darmowymi assetami (kenney.nl, itch.io, opengameart). Pipeline jest przygotowany tak, aby w każdej chwili
-> wstawić profesjonalne grafiki (np. CC0 od Kenneya) bez zmian w kodzie gry.
+Ikony przedmiotów, ramki okien, przyciski i ikona aplikacji leżą w `client/assets/` (PNG + `atlas_index.json`).
+Tworzy je generator pixel artu `client/tools/build_art.gd` (licencja CC0); po zmianie: `tools/build_assets.sh`.
+Każdy PNG można podmienić ręcznie narysowanym (ten sam rozmiar).
 
 ## Struktura projektu
 
@@ -166,15 +158,16 @@ popielne_krolestwa/
 │   └── Dockerfile
 ├── client/                  # Godot 4.5 (GDScript)
 │   ├── project.godot, export_presets.cfg
-│   ├── scenes/              # main, game (świat, światło, cząsteczki), entity (postać), torch
-│   ├── shaders/             # teren, kołysanie drzew, błysk trafienia, winieta
-│   ├── assets/              # grafiki PNG (atlasy), TileSet .tres, atlas_index.json
-│   ├── scripts/autoload/    # Config, Net, GameData, Sprites (atlasy grafik), Sfx (dźwięk)
-│   ├── scripts/game/        # scena gry, istoty, efekty, loot
+│   ├── scenes/              # main, game (scena 3D)
+│   ├── shaders/             # low-poly: teren, obiekty, roślinność (wiatr), woda; winieta
+│   ├── assets/              # grafiki interfejsu PNG, atlas_index.json
+│   ├── scripts/autoload/    # Config, Net, GameData, Sprites (ikony), Sfx (dźwięk)
+│   ├── scripts/game/        # scena gry: kamera, słońce, dzień/noc, sterowanie, pakiety
+│   ├── scripts/world3d/     # świat 3D: generator terenu, modele postaci, ogień, efekty, loot, nakładka
 │   ├── scripts/ui/          # logowanie, HUD, joystick, plecak, postać, NPC, sklep, depozyt,
 │   │                        # rynek, rzemiosło, specjalizacje, okno ilości/ceny
 │   ├── scripts/debug/       # automatyczny test klienta
-│   └── tools/               # build_art.gd + art/ (generator pixel artu), build_tileset.gd, preview_art.gd
+│   └── tools/               # build_art.gd + art/ (generator ikon i interfejsu)
 └── tools/                   # build_apk.sh (APK debug/release), build_assets.sh (grafiki)
 ```
 
@@ -366,6 +359,7 @@ w `client/export_presets.cfg`. Google Play wymaga formatu AAB – to wymaga eksp
 | Akcja | Telefon | Komputer |
 |-------|---------|----------|
 | Ruch | joystick (lewy dół) lub dotknij pola | strzałki / WASD, kliknięcie |
+| Przybliżenie kamery | dwa palce (szczypanie) | kółko myszy |
 | Atak | dotknij potwora (ponownie – przerwij) lub **Atak** (najbliższy / następny) | kliknięcie |
 | Leczenie | przycisk **exura** lub wpisz `exura` w czat | – |
 | Mikstury | przyciski z czerwoną / niebieską miksturą | – |
@@ -399,6 +393,8 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 # scenariusz ETAPU 2 (domyślny): NPC, sklep, zbieranie, rafinacja, rynek, depozyt, specjalizacje
 # scenariusz ETAPU 1: dodaj --scenario=etap1
 # scenariusz ETAPU 3: dodaj --scenario=etap3 (kapłanka, strefy, umiejętność, okno postaci)
+# przegląd świata 3D: --scenario=widoki (jezioro, Popielisko, krawędź, brama, rynek); ekran logowania: --scenario=login
+# pora dnia na zrzutach: --day / --dusk / --night
 ```
 
 ---
@@ -477,6 +473,19 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 9. **Protokół pozostał w wersji 2** – nowe pola i wiadomości są dopisane zgodnie wstecz (starsze serwery/klienci
    z ETAPU 2 muszą być jednak zaktualizowani razem, bo baza dostaje migrację 3 – kolumnę `pvp`).
 
+## Decyzje – nowa oprawa 3D (wersja 0.5.0)
+
+1. **3D low-poly zamiast pixel artu 2D** (na życzenie) przy zachowaniu serwera, protokołu i wszystkich mechanik –
+   świat 3D powstaje z tej samej mapy kafelków, więc stare serwery i zapisy postaci działają bez zmian.
+2. **Modele tworzone w kodzie** (bez zewnętrznych plików .glb): środowisko nie ma dostępu do serwisów z assetami,
+   a proceduralne modele dają spójny styl, małe APK (~28 MB arm64) i wygląd zależny od ekwipunku i tieru.
+3. **Renderer Compatibility (OpenGL ES 3 / WebGL 2)** – ten sam na Androidzie i w przeglądarce, działa na starszych
+   telefonach (Android 8+). Cienie tylko od słońca, światła pochodni bez cieni.
+4. **Kamera stała (bez obrotu)** – sterowanie joystickiem i tapnięciem pozostaje intuicyjne jak w Tibii/Albionie;
+   dodane przybliżanie.
+5. **Imiona i paski życia w 2D nad 3D** – czytelne w każdej skali ekranu.
+6. **Trawa i mgła zmieniają kolor wraz ze strefą** – od razu widać, że wchodzisz w niebezpieczny teren.
+
 ## Plan etapów
 
 - [x] **ETAP 1** – grywalne MVP.
@@ -487,7 +496,7 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 
 ## Grafika, dźwięk, licencje
 
-Wszystkie grafiki (kafelki, postacie, potwory, przedmioty, ikona, ekran startowy) i efekty dźwiękowe
-są **generowane proceduralnie w kodzie** tego projektu (`client/scripts/autoload/sprites.gd`,
-`sfx.gd`, `client/tools/generate_art.gd`) i udostępniane jako **CC0**. Projekt nie zawiera żadnych
+Wszystkie modele 3D (teren, drzewa, budowle, postacie, potwory), grafiki interfejsu, ikona i efekty dźwiękowe
+są **generowane proceduralnie w kodzie** tego projektu (`client/scripts/world3d/`, `client/tools/build_art.gd`,
+`client/scripts/autoload/sfx.gd`) i udostępniane jako **CC0**. Projekt nie zawiera żadnych
 assetów z Tibii ani Albion Online. Czcionka: domyślna czcionka Godota (Open Sans, licencja OFL).
