@@ -13,6 +13,9 @@ import { Player, Connection } from '../game/entities';
 import { createAccountWithCharacter, playerFromRow } from '../game/session';
 import { hashPassword, verifyPassword, validateName, validatePassword } from '../auth';
 
+/** Tyle czasu po ostatniej walce postać zostaje w świecie po rozłączeniu. */
+const COMBAT_LOGOUT_MS = 30_000;
+
 class WsConnection implements Connection {
   constructor(private ws: WebSocket) {}
   send(msg: object | string) {
@@ -25,6 +28,8 @@ class WsConnection implements Connection {
 
 export class GameServer {
   private wss: WebSocketServer | null = null;
+  /** Zamykanie serwera – gracze są wylogowywani (i zapisywani) natychmiast. */
+  private closing = false;
 
   constructor(private world: World) {}
 
@@ -44,6 +49,7 @@ export class GameServer {
   async close(): Promise<void> {
     const wss = this.wss;
     if (!wss) return;
+    this.closing = true;
     const closed = [...wss.clients].map((c) => new Promise<void>((r) => c.once('close', () => r())));
     for (const c of wss.clients) c.terminate();
     await Promise.all(closed);
@@ -104,7 +110,18 @@ export class GameServer {
       if (player) {
         console.log(`[auth] ${player.name} wylogowany`);
         // Postać mogła zostać już przejęta przez nowe logowanie.
-        if (this.world.players.get(player.id) === player) this.world.removePlayer(player);
+        const p = player;
+        if (this.world.players.get(p.id) !== p) return;
+        // Ucieczka z walki: postać zostaje w świecie jeszcze do 30 s od ostatniej walki.
+        const left = this.closing ? 0 : COMBAT_LOGOUT_MS - (Date.now() - p.lastCombatAt);
+        if (left > 0) {
+          console.log(`[auth] ${p.name} wylogował się w walce – zostaje w świecie ${Math.ceil(left / 1000)} s`);
+          setTimeout(() => {
+            if (this.world.players.get(p.id) === p) this.world.removePlayer(p);
+          }, left);
+        } else {
+          this.world.removePlayer(p);
+        }
       }
     });
     ws.on('error', () => {});

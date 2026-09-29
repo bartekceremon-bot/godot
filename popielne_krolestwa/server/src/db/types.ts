@@ -28,6 +28,8 @@ export interface CharacterRow {
   inventory: string;
   /** JSON: Specs (drzewko specjalizacji) */
   specs: string;
+  /** JSON: PvpState (czaszka, zabójstwa, błogosławieństwa) */
+  pvp: string;
   updated_at: number;
 }
 

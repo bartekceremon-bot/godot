@@ -37,7 +37,9 @@ function storage(): Storage | null {
   }
 }
 
-const BOT_NAMES = ['Wędrowiec Jarek', 'Łowczyni Ola', 'Stary Bogumił', 'Zbieraczka Iga', 'Najemnik Radek'];
+const BOT_NAMES = ['Wędrowiec Jarek', 'Łowczyni Ola', 'Stary Bogumił', 'Zbieraczka Iga', 'Najemnik Radek', 'Rozbójnik Zbych'];
+/** Indeks bota-rozbójnika: krąży po czerwonej strefie i atakuje graczy (ma czerwoną czaszkę). */
+const BANDIT = 5;
 const BOT_CHAT = [
   'Ktoś widział wilki na zachodzie?',
   'Kupię deski kasztanowe, dobra cena!',
@@ -163,6 +165,7 @@ export class OfflineHost {
       { x: 62, y: 49 },
       { x: 48, y: 34 },
       { x: 49, y: 62 },
+      { x: 12, y: 60 },
     ];
     BOT_NAMES.forEach((name, i) => {
       const db = this.world.db;
@@ -181,6 +184,7 @@ export class OfflineHost {
         ['cloth_body_t3', 'cloth_head_t3', 'cloth_legs_t2', 'cloth_feet_t2'],
         ['leather_body_t1', 'leather_feet_t1', 'axe_t1'],
         ['plate_body_t1', 'plate_feet_t1', 'sword_t2', 'shield_t2'],
+        ['leather_body_t3', 'leather_head_t3', 'leather_legs_t2', 'axe_t3'],
       ][i];
       for (const g of gear) {
         const slot = p.inventory.bag.findIndex((s) => s === null);
@@ -188,6 +192,13 @@ export class OfflineHost {
         p.inventory.add(g);
         const idx = p.inventory.bag.findIndex((s) => s?.item === g);
         p.inventory.equipFromBag(idx);
+      }
+      if (i === BANDIT) {
+        p.pvp.skull = 'red';
+        p.pvp.skullUntil = Number.MAX_SAFE_INTEGER;
+        p.exp = 4200; // poziom 8
+        p.level = 8;
+        p.hp = p.maxHp();
       }
       this.world.players.set(p.id, p);
       this.bots.push({ p, home: homes[i], goal: homes[i], nextAct: 0, nextChat: Date.now() + 5000 + i * 7000 });
@@ -205,6 +216,14 @@ export class OfflineHost {
       }
       if (now < b.nextAct) continue;
       b.nextAct = now + p.stepMs() + 30;
+      // PvP: bot oddaje napastnikowi, a rozbójnik sam poluje na graczy poza zieloną strefą.
+      const enemy = this.pvpEnemy(b, now);
+      if (enemy) {
+        if (p.targetId !== enemy.id) this.world.handle(p, { t: 'attack', id: enemy.id });
+        if (chebyshev(enemy.x, enemy.y, p.x, p.y) > 1) this.stepToward(p, enemy.x, enemy.y);
+        else if (Math.random() < 0.3) this.world.handle(p, { t: 'ability', slot: 1 + Math.floor(Math.random() * 3) });
+        continue;
+      }
       // Walka z pobliskim potworem.
       let target = 0;
       for (const m of this.world.monsters.values())
@@ -222,6 +241,20 @@ export class OfflineHost {
       }
       this.stepToward(p, b.goal.x, b.goal.y);
     }
+  }
+
+  private pvpEnemy(b: Bot, now: number): Player | null {
+    const p = b.p;
+    for (const [id, until] of p.aggressors) {
+      const a = this.world.players.get(id);
+      if (a && until > now && chebyshev(a.x, a.y, p.x, p.y) <= 8 && !this.world.pvp.canAttack(p, a)) return a;
+    }
+    if (this.bots.indexOf(b) !== BANDIT) return null;
+    for (const o of this.world.players.values()) {
+      if (this.bots.some((x) => x.p === o)) continue;
+      if (chebyshev(o.x, o.y, p.x, p.y) <= 6 && !this.world.pvp.canAttack(p, o)) return o;
+    }
+    return null;
   }
 
   private stepToward(p: Player, tx: number, ty: number) {

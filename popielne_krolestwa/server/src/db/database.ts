@@ -56,6 +56,8 @@ const MIGRATIONS: string[] = [
      created_at INTEGER NOT NULL
    );
    CREATE INDEX market_orders_city_item ON market_orders (city, item);`,
+  // ETAP 3: PvP – czaszki, niesprawiedliwe zabójstwa, błogosławieństwa.
+  `ALTER TABLE characters ADD COLUMN pvp TEXT NOT NULL DEFAULT '{}';`,
 ];
 
 export class Database implements GameDatabase {
@@ -111,10 +113,10 @@ export class Database implements GameDatabase {
   createCharacter(c: Omit<CharacterRow, 'id' | 'updated_at'>): number {
     const r = this.db
       .prepare(
-        `INSERT INTO characters (account_id, name, x, y, level, exp, hp, mp, look, skills, inventory, specs, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO characters (account_id, name, x, y, level, exp, hp, mp, look, skills, inventory, specs, pvp, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(c.account_id, c.name, c.x, c.y, c.level, c.exp, c.hp, c.mp, c.look, c.skills, c.inventory, c.specs, Date.now());
+      .run(c.account_id, c.name, c.x, c.y, c.level, c.exp, c.hp, c.mp, c.look, c.skills, c.inventory, c.specs, c.pvp, Date.now());
     return Number(r.lastInsertRowid);
   }
 
@@ -122,9 +124,9 @@ export class Database implements GameDatabase {
     this.db
       .prepare(
         `UPDATE characters SET x = ?, y = ?, level = ?, exp = ?, hp = ?, mp = ?, look = ?,
-           skills = ?, inventory = ?, specs = ?, updated_at = ? WHERE id = ?`,
+           skills = ?, inventory = ?, specs = ?, pvp = ?, updated_at = ? WHERE id = ?`,
       )
-      .run(c.x, c.y, c.level, c.exp, c.hp, c.mp, c.look, c.skills, c.inventory, c.specs, Date.now(), c.id);
+      .run(c.x, c.y, c.level, c.exp, c.hp, c.mp, c.look, c.skills, c.inventory, c.specs, c.pvp, Date.now(), c.id);
   }
 
   // --- Transakcje ---------------------------------------------------------------

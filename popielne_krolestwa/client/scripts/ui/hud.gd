@@ -39,7 +39,10 @@ var _death: ColorRect
 var _death_label: Label
 var _perf: Label
 var _spell_btn: Button
-var _spell_cd := 0.0
+var _cooldowns: Dictionary = {}  # id -> [pozostało, całość]
+var _ability_btns: Array[Button] = []
+var _zone_label: Label
+var _zone_toast: Label
 var _hp_potion_btn: Button
 var _mp_potion_btn: Button
 
@@ -145,6 +148,8 @@ func _build_top_buttons() -> void:
 	var info := VBoxContainer.new()
 	_time_label = UiTheme.label("", 16, Color(1, 0.9, 0.6))
 	info.add_child(_time_label)
+	_zone_label = UiTheme.label("", 16)
+	info.add_child(_zone_label)
 	_perf = UiTheme.label("", 14, Color(0.7, 0.7, 0.7))
 	info.add_child(_perf)
 	mm_row.add_child(info)
@@ -160,29 +165,63 @@ func _build_joystick() -> void:
 
 
 func _build_actions() -> void:
+	# Pasek akcji: górny rząd – 3 umiejętności założonej broni + atak; dolny – czar i mikstury.
 	var grid := GridContainer.new()
-	grid.columns = 2
+	grid.columns = 4
 	grid.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	grid.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	grid.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	grid.position = Vector2(-24, -24)
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 12)
+	grid.position = Vector2(-20, -20)
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
 	_root.add_child(grid)
 
-	var size := Vector2(110, 96)
-	_spell_btn = _action_button("exura", "spell_heal", size)
-	_spell_btn.pressed.connect(func(): Net.send({"t": "cast", "spell": "heal"}); _spell_cd = 1.0)
-	grid.add_child(_spell_btn)
+	var size := Vector2(86, 86)
+	for i in 3:
+		var b := _action_button("", "attack", size)
+		b.add_theme_font_size_override("font_size", 13)
+		b.pressed.connect(func(): Net.send({"t": "ability", "slot": i + 1}))
+		_ability_btns.append(b)
+		grid.add_child(b)
 	var atk := _action_button("Atak", "attack", size)
 	atk.pressed.connect(func(): game.attack_nearest())
 	grid.add_child(atk)
+	_spell_btn = _action_button("exura", "spell_heal", size)
+	_spell_btn.pressed.connect(func(): Net.send({"t": "cast", "spell": "heal"}); _cooldowns["heal"] = [1.0, 1.0])
+	grid.add_child(_spell_btn)
 	_hp_potion_btn = _action_button("0", "hp_potion", size)
 	_hp_potion_btn.pressed.connect(_use_item.bind("hp_potion"))
 	grid.add_child(_hp_potion_btn)
 	_mp_potion_btn = _action_button("0", "mp_potion", size)
 	_mp_potion_btn.pressed.connect(_use_item.bind("mp_potion"))
 	grid.add_child(_mp_potion_btn)
+	_refresh_abilities()
+
+
+## Umiejętności zależą od broni w ręku (jak w Albionie). Bez broni przyciski są wyłączone.
+func _refresh_abilities() -> void:
+	var weapon = _eq.get("weapon")
+	var kind := GameData.weapon_kind(str(weapon.item)) if weapon is Dictionary else ""
+	var defs: Array = GameData.abilities.get(kind, [null, null, null])
+	for i in 3:
+		var b: Button = _ability_btns[i]
+		var d = defs[i]
+		b.set_meta("ability", d.id if d else "")
+		if d:
+			b.text = str(d.name).get_slice(" ", 0)
+			b.icon = Sprites.icon(str(d.icon))
+			b.tooltip_text = "%s – %s (%d many)" % [d.name, d.description, int(d.mana)]
+			b.disabled = false
+		else:
+			b.text = "—"
+			b.icon = null
+			b.tooltip_text = "Załóż broń, aby odblokować umiejętności."
+			b.disabled = true
+
+
+## Serwer potwierdził użycie umiejętności – odliczanie na przycisku.
+func ability_cooldown(id: String, seconds: float) -> void:
+	_cooldowns[id] = [seconds, seconds]
 
 
 func _action_button(text: String, icon_name: String, min_size: Vector2) -> Button:
@@ -201,8 +240,8 @@ func _build_chat() -> void:
 	panel.anchor_right = 0.5
 	panel.anchor_top = 1.0
 	panel.anchor_bottom = 1.0
-	panel.offset_left = -290
-	panel.offset_right = 250
+	panel.offset_left = -300
+	panel.offset_right = 200
 	panel.offset_top = -200
 	panel.offset_bottom = -10
 	panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -314,6 +353,15 @@ func _build_windows() -> void:
 	_death_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_death.add_child(_death_label)
 	_root.add_child(amount)
+	_zone_toast = UiTheme.label("", 34)
+	_zone_toast.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_zone_toast.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_zone_toast.position.y = 150
+	_zone_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_zone_toast.add_theme_constant_override("outline_size", 10)
+	_zone_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_zone_toast.hide()
+	_root.add_child(_zone_toast)
 
 
 ## Proste okno z tytułem i przyciskiem zamknięcia. Zawartość dodaje się do get_child(0).
@@ -390,6 +438,7 @@ func update_inventory(msg: Dictionary) -> void:
 	_inventory.set_data(_bag, _eq)
 	_hp_potion_btn.text = str(_count("hp_potion"))
 	_mp_potion_btn.text = str(_count("mp_potion"))
+	_refresh_abilities()
 	for w in [shop, depot, market, craft]:
 		w.refresh()
 
@@ -487,10 +536,33 @@ func show_online(list: Array) -> void:
 	_toggle(_online)
 
 
-func show_death(by: String, lost: int) -> void:
-	_death_label.text = "ZGINĄŁEŚ\nZabójca: %s\nStracone doświadczenie: %d" % [by, lost]
+func show_death(msg: Dictionary) -> void:
+	var lines: PackedStringArray = ["ZGINĄŁEŚ", "Zabójca: %s" % msg.by, "Stracone doświadczenie: %d" % int(msg.lost)]
+	if int(msg.get("items", 0)) > 0:
+		lines.append("Utracone przedmioty: %d – leżą w miejscu śmierci" % int(msg.items))
+	if int(msg.get("bless", 0)) > 0:
+		lines.append("Błogosławieństwa złagodziły karę (%d)" % int(msg.bless))
+	_death_label.text = "\n".join(lines)
 	_death.show()
-	get_tree().create_timer(3.0).timeout.connect(_death.hide)
+	get_tree().create_timer(4.0).timeout.connect(_death.hide)
+
+
+## Strefa ryzyka: napis przy minimapie + komunikat na środku ekranu przy zmianie.
+func set_zone(z: String, announce: bool) -> void:
+	var col: Color = GameData.ZONE_COLORS[z]
+	_zone_label.text = GameData.ZONE_NAMES[z]
+	_zone_label.add_theme_color_override("font_color", col)
+	if not announce:
+		return
+	_zone_toast.text = "%s\n%s" % [GameData.ZONE_NAMES[z].to_upper(), GameData.ZONE_HINTS[z]]
+	_zone_toast.add_theme_color_override("font_color", col)
+	_zone_toast.modulate.a = 1.0
+	_zone_toast.show()
+	var t := create_tween()
+	t.tween_interval(2.2)
+	t.tween_property(_zone_toast, "modulate:a", 0.0, 0.8)
+	if z == "r":
+		Sfx.play("hurt")
 
 
 ## Pora dnia (0 = dzień, 1 = noc) – napis przy minimapie.
@@ -508,9 +580,20 @@ func joystick_vector() -> Vector2:
 
 
 func _process(delta: float) -> void:
-	if _spell_cd > 0:
-		_spell_cd -= delta
-		_spell_btn.modulate = Color(0.6, 0.6, 0.6, 0.9) if _spell_cd > 0 else Color(1, 1, 1, 0.9)
+	for id in _cooldowns.keys():
+		_cooldowns[id][0] -= delta
+		if _cooldowns[id][0] <= 0:
+			_cooldowns.erase(id)
+	_spell_btn.modulate = Color(0.55, 0.55, 0.55, 0.9) if _cooldowns.has("heal") else Color(1, 1, 1, 0.95)
+	for b in _ability_btns:
+		var id := str(b.get_meta("ability", ""))
+		if _cooldowns.has(id):
+			b.modulate = Color(0.5, 0.5, 0.5, 0.9)
+			b.text = "%.0f s" % ceil(_cooldowns[id][0])
+		else:
+			b.modulate = Color(1, 1, 1, 0.95)
+			if id != "" and b.text.ends_with(" s"):
+				_refresh_abilities()
 	_perf.visible = Config.show_fps
 	if Config.show_fps:
 		_perf.text = "FPS %d  •  ping %d ms" % [Engine.get_frames_per_second(), Net.latency_ms]

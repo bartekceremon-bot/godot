@@ -97,5 +97,12 @@ void fragment() {
 			col.rgb = mix(col.rgb, vec3(0.78, 0.9, 0.95), foam * 0.55 * pulse);
 		}
 	}
+	// Odcień strefy ryzyka (kanał G mapy: 0 zielona, 0.5 żółta, 1 czerwona).
+	float zone = texture(map_tex, (cell + 0.5) / map_size).g;
+	if (zone > 0.75) {
+		col.rgb *= vec3(1.0, 0.8, 0.74);
+	} else if (zone > 0.25) {
+		col.rgb *= vec3(1.0, 0.95, 0.82);
+	}
 	COLOR = col;
 }

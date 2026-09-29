@@ -82,12 +82,13 @@ func _build_map() -> void:
 	_astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	_astar.update()
 	# Mapa typów terenu dla shadera (1 piksel = 1 kafelek).
-	var terrain := Image.create(GameData.map_w, GameData.map_h, false, Image.FORMAT_R8)
+	var terrain := Image.create(GameData.map_w, GameData.map_h, false, Image.FORMAT_RG8)
 	for y in GameData.map_h:
 		var row: String = GameData.map_rows[y]
 		for x in GameData.map_w:
 			var ch := row[x]
-			terrain.set_pixel(x, y, Color(_terrain_under(ch, x, y) / 255.0, 0, 0))
+			var zone := {"g": 0.0, "y": 0.5, "r": 1.0}.get(GameData.zone_at(x, y), 0.0) as float
+			terrain.set_pixel(x, y, Color(_terrain_under(ch, x, y) / 255.0, zone, 0))
 			if not GameData.WALKABLE.contains(ch):
 				_astar.set_point_solid(Vector2i(x, y), true)
 			_place_object(ch, x, y)
@@ -221,6 +222,7 @@ func _on_message(msg: Dictionary) -> void:
 			me.snap_to(my_pos)
 			_path.clear()
 			_move_cooldown = 0.0
+			_update_zone()
 		"stats":
 			stats = msg
 			step_ms = int(msg.step)
@@ -257,8 +259,10 @@ func _on_message(msg: Dictionary) -> void:
 		"online":
 			hud.show_online(msg.list)
 		"died":
-			hud.show_death(str(msg.by), int(msg.lost))
+			hud.show_death(msg)
 			Sfx.play("death")
+		"cd":
+			hud.ability_cooldown(str(msg.id), float(msg.ms) / 1000.0)
 		"sfx":
 			Sfx.play(str(msg.k))
 
@@ -283,6 +287,19 @@ func _on_snapshot(msg: Dictionary) -> void:
 	_update_minimap()
 
 
+var _zone := ""
+
+
+## Wejście do innej strefy: duży komunikat na środku ekranu.
+func _update_zone() -> void:
+	var z := GameData.zone_at(my_pos.x, my_pos.y)
+	if z == _zone:
+		return
+	var first := _zone == ""
+	_zone = z
+	hud.set_zone(z, not first)
+
+
 func _update_minimap() -> void:
 	var dots := []
 	for id in entities:
@@ -292,6 +309,8 @@ func _update_minimap() -> void:
 		var col := Color(0.4, 1, 0.4)
 		if e.kind == "m":
 			col = Color(1, 0.3, 0.25)
+		elif e.kind == "p" and e.skull != "":
+			col = Color(1, 0.1, 0.6)
 		elif e.kind == "n":
 			col = Color(1, 0.85, 0.3)
 		dots.append([e.tile, col])
@@ -415,6 +434,12 @@ func _on_tap(tile: Vector2i) -> void:
 	for id in entities:
 		var e: EntityView = entities[id]
 		if e.kind == "m" and e.tile == tile:
+			attack(id)
+			return
+	# 1a. Inny gracz -> atak (PvP; serwer sprawdza strefę i zasady).
+	for id in entities:
+		var e: EntityView = entities[id]
+		if e.kind == "p" and not e.is_me and e.tile == tile:
 			attack(id)
 			return
 	# 1b. NPC -> rozmowa (podejdź, jeśli daleko).
@@ -609,6 +634,7 @@ func _try_step(step: Vector2i, from_path: bool) -> bool:
 	me.gathering = false
 	_update_labels()
 	_update_minimap()
+	_update_zone()
 	return true
 
 

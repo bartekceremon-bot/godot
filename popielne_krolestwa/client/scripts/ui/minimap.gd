@@ -24,7 +24,14 @@ func _ready() -> void:
 	for y in GameData.map_h:
 		var row: String = GameData.map_rows[y]
 		for x in GameData.map_w:
-			img.set_pixel(x + PAD, y + PAD, COLORS.get(row[x], Color.MAGENTA))
+			var c: Color = COLORS.get(row[x], Color.MAGENTA)
+			# Odcień strefy ryzyka.
+			var z := GameData.zone_at(x, y)
+			if z == "r":
+				c = c.lerp(Color(0.8, 0.15, 0.1), 0.35)
+			elif z == "y":
+				c = c.lerp(Color(0.85, 0.7, 0.2), 0.25)
+			img.set_pixel(x + PAD, y + PAD, c)
 	_tex = ImageTexture.create_from_image(img)
 
 

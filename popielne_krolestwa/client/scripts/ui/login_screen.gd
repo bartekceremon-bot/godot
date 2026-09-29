@@ -83,7 +83,7 @@ func _ready() -> void:
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_status)
 
-	var ver := UiTheme.label("v%s  •  ETAP 2+" % ProjectSettings.get_setting("application/config/version"), 14, Color(0.5, 0.45, 0.4))
+	var ver := UiTheme.label("v%s  •  ETAP 3" % ProjectSettings.get_setting("application/config/version"), 14, Color(0.5, 0.45, 0.4))
 	ver.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	ver.position = Vector2(-180, -30)
 	add_child(ver)

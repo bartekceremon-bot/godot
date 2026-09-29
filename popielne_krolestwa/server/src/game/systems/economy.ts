@@ -98,6 +98,8 @@ export class EconomySystem {
         return this.sendDepot(p, n.def.city);
       case 'market':
         return this.sendMarket(p, n.def.city);
+      case 'bless':
+        return this.sendDialog(p, n, this.world.pvp.buyBlessing(p));
       case 'craft':
         if (n.def.station) {
           p.openWindow = 'craft';

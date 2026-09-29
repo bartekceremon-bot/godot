@@ -18,7 +18,7 @@ cp "$TMP/index.pck" "$OUT/game-pck.wasm"
 
 ARGS='["--audio-driver", "Dummy"]'
 if [ "${AUTOTEST:-}" = "1" ]; then
-  ARGS='["--audio-driver", "Dummy", "--", "--autotest=offline,Tester,haslo1"]'
+  ARGS='["--audio-driver", "Dummy", "--", "--autotest=offline,Tester,haslo1", "--scenario=etap3"]'
 fi
 python3 - "$ROOT" "$TMP" "$OUT" "$ARGS" <<'PY'
 import sys, base64, json, os

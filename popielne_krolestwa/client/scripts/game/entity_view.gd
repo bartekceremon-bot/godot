@@ -26,6 +26,8 @@ var gathering := false:
 	set(v):
 		gathering = v
 		_redraw()
+## Czaszka gracza: "", "white", "red".
+var skull := ""
 ## Wygląd ekwipunku: [głowa, tułów, nogi, stopy, broń, tarcza] (id przedmiotów).
 var equipment: Array = []
 
@@ -69,6 +71,7 @@ func apply(e: Dictionary, me: bool) -> void:
 	display_name = str(e.n)
 	hp_pct = int(e.h)
 	equipment = e.get("eq", [])
+	skull = str(e.get("sk", ""))
 	if not me:
 		var t := Vector2i(int(e.x), int(e.y))
 		if t != tile:
@@ -236,6 +239,9 @@ func _draw_overlay() -> void:
 	var name_y := -12 if kind != "n" else -6
 	o.draw_string_outline(font, Vector2(-44, name_y), display_name, HORIZONTAL_ALIGNMENT_CENTER, 120, 8, 3, Color(0, 0, 0, 0.9))
 	o.draw_string(font, Vector2(-44, name_y), display_name, HORIZONTAL_ALIGNMENT_CENTER, 120, 8, col)
+	if skull != "":
+		var w := font.get_string_size(display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+		o.draw_texture_rect(Sprites.icon("skull_" + skull), Rect2(16 - w / 2.0 - 12, name_y - 9, 10, 10), false)
 	if kind == "n":
 		return
 	if gathering:

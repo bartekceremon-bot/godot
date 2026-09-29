@@ -12,6 +12,14 @@ var station_names: Dictionary = {}
 var spec_defs: Array = []
 var tier_spec_req: Array = []
 var quality_names: Array = []
+## Umiejętności broni: rodzaj broni -> [def slot 1, 2, 3]
+var abilities: Dictionary = {}
+## Strefy: wiersze znaków g/y/r
+var zones: PackedStringArray = []
+
+const ZONE_NAMES := {"g": "Strefa zielona", "y": "Strefa żółta", "r": "Strefa czerwona"}
+const ZONE_HINTS := {"g": "bezpieczna – bez PvP", "y": "PvP – po śmierci tracisz część plecaka", "r": "PEŁNE PvP – full loot!"}
+const ZONE_COLORS := {"g": Color(0.55, 0.95, 0.5), "y": Color(1.0, 0.85, 0.3), "r": Color(1.0, 0.35, 0.25)}
 var my_id := 0
 var my_name := ""
 var map_w := 0
@@ -63,6 +71,12 @@ func load_welcome(msg: Dictionary) -> void:
 	spec_defs = msg.get("specs", [])
 	tier_spec_req = msg.get("tierSpecReq", [])
 	quality_names = msg.get("qualities", [])
+	abilities.clear()
+	for a in msg.get("abilities", []):
+		if not abilities.has(a.weapon):
+			abilities[a.weapon] = [null, null, null]
+		abilities[a.weapon][int(a.slot) - 1] = a
+	zones = PackedStringArray(msg.get("zones", []))
 	map_w = int(msg.map.w)
 	map_h = int(msg.map.h)
 	map_rows = PackedStringArray(msg.map.rows)
@@ -76,6 +90,19 @@ func tile_at(x: int, y: int) -> String:
 
 func is_walkable(x: int, y: int) -> bool:
 	return WALKABLE.contains(tile_at(x, y))
+
+
+## Strefa kafelka: "g", "y" albo "r".
+func zone_at(x: int, y: int) -> String:
+	if y < 0 or y >= zones.size() or x < 0 or x >= zones[y].length():
+		return "r"
+	return zones[y][x]
+
+
+## Rodzaj broni z id przedmiotu ("sword_t2" -> "sword").
+static func weapon_kind(item_id: String) -> String:
+	var k := item_id.get_slice("_", 0)
+	return k if k in ["sword", "axe", "mace", "bow"] else ""
 
 
 func is_protection_zone(x: int, y: int) -> bool:

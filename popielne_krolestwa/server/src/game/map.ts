@@ -41,6 +41,15 @@ const TILE_INFO: Record<string, TileInfo> = {
   P: { walkable: false, blocksSight: false, protectionZone: true },
 };
 
+/** Strefa kafelka: miasto i okolica zielone, dalej żółta, najdalej i na Popielisku czerwona. */
+export function computeZone(tile: string, x: number, y: number, temple: Point): Zone {
+  if (TILE_INFO[tile]?.protectionZone) return 'green';
+  const d = Math.max(Math.abs(x - temple.x), Math.abs(y - temple.y));
+  if (tile === 'a' || d > YELLOW_RADIUS) return 'red';
+  if (d > GREEN_RADIUS) return 'yellow';
+  return 'green';
+}
+
 const OUTSIDE: TileInfo = { walkable: false, blocksSight: true, protectionZone: false };
 
 export interface SpawnPoint {
@@ -64,6 +73,19 @@ export interface Point {
   y: number;
 }
 
+/**
+ * Strefy ryzyka (pierścienie wokół miasta, jak w koncepcji świata):
+ *  - green  – bez PvP, śmierć kosztuje tylko trochę doświadczenia,
+ *  - yellow – PvP możliwe, czaszki za zabijanie niewinnych, po śmierci tracisz część plecaka,
+ *  - red    – pełne PvP i full loot (w ETAPIE 4 dojdzie czarna strefa – Popielisko).
+ */
+export type Zone = 'green' | 'yellow' | 'red';
+export const ZONE_CODE: Record<Zone, string> = { green: 'g', yellow: 'y', red: 'r' };
+
+/** Granice stref (odległość „szachowa” od świątyni). */
+export const GREEN_RADIUS = 22;
+export const YELLOW_RADIUS = 34;
+
 export class GameMap {
   readonly width: number;
   readonly height: number;
@@ -72,6 +94,7 @@ export class GameMap {
   readonly temple: Point;
   readonly spawns: SpawnPoint[] = [];
   readonly nodes: NodeSpawn[] = [];
+  private zones: Zone[][];
 
   constructor(width: number, height: number, tiles: string[][], temple: Point, spawns: SpawnPoint[], nodes: NodeSpawn[] = []) {
     this.width = width;
@@ -80,6 +103,17 @@ export class GameMap {
     this.temple = temple;
     this.spawns = spawns;
     this.nodes = nodes;
+    this.zones = tiles.map((row, y) => row.map((c, x) => computeZone(c, x, y, temple)));
+  }
+
+  zoneAt(x: number, y: number): Zone {
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height) return 'red';
+    return this.zones[y][x];
+  }
+
+  /** Strefy jako wiersze znaków g/y/r – wysyłane klientowi (minimapa, oznaczenia). */
+  zoneRows(): string[] {
+    return this.zones.map((row) => row.map((z) => ZONE_CODE[z]).join(''));
   }
 
   tileAt(x: number, y: number): string {
@@ -302,7 +336,7 @@ function placeNodes(t: string[][], rng: SeededRng, temple: Point, spawns: SpawnP
   const taken = new Set<string>();
   for (const n of NPCS) taken.add(`${n.x},${n.y}`);
   for (const s of spawns) taken.add(`${s.x},${s.y}`);
-  const quota = [0, 45, 40, 30, 22];
+  const quota = [0, 40, 40, 32, 28];
   const count = [0, 0, 0, 0, 0];
   let attempts = 0;
   while (attempts++ < 20000 && count.slice(1).some((c, i) => c < quota[i + 1])) {
@@ -312,8 +346,9 @@ function placeNodes(t: string[][], rng: SeededRng, temple: Point, spawns: SpawnP
     if ((tile !== '.' && tile !== 'a' && tile !== 's') || taken.has(`${x},${y}`)) continue;
     const d = Math.max(Math.abs(x - temple.x), Math.abs(y - temple.y));
     const ash = tile === 'a';
-    let tier = d < 12 ? 0 : d < 22 ? 1 : d < 32 ? 2 : d < 42 ? 3 : 4;
-    if (ash) tier = d >= 36 ? 4 : 3;
+    // Tier zależy od strefy: zielona T1–T2, żółta T3, czerwona (i Popielisko) T4.
+    const zone = computeZone(tile, x, y, temple);
+    let tier = zone === 'red' ? 4 : zone === 'yellow' ? 3 : d < 10 ? 0 : d < 16 ? 1 : 2;
     if (tier === 0 || count[tier] >= quota[tier]) continue;
     // Drzewa rosną przy lasach, ruda i kamień – na Popielisku i w skałach.
     let trees = 0;

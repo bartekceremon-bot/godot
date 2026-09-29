@@ -7,13 +7,13 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 2 – ekonomia + nowa oprawa graficzna** (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 3 – PvP, strefy ryzyka i umiejętności broni** (wersja 0.4.0) (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
 ## Spis treści
 
-1. [Co działa w ETAPIE 1](#co-działa-w-etapie-1) i [ETAPIE 2](#co-doszło-w-etapie-2--ekonomia)
+1. [Co działa w ETAPIE 1](#co-działa-w-etapie-1), [ETAPIE 2](#co-doszło-w-etapie-2--ekonomia) i [ETAPIE 3](#co-doszło-w-etapie-3--pvp)
 2. [Struktura projektu](#struktura-projektu)
 3. [Szybki start – tryb „lokalny serwer” (komputer + telefon w tej samej sieci Wi-Fi)](#szybki-start--tryb-lokalny-serwer)
 4. [Serwer na VPS (Docker)](#serwer-na-vps-docker)
@@ -22,7 +22,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 7. [Podpisywanie kluczem release](#podpisywanie-kluczem-release)
 8. [Sterowanie](#sterowanie)
 9. [Testy](#testy)
-10. [Decyzje podjęte w ETAPIE 1](#decyzje-podjęte-w-etapie-1) i [ETAPIE 2](#decyzje-podjęte-w-etapie-2)
+10. Decyzje podjęte w [ETAPIE 1](#decyzje-podjęte-w-etapie-1), [ETAPIE 2](#decyzje-podjęte-w-etapie-2) i [ETAPIE 3](#decyzje-podjęte-w-etapie-3)
 11. [Plan etapów](#plan-etapów)
 12. [Grafika, dźwięk, licencje](#grafika-dźwięk-licencje)
 
@@ -68,6 +68,42 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
   za 20% wartości.
 - **Udźwig:** 400 oz + 20 oz/poziom (widoczny w plecaku) – surowce ważą, transport ma znaczenie.
 - Postacie z ETAPU 1 są automatycznie migrowane (stare przedmioty → nowe T1/T2, narzędzia T1 w prezencie).
+
+## Co doszło w ETAPIE 3 – PvP
+
+- **Strefy ryzyka** (pierścienie wokół świątyni Popielgrodu, widoczne na mapie, minimapie i jako napis pod zegarem;
+  przy przekroczeniu granicy pojawia się komunikat):
+  - **zielona** (miasto i okolice, złoża T1–T2) – brak PvP, śmierć = −5% doświadczenia, przedmioty zostają,
+  - **żółta** (złoża T3) – PvP z czaszkami, śmierć = −7% doświadczenia i utrata ok. 30% stosów z plecaka,
+  - **czerwona** (daleko od miasta i całe Popielisko, złoża T4) – pełne PvP, śmierć = −10% doświadczenia
+    i **FULL LOOT**: cały plecak i ekwipunek zostają w zwłokach na 5 minut – każdy może je podnieść.
+- **Walka z graczami:** dotknij innego gracza (albo przycisk **Atak**) w strefie żółtej/czerwonej. Przy ataku
+  na niewinnego w żółtej strefie serwer ostrzega, że dostaniesz białą czaszkę (walka zaczyna się od razu).
+- **Czaszki** (żółta strefa, jak w Tibii): atak na gracza bez czaszki, który cię nie zaatakował → **biała czaszka**
+  (15 min, znika też po śmierci). **3 niesprawiedliwe zabójstwa w ciągu 24 h → czerwona czaszka** (2 h) –
+  jej właściciel traci **wszystko** po śmierci w każdej strefie, a zabicie go nie daje czaszki. Samoobrona jest
+  zawsze usprawiedliwiona.
+- **Blokada strefy ochronnej:** po walce PvP przez 60 s nie wejdziesz do miasta (napis w oknie Postać).
+- **Wylogowanie w walce:** postać zostaje w świecie jeszcze 30 s po rozłączeniu, jeśli walczyła z graczem.
+- **Kara za śmierć:** strata doświadczenia (może spaść poziom) i części postępu skilli; zabójca-gracz dostaje
+  doświadczenie (15 × poziom ofiary).
+- **Błogosławieństwa** (Kapłanka Wiesława w świątyni, słowo „błogosławieństwo”, cena 100 + 20 × poziom): do 5;
+  każde zmniejsza stratę doświadczenia i skilli o 16%, komplet 5 chroni plecak w żółtej strefie.
+  Zużywają się przy śmierci poza zieloną strefą. Nie chronią przed full lootem w czerwonej strefie.
+- **Umiejętności broni** (Albion – „jesteś tym, co nosisz”, bez klas): każda broń daje 3 przyciski na pasku akcji,
+  kosztują manę i mają czas odnowienia (widoczny na przycisku):
+
+  | Broń | 1 | 2 | 3 |
+  |------|---|---|---|
+  | Miecz | Potężne cięcie (180%) | Rozpłatanie (krwawienie 5 s) | Parowanie (½ obrażeń wręcz 4 s) |
+  | Topór | Rąbnięcie (220%) | Wir (wszyscy wokół, 120%) | Szał (szybkie ataki 6 s) |
+  | Buława | Ogłuszenie (1,5 s) | Miażdżenie (150%, ignoruje pancerz) | Żelazna skóra (+6 pancerza 8 s) |
+  | Łuk | Celny strzał (200%, zasięg 7) | Strzała spowalniająca (5 s) | Deszcz strzał (obszar) |
+
+- **Rozbójnik Zbych** (bot w trybie offline, czerwona czaszka) poluje na graczy poza zieloną strefą; inne boty
+  bronią się, gdy je zaatakujesz.
+- Nowa NPC **Kapłanka Wiesława** (słowa: „błogosławieństwo”, „śmierć”, „strefy”, „czaszki”), ikony czaszek nad
+  graczami, ekran śmierci z listą strat, efekty umiejętności.
 
 ## Oprawa graficzna (Godot 4.5)
 
@@ -340,6 +376,9 @@ w `client/export_presets.cfg`. Google Play wymaga formatu AAB – to wymaga eksp
 | Zbieranie | dotknij złoża (drzewo, głaz, żyła, włókna) | kliknięcie |
 | Rozmowa z NPC | dotknij NPC → przyciski słów kluczowych (lub pisz w czacie) | kliknięcie |
 | Specjalizacje | **Spec.** | – |
+| Umiejętności broni | 3 przyciski nad **Atak** (zależne od broni w ręce) | – |
+| Atak na gracza | dotknij gracza w strefie żółtej/czerwonej | kliknięcie |
+| Błogosławieństwa | Kapłanka w świątyni → „błogosławieństwo” | – |
 
 Wręcz postać sama podchodzi do celu; z łukiem zatrzymuje się w zasięgu strzału (6 pól, potrzebna linia wzroku).
 
@@ -359,6 +398,7 @@ Automatyczny test klienta (logowanie, ruch, walka, czar, plecak, zrzuty ekranu):
 godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp/zrzuty
 # scenariusz ETAPU 2 (domyślny): NPC, sklep, zbieranie, rafinacja, rynek, depozyt, specjalizacje
 # scenariusz ETAPU 1: dodaj --scenario=etap1
+# scenariusz ETAPU 3: dodaj --scenario=etap3 (kapłanka, strefy, umiejętność, okno postaci)
 ```
 
 ---
@@ -416,11 +456,32 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 12. **Okna handlu otwiera rozmowa z NPC** (zamiast osobnych kafelków-przycisków) – spójne z Tibią i wygodne na dotyku;
     odejście od NPC zamyka okna.
 
+## Decyzje podjęte w ETAPIE 3
+
+1. **Strefy jako pierścienie wokół jednego miasta** (odległość od świątyni): zielona do 22 pól, żółta do 34,
+   czerwona dalej oraz całe Popielisko. Tiery złóż dopasowane do stref: T1–T2 zielona, T3 żółta, T4 czerwona.
+   Tiery T5–T8, dwa kolejne miasta i Czarna Strefa (T8, terytoria gildii) – w ETAPIE 4 razem z powiększeniem mapy.
+2. **Czaszki tylko w żółtej strefie** (w czerwonej wszyscy są uczciwym celem, jak w Albionie); w zielonej PvP jest
+   całkowicie wyłączone po stronie serwera.
+3. **Utrata w żółtej strefie = losowe ~30% stosów plecaka** (ekwipunek zostaje) – kompromis między „tracisz część
+   torby” ze specyfikacji a frustracją na telefonie. Komplet 5 błogosławieństw chroni plecak.
+4. **Full loot zostaje w zwłokach 5 minut** jako przedmioty na ziemi (każdy może je podnieść) zamiast okna „ciała” –
+   działa z istniejącym systemem lootu i dotykiem.
+5. **Kara za śmierć:** 5/7/10% doświadczenia (zielona/żółta/czerwona) i ta sama proporcja postępu skilli;
+   każde błogosławieństwo −16% kary (5 = −80%). Cena rośnie z poziomem: 100 + 20 × poziom złota za sztukę.
+6. **Umiejętności broni zamiast klas:** 3 na typ broni (miecz, topór, buława, łuk), dostępne od razu, koszt many
+   + cooldown; rosną od nich skille broni (+2 próby). Tarcza i zbroja nie dają umiejętności (być może w ETAPIE 5).
+7. **Blokada strefy ochronnej 60 s i wylogowanie w walce 30 s** – żeby nie dało się uciec z walki do miasta ani
+   zamykając aplikację.
+8. **Zabójca-gracz dostaje doświadczenie** (15 × poziom ofiary), a zabicie czerwonej czaszki nigdy nie jest karane.
+9. **Protokół pozostał w wersji 2** – nowe pola i wiadomości są dopisane zgodnie wstecz (starsze serwery/klienci
+   z ETAPU 2 muszą być jednak zaktualizowani razem, bo baza dostaje migrację 3 – kolumnę `pvp`).
+
 ## Plan etapów
 
 - [x] **ETAP 1** – grywalne MVP.
 - [x] **ETAP 2** – ekonomia: zbieractwo, crafting, tiery T1–T4, rynek miejski, NPC handlarze, depozyt.
-- [ ] **ETAP 3** – PvP: strefy żółta i czerwona, full loot, czaszki, kara za śmierć, błogosławieństwa.
+- [x] **ETAP 3** – PvP: strefy żółta i czerwona, full loot, czaszki, kara za śmierć, błogosławieństwa, umiejętności broni.
 - [ ] **ETAP 4** – gildie, Czarna Strefa (Popielisko), terytoria, bossowie świata, wierzchowce.
 - [ ] **ETAP 5** – balans, tutorial, ustawienia grafiki, optymalizacja baterii, ikona i ekran startowy.
 

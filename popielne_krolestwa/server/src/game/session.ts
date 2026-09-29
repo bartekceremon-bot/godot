@@ -2,7 +2,7 @@
  * Tworzenie nowych postaci i odtwarzanie postaci z bazy – wspólne dla serwera
  * WebSocket (net/server.ts) i trybu offline w przeglądarce (offline/host.ts).
  */
-import { Player, Connection } from './entities';
+import { Player, Connection, loadPvp } from './entities';
 import { Inventory } from './inventory';
 import { defaultSkills, maxHpForLevel, maxMpForLevel, Skills } from './progression';
 import { defaultSpecs, loadSpecs } from './specs';
@@ -46,6 +46,7 @@ export function createAccountWithCharacter(db: GameDatabase, name: string, passH
     skills: JSON.stringify(defaultSkills()),
     inventory: JSON.stringify(starterInventory().toJSON()),
     specs: JSON.stringify(defaultSpecs()),
+    pvp: '{}',
   });
   return accountId;
 }
@@ -57,7 +58,7 @@ export function playerFromRow(row: CharacterRow, conn: Connection): Player {
   const inventory = new Inventory(inv.bag, inv.equipment);
   // Postać z ETAPU 1 (brak specjalizacji) dostaje jednorazowo narzędzia T1 do zbieractwa.
   if (!row.specs || row.specs === '{}') for (const tool of ['woodaxe_t1', 'pickaxe_t1', 'sickle_t1']) inventory.add(tool);
-  return new Player({
+  const p = new Player({
     charId: row.id,
     name: row.name,
     conn,
@@ -71,4 +72,6 @@ export function playerFromRow(row: CharacterRow, conn: Connection): Player {
     specs: loadSpecs(JSON.parse(row.specs || '{}')),
     inventory,
   });
+  p.pvp = loadPvp(row.pvp);
+  return p;
 }

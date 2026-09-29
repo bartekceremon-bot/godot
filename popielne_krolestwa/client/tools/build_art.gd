@@ -108,6 +108,7 @@ func _characters() -> void:
 		"npc_smith": {"tunic": Color("4a4a4a"), "pants": Color("2a2a2a"), "hair": Color("1a1a1a"), "bald": true},
 		"npc_crafter": {"tunic": Color("9a2a3a"), "pants": Color("3a2a3a"), "hair": Color("d0a040")},
 		"npc_refiner": {"tunic": Color("b0602a"), "pants": Color("3a2a1a"), "hair": Color("5a5a5a")},
+		"npc_priest": {"tunic": Color("d8d0c0"), "pants": Color("8a7a50"), "hair": Color("e8d8a0")},
 	}
 	for n in npcs:
 		sheets[n] = ArtCharacters.body(npcs[n])
@@ -176,7 +177,7 @@ func _ui() -> void:
 	_save(_x2(ArtUI.logo(96, false), 4), "splash.png")
 	_save(ArtUI.joystick_base(), "ui/joystick_base.png")
 	_save(ArtUI.joystick_knob(), "ui/joystick_knob.png")
-	for n in ["bag", "character", "specs", "people", "menu", "chat", "attack", "heal"]:
+	for n in ["bag", "character", "specs", "people", "menu", "chat", "attack", "heal", "skull_white", "skull_red"]:
 		_save(ArtUI.icon(n), "ui/icon_%s.png" % n)
 	_save(ArtUI.soft_dot(16), "fx/soft_dot.png")
 	_save(ArtUI.soft_dot(64), "fx/soft_light.png")

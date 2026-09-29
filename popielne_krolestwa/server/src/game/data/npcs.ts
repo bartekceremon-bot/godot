@@ -31,7 +31,7 @@ export const CITIES: Record<string, CityDef> = {
   },
 };
 
-export type NpcAction = 'shop' | 'depot' | 'market' | 'craft';
+export type NpcAction = 'shop' | 'depot' | 'market' | 'craft' | 'bless';
 
 export interface NpcKeyword {
   text: string;
@@ -164,6 +164,25 @@ export const NPCS: NpcDef[] = [
     station: 'refinery',
   },
 ];
+
+NPCS.push({
+  id: 'priest',
+  name: 'Kapłanka Wiesława',
+  look: 'npc_priest',
+  city: 'popielgrod',
+  x: 50,
+  y: 45,
+  greeting: 'Niech popiół cię nie pochłonie, {name}. Powiedz „błogosławieństwo”, a zmniejszę karę za twoją śmierć.',
+  keywords: {
+    błogosławieństwo: { text: 'Przyjmij łaskę.', action: 'bless' },
+    śmierć: {
+      text: 'Śmierć odbiera doświadczenie i część umiejętności. W żółtej strefie tracisz część plecaka, w czerwonej – wszystko, co masz przy sobie. Każde z pięciu błogosławieństw zmniejsza karę; pięć chroni plecak w żółtej strefie.',
+    },
+    strefy: { text: 'Wokół miasta jest zielona strefa – bezpieczna. Dalej żółta, gdzie gracze mogą walczyć, a najdalej i na Popielisku czerwona – tam obowiązuje pełny łup.' },
+    czaszki: { text: 'Kto w żółtej strefie zaatakuje niewinnego, dostaje białą czaszkę. Trzy niesprawiedliwe zabójstwa w ciągu doby – czerwoną. Czerwona czaszka traci wszystko po śmierci.' },
+    żegnaj: BYE,
+  },
+});
 
 /** Słowa powitania rozpoczynające rozmowę. */
 export const GREETINGS = ['witaj', 'hi', 'hello', 'cześć', 'czesc', 'dzień dobry'];

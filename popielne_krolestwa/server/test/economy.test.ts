@@ -34,7 +34,7 @@ function makePlayer(world: World, name: string, x: number, y: number) {
   const accountId = db.createAccount(name + nextChar++, 'x');
   const charId = db.createCharacter({
     account_id: accountId, name: name + accountId, x, y, level: 1, exp: 0, hp: 150, mp: 50, look: 0,
-    skills: JSON.stringify(defaultSkills()), inventory: '{"bag":[],"equipment":{}}', specs: JSON.stringify(defaultSpecs()),
+    skills: JSON.stringify(defaultSkills()), inventory: '{"bag":[],"equipment":{}}', specs: JSON.stringify(defaultSpecs()), pvp: '{}',
   });
   const conn = new FakeConn();
   const p = new Player({

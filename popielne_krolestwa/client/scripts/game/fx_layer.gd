@@ -84,6 +84,21 @@ func spawn(f: Dictionary) -> void:
 			_add({"kind": "text", "pos": p - Vector2(0, 8), "text": "+%d %s" % [int(f.v), str(d.name).get_slice(" (", 0)], "col": Color(0.6, 1, 0.5), "dur": 1.4, "rise": 20.0, "size": 8})
 		"craft":
 			_add({"kind": "sparkle", "pos": p, "dur": 0.9, "col": Color(1, 0.7, 0.3)})
+		"stun":
+			_add({"kind": "sparkle", "pos": p - Vector2(0, 14), "dur": 1.5, "col": Color(1, 0.95, 0.4)})
+			_add({"kind": "text", "pos": p, "text": "ogłuszony!", "col": Color(1, 0.95, 0.4), "dur": 1.2, "rise": 10.0, "size": 8})
+		"whirl":
+			burst(p, Color(0.9, 0.9, 1.0), 24, 140.0, 0.0, 0.4)
+			_add({"kind": "puff", "pos": p, "dur": 0.5, "col": Color(0.9, 0.9, 1.0)})
+		"volley":
+			for i in 5:
+				_add({"kind": "shot", "pos": p + Vector2(randf_range(-40, 40), -120), "to": p + Vector2(randf_range(-28, 28), randf_range(-28, 28)), "dur": 0.3})
+			burst(p, Color(0.85, 0.7, 0.45), 16, 80.0)
+		"frenzy":
+			burst(p, Color(1.0, 0.3, 0.15), 20, 60.0, -40.0, 0.8)
+		"ironskin":
+			_add({"kind": "sparkle", "pos": p, "dur": 1.0, "col": Color(0.7, 0.8, 0.95)})
+			burst(p, Color(0.75, 0.8, 0.9), 16, 50.0, -20.0, 0.8)
 		"words":
 			_add({"kind": "text", "pos": p - Vector2(0, 26), "text": str(f.text), "col": Color(1, 0.6, 0.2), "dur": 1.6, "rise": 6.0, "size": 9})
 

@@ -51,7 +51,12 @@ func _process(delta: float) -> void:
 		return
 	if not _started:
 		_started = true
-		_steps = _scenario_etap1(game) if scenario == "etap1" else _scenario_etap2(game)
+		if scenario == "etap1":
+			_steps = _scenario_etap1(game)
+		elif scenario == "etap3":
+			_steps = _scenario_etap3(game)
+		else:
+			_steps = _scenario_etap2(game)
 		_wait = 1.5
 		return
 	if _busy:
@@ -130,6 +135,25 @@ func _scenario_etap2(game: Node) -> Array:
 		func(): Net.send({"t": "depot_put", "slot": _bag_slot(hud, "hp_potion"), "count": 1}); return 1.0,
 		func(): await _shot("09_depozyt"); hud.depot.close_window(); hud.npc_dialog.hide(); return 0.3,
 		func(): hud._toggle(hud.specs); await _shot("10_specjalizacje"); return 0.3,
+	]
+
+
+## ETAP 3: kapłanka, strefy żółta i czerwona, umiejętności broni.
+func _scenario_etap3(game: Node) -> Array:
+	var hud = game.hud
+	return [
+		func(): return _tap_entity(game, "n", "Kapłanka"),
+		func(): Net.send({"t": "npc", "id": hud.npc_dialog.npc_id, "word": "strefy"}); return 1.0,
+		func(): await _shot("01_kaplanka"); hud.npc_dialog.hide(); return 0.3,
+		# Na południe drogą do żółtej strefy.
+		func(): game._on_tap(Vector2i(48, 71)); return 12.0,
+		func(): await _shot("02_strefa_zolta"); return 0.3,
+		func(): game.attack_nearest(); return 3.0,
+		func(): Net.send({"t": "ability", "slot": 1}); return 0.6,
+		func(): await _shot("03_umiejetnosc"); return 2.5,
+		func(): game._on_tap(Vector2i(48, 84)); return 6.0,
+		func(): await _shot("04_strefa_czerwona"); return 0.3,
+		func(): hud._toggle(hud._character); await _shot("05_postac"); return 0.3,
 	]
 
 

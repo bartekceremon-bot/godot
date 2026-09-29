@@ -19,6 +19,17 @@ import { Market } from './economy/market';
 import { GatheringSystem } from './systems/gathering';
 import { EconomySystem } from './systems/economy';
 import { SPEC_DEFS, TIER_SPEC_REQ, addFame, bonusYieldChance, fameForTier } from './specs';
+import { PvpSystem } from './systems/pvp';
+import { AbilitySystem } from './systems/abilities';
+import { ABILITY_LIST } from './data/abilities';
+
+/** Cel ataku: potwór albo gracz. */
+export type Target = Monster | Player;
+
+/** Po śmierci w PvP przedmioty leżą dłużej (zwłoki do ograbienia). */
+const CORPSE_TTL_MS = 5 * 60_000;
+const FRENZY_ATTACK_MS = 1200;
+const SLOW_FACTOR = 1.6;
 import { addSkillTries, levelForExp } from './progression';
 import { playerMaxDamage, rollDamage, distanceHitChance, playerDefense, chebyshev, FIST_ATTACK } from './combat';
 import { randInt, chance } from '../util/rng';
@@ -41,7 +52,6 @@ const GROUND_ITEM_TTL_MS = 120_000;
 // więc tolerancja nie daje trwałego przyspieszenia – tylko jednorazowy zapas.
 const MOVE_TOLERANCE_MS = 150;
 const CHAT_INTERVAL_MS = 400;
-const DEATH_EXP_LOSS = 0.05;
 const MONSTER_LEASH = 14;
 
 interface SpawnState {
@@ -65,6 +75,8 @@ export class World {
   readonly market: Market;
   readonly gathering = new GatheringSystem(this);
   readonly economy = new EconomySystem(this);
+  readonly pvp = new PvpSystem(this);
+  readonly abilities = new AbilitySystem(this);
   private spawnStates: SpawnState[] = [];
   private fxQueue: Fx[] = [];
   private timer: NodeJS.Timeout | null = null;
@@ -131,6 +143,8 @@ export class World {
       specs: SPEC_DEFS,
       tierSpecReq: TIER_SPEC_REQ,
       qualities: QUALITY_NAMES,
+      abilities: ABILITY_LIST,
+      zones: this.map.zoneRows(),
     });
     p.send({ t: 'pos', x: p.x, y: p.y, d: p.dir });
     p.inventory.dirty = true;
@@ -164,6 +178,7 @@ export class World {
       skills: JSON.stringify(p.skills),
       inventory: JSON.stringify(p.inventory.toJSON()),
       specs: JSON.stringify(p.specs),
+      pvp: JSON.stringify(p.pvp),
     });
   }
 
@@ -202,6 +217,8 @@ export class World {
       // --- ETAP 2: ekonomia ---
       case 'gather':
         return this.gathering.start(p, Number(msg.id), now);
+      case 'ability':
+        return this.abilities.use(p, Number(msg.slot), now);
       case 'npc':
         return this.economy.talk(p, Number(msg.id), String(msg.word ?? ''));
       case 'close':
@@ -249,13 +266,15 @@ export class World {
     const [dx, dy] = MOVE_VECTORS[d];
     const nx = p.x + dx;
     const ny = p.y + dy;
-    // Za szybko (speedhack / lag) albo pole zajęte → korekta pozycji u klienta.
-    if (now < p.nextMoveAt - MOVE_TOLERANCE_MS || !this.canPlayerStep(nx, ny)) {
+    // Za szybko (speedhack / lag), ogłuszenie albo pole zajęte → korekta pozycji u klienta.
+    const pzLocked = now < p.pzLockUntil && this.map.isProtectionZone(nx, ny) && !this.map.isProtectionZone(p.x, p.y);
+    if (now < p.nextMoveAt - MOVE_TOLERANCE_MS || p.status.stunned(now) || pzLocked || !this.canPlayerStep(nx, ny)) {
+      if (pzLocked) this.sendSystem(p, `Po walce z graczem nie możesz wejść do strefy ochronnej jeszcze przez ${Math.ceil((p.pzLockUntil - now) / 1000)} s.`);
       p.send({ t: 'pos', x: p.x, y: p.y, d: p.dir });
       return;
     }
     const diagonal = dx !== 0 && dy !== 0;
-    const step = Math.round(p.stepMs() * (diagonal ? 1.4 : 1));
+    const step = Math.round(p.stepMs() * (diagonal ? 1.4 : 1) * (p.status.slowed(now) ? SLOW_FACTOR : 1));
     p.gathering = null;
     p.talkingTo = 0;
     p.x = nx;
@@ -278,11 +297,17 @@ export class World {
       p.targetId = 0;
       return;
     }
-    const m = this.monsters.get(id);
-    if (!m) return;
+    const t = this.getTarget(id);
+    if (!t) return;
     if (this.map.isProtectionZone(p.x, p.y)) {
       this.sendSystem(p, 'Nie możesz walczyć w strefie ochronnej.');
       return;
+    }
+    if (t instanceof Player) {
+      const err = this.pvp.canAttack(p, t);
+      if (err) return this.sendSystem(p, err);
+      if (!this.pvp.isJustified(p, t, Date.now()) && this.pvp.zoneOf(p) === 'yellow' && p.pvp.skull === '')
+        this.sendSystem(p, `Uwaga: atak na ${t.name} da ci białą czaszkę.`);
     }
     p.gathering = null;
     p.targetId = id;
@@ -398,6 +423,8 @@ export class World {
   tick(now: number) {
     this.tickSpawns(now);
     this.gathering.tickNodes(now);
+    for (const m of this.monsters.values()) this.tickBleed(m, now);
+    for (const p of this.players.values()) this.tickBleed(p, now);
     for (const m of this.monsters.values()) this.tickMonster(m, now);
     for (const p of this.players.values()) this.tickPlayer(p, now);
     for (const [id, g] of this.groundItems) if (g.expiresAt <= now) this.groundItems.delete(id);
@@ -419,53 +446,107 @@ export class World {
     if (p.hp > p.maxHp()) p.hp = p.maxHp();
     if (p.mp > p.maxMp()) p.mp = p.maxMp();
     if (p.gathering) this.gathering.tick(p, now);
-    // Automatyczny atak celu
+    this.pvp.tick(p, now);
+    // Automatyczny atak celu (potwór albo gracz).
     if (!p.targetId) return;
-    const m = this.monsters.get(p.targetId);
-    if (!m || chebyshev(p.x, p.y, m.x, m.y) > 9) {
+    const t = this.getTarget(p.targetId);
+    if (!t || t === p || chebyshev(p.x, p.y, t.x, t.y) > 9) {
       p.targetId = 0;
       return;
     }
-    if (now < p.nextAttackAt || this.map.isProtectionZone(p.x, p.y)) return;
-    const weapon = p.weapon();
-    const range = weapon?.range ?? 1;
-    const dist = chebyshev(p.x, p.y, m.x, m.y);
+    if (t instanceof Player && this.pvp.canAttack(p, t)) {
+      p.targetId = 0;
+      return;
+    }
+    if (now < p.nextAttackAt || this.map.isProtectionZone(p.x, p.y) || p.status.stunned(now)) return;
+    const { maxDmg, skill, range } = this.playerAttack(p);
+    const dist = chebyshev(p.x, p.y, t.x, t.y);
     if (dist > range) return;
-    if (range > 1 && !this.map.hasLineOfSight(p.x, p.y, m.x, m.y)) return;
+    if (range > 1 && !this.map.hasLineOfSight(p.x, p.y, t.x, t.y)) return;
 
-    p.nextAttackAt = now + ATTACK_INTERVAL_MS;
+    p.nextAttackAt = now + (now < p.status.frenzyUntil ? FRENZY_ATTACK_MS : ATTACK_INTERVAL_MS);
     p.lastCombatAt = now;
-    p.dir = dirFromDelta(m.x - p.x, m.y - p.y, p.dir);
-    if (!m.targetId) m.targetId = p.id;
-
-    const skillName: SkillName = weapon?.skill ?? 'club';
-    const skill = p.skills[skillName].level;
-    if (addSkillTries(p.skills, skillName, 1)) this.announceSkill(p, skillName);
+    p.dir = dirFromDelta(t.x - p.x, t.y - p.y, p.dir);
+    if (addSkillTries(p.skills, skill, 1)) this.announceSkill(p, skill);
 
     if (range > 1) {
-      this.fxQueue.push({ x: p.x, y: p.y, k: 'shot', tx: m.x, ty: m.y });
-      if (!chance(distanceHitChance(skill, dist))) {
-        this.fxQueue.push({ x: m.x, y: m.y, k: 'miss' });
+      this.fxQueue.push({ x: p.x, y: p.y, k: 'shot', tx: t.x, ty: t.y });
+      if (!chance(distanceHitChance(p.skills[skill].level, dist))) {
+        this.fxQueue.push({ x: t.x, y: t.y, k: 'miss' });
         return;
       }
     }
-    const attack = weapon?.attack ? weapon.attack * p.qualityMult('weapon') : FIST_ATTACK;
-    const maxDmg = playerMaxDamage(attack, skill, p.level);
-    const dmg = rollDamage(maxDmg, m.def.armor, m.def.defense);
-    this.damageMonster(m, dmg, p);
+    this.hit(p, t, maxDmg, { ranged: range > 1 });
   }
 
-  private damageMonster(m: Monster, dmg: number, attacker: Player) {
+  getTarget(id: number): Target | undefined {
+    return this.monsters.get(id) ?? this.players.get(id);
+  }
+
+  /** Parametry zwykłego ataku gracza bronią w ręku. */
+  playerAttack(p: Player): { maxDmg: number; skill: SkillName; range: number } {
+    const weapon = p.weapon();
+    const skill: SkillName = weapon?.skill ?? 'club';
+    const attack = weapon?.attack ? weapon.attack * p.qualityMult('weapon') : FIST_ATTACK;
+    return { maxDmg: playerMaxDamage(attack, p.skills[skill].level, p.level), skill, range: weapon?.range ?? 1 };
+  }
+
+  /** Pancerz i obrona celu (z efektami umiejętności). */
+  defenseOf(t: Target, now: number): { armor: number; defense: number } {
+    if (t instanceof Monster) return { armor: t.def.armor, defense: t.def.defense };
+    const shield = t.shield();
+    const weapon = t.weapon();
+    const defense = playerDefense(
+      (shield?.defense ?? 0) * t.qualityMult('shield'),
+      (weapon?.defense ?? 0) * t.qualityMult('weapon'),
+      t.skills.shielding.level,
+    );
+    const armor = t.inventory.totalArmor() + (now < t.status.ironskinUntil ? t.status.ironskinArmor : 0);
+    return { armor, defense };
+  }
+
+  /** Trafienie celu przez gracza (zwykły atak lub umiejętność). */
+  hit(attacker: Player, t: Target, maxDmg: number, opts: { ranged?: boolean; ignoreArmor?: boolean }) {
+    const now = Date.now();
+    const d = this.defenseOf(t, now);
+    let dmg = rollDamage(Math.round(maxDmg), opts.ignoreArmor ? 0 : d.armor, d.defense);
+    if (t instanceof Player) {
+      if (!opts.ranged && now < t.status.parryUntil) dmg = Math.floor(dmg / 2);
+      this.pvp.onAttack(attacker, t, now);
+    } else if (!t.targetId) {
+      t.targetId = attacker.id;
+    }
+    this.applyDamage(t, dmg, attacker);
+  }
+
+  /** Zadaje obrażenia (efekty, śmierć). source = kto zadał (zasługa za zabójstwo). */
+  applyDamage(t: Target, dmg: number, source: Player | Monster | null) {
     if (dmg <= 0) {
-      this.fxQueue.push({ x: m.x, y: m.y, k: 'block' });
+      this.fxQueue.push({ x: t.x, y: t.y, k: 'block' });
       return;
     }
-    m.hp -= dmg;
-    this.fxQueue.push({ x: m.x, y: m.y, k: 'num', v: dmg, c: 'dmg' });
-    if (m.hp <= 0) this.killMonster(m, attacker);
+    t.hp -= dmg;
+    this.fxQueue.push({ x: t.x, y: t.y, k: 'num', v: dmg, c: 'dmg' });
+    if (t instanceof Player) t.lastCombatAt = Date.now();
+    if (t.hp > 0) return;
+    if (t instanceof Monster) this.killMonster(t, source instanceof Player ? source : null);
+    else this.killPlayer(t, source);
   }
 
-  private killMonster(m: Monster, killer: Player) {
+  /** Krwawienie – obrażenia co sekundę. */
+  private tickBleed(t: Target, now: number) {
+    const st = t.status;
+    if (!st.bleedUntil || now < st.bleedNextAt) return;
+    if (now > st.bleedUntil) {
+      st.bleedUntil = 0;
+      return;
+    }
+    st.bleedNextAt = now + 1000;
+    const src = this.players.get(st.bleedSource) ?? null;
+    if (t instanceof Monster ? this.monsters.has(t.id) : this.players.has(t.id)) this.applyDamage(t, st.bleedDamage, src);
+  }
+
+  private killMonster(m: Monster, killer: Player | null) {
     this.monsters.delete(m.id);
     const st = this.spawnStates[m.spawnIndex];
     st.alive.delete(m.id);
@@ -479,7 +560,7 @@ export class World {
       this.addGroundItem(m.x, m.y, l.item, randInt(l.min ?? 1, l.max ?? 1));
     }
     // Oskórowanie zwierzęcia – skóra zależna od tieru zwierzęcia i specjalizacji zabójcy.
-    if (m.def.hideTier) {
+    if (m.def.hideTier && killer) {
       const t = m.def.hideTier;
       const spec = killer.specs.skinner;
       if (spec.level >= TIER_SPEC_REQ[t]) {
@@ -491,6 +572,7 @@ export class World {
         this.sendSystem(killer, `Za mało doświadczenia, by oskórować (Oskórowywacz ${TIER_SPEC_REQ[t]}).`);
       }
     }
+    if (!killer) return;
     this.giveExp(killer, m.def.exp);
     this.sendSystem(killer, `Pokonałeś: ${m.name}. +${m.def.exp} doświadczenia.`);
   }
@@ -509,22 +591,22 @@ export class World {
     }
   }
 
-  private announceSkill(p: Player, skill: SkillName) {
+  announceSkill(p: Player, skill: SkillName) {
     this.sendSystem(p, `Awans: ${SKILL_LABELS[skill]} – poziom ${p.skills[skill].level}.`);
   }
 
-  private addGroundItem(x: number, y: number, item: string, count: number, q = 1) {
+  private addGroundItem(x: number, y: number, item: string, count: number, q = 1, ttl = GROUND_ITEM_TTL_MS) {
     // Stos tego samego przedmiotu na tym samym polu łączymy.
     const def = getItem(item);
     if (def?.stackable)
       for (const g of this.groundItems.values())
         if (g.x === x && g.y === y && g.item === item && g.q === q) {
           g.count += count;
-          g.expiresAt = Date.now() + GROUND_ITEM_TTL_MS;
+          g.expiresAt = Date.now() + ttl;
           return;
         }
     const id = allocEntityId();
-    this.groundItems.set(id, { id, x, y, item, count, q, expiresAt: Date.now() + GROUND_ITEM_TTL_MS });
+    this.groundItems.set(id, { id, x, y, item, count, q, expiresAt: Date.now() + ttl });
   }
 
   // =========================================================================
@@ -567,6 +649,7 @@ export class World {
   }
 
   private tickMonster(m: Monster, now: number) {
+    if (m.status.stunned(now)) return;
     const spawn = this.map.spawns[m.spawnIndex];
     // Wybór / weryfikacja celu
     let target = m.targetId ? this.players.get(m.targetId) : undefined;
@@ -639,7 +722,7 @@ export class World {
     const nx = m.x + dx;
     const ny = m.y + dy;
     if (!this.canMonsterStep(nx, ny)) return false;
-    const step = Math.round(m.def.stepMs * (dx !== 0 && dy !== 0 ? 1.4 : 1));
+    const step = Math.round(m.def.stepMs * (dx !== 0 && dy !== 0 ? 1.4 : 1) * (m.status.slowed(now) ? SLOW_FACTOR : 1));
     m.x = nx;
     m.y = ny;
     m.dir = dirFromDelta(dx, dy, m.dir);
@@ -650,40 +733,47 @@ export class World {
 
   private monsterAttack(m: Monster, p: Player, now: number) {
     p.lastCombatAt = now;
-    const shield = p.shield();
-    const weapon = p.weapon();
-    if (shield && addSkillTries(p.skills, 'shielding', 1)) this.announceSkill(p, 'shielding');
-    const def = playerDefense(
-      (shield?.defense ?? 0) * p.qualityMult('shield'),
-      (weapon?.defense ?? 0) * p.qualityMult('weapon'),
-      p.skills.shielding.level,
-    );
-    const dmg = rollDamage(m.def.maxDamage, p.inventory.totalArmor(), def);
-    if (dmg <= 0) {
-      this.fxQueue.push({ x: p.x, y: p.y, k: 'block' });
-      return;
-    }
-    p.hp -= dmg;
-    this.fxQueue.push({ x: p.x, y: p.y, k: 'num', v: dmg, c: 'dmg' });
-    if (p.hp <= 0) this.killPlayer(p, m);
+    if (p.shield() && addSkillTries(p.skills, 'shielding', 1)) this.announceSkill(p, 'shielding');
+    const d = this.defenseOf(p, now);
+    let dmg = rollDamage(m.def.maxDamage, d.armor, d.defense);
+    if (now < p.status.parryUntil) dmg = Math.floor(dmg / 2);
+    this.applyDamage(p, dmg, m);
   }
 
-  private killPlayer(p: Player, killer: Monster) {
+  private killPlayer(p: Player, killer: Player | Monster | null) {
+    const now = Date.now();
+    const zone = this.pvp.zoneOf(p);
     this.fxQueue.push({ x: p.x, y: p.y, k: 'death', look: 'player' });
-    // Kara za śmierć (ETAP 1 – prosta; pełny system z błogosławieństwami w ETAPIE 3).
-    const lost = Math.floor(p.exp * DEATH_EXP_LOSS);
-    p.exp -= lost;
+    // Zabójstwo przez gracza: czaszki, komunikat, nagroda (przed karą ofiary).
+    if (killer instanceof Player && killer !== p) {
+      this.pvp.onKill(killer, p, this.pvp.isJustified(killer, p, now), zone, now);
+      this.giveExp(killer, p.level * 15);
+    }
+    const res = this.pvp.applyDeath(p, zone);
+    // Zwłoki: utracone przedmioty leżą na miejscu śmierci (każdy może je ograbić).
+    for (const s of res.dropped) this.addGroundItem(p.x, p.y, s.item, s.count, s.q ?? 1, CORPSE_TTL_MS);
     p.level = levelForExp(p.exp);
     p.hp = p.maxHp();
     p.mp = p.maxMp();
     p.targetId = 0;
+    p.gathering = null;
+    p.status.bleedUntil = 0;
+    p.status.stunUntil = 0;
+    p.status.slowUntil = 0;
+    p.aggressors.clear();
+    p.pzLockUntil = 0;
     p.x = this.map.temple.x;
     p.y = this.map.temple.y;
     p.nextMoveAt = 0;
     for (const m of this.monsters.values()) if (m.targetId === p.id) m.targetId = 0;
+    for (const o of this.players.values()) if (o.targetId === p.id) o.targetId = 0;
+    const by = killer ? killer.name : 'krwawienie';
     p.send({ t: 'pos', x: p.x, y: p.y, d: p.dir });
-    p.send({ t: 'died', by: killer.name, lost });
-    this.sendSystem(p, `Zginąłeś! Zabójca: ${killer.name}. Straciłeś ${lost} doświadczenia.`);
+    p.send({ t: 'died', by, lost: res.expLost, zone, items: res.dropped.length, bless: res.blessingsUsed });
+    this.sendSystem(p, `Zginąłeś! Zabójca: ${by}. Straciłeś ${res.expLost} doświadczenia` +
+      (res.dropped.length ? ` i ${res.dropped.length} przedmiotów (leżą w miejscu śmierci).` : '.') +
+      (res.blessingsUsed ? ` Zużyto błogosławieństwa: ${res.blessingsUsed}.` : ''));
+    p.inventory.dirty = true;
     this.savePlayer(p);
   }
 
@@ -703,7 +793,7 @@ export class World {
       const ents: object[] = [];
       for (const o of this.players.values())
         if (this.inView(p, o.x, o.y))
-          ents.push({ i: o.id, k: 'p', n: o.name, x: o.x, y: o.y, d: o.dir, h: hpPct(o.hp, o.maxHp()), l: o.look, s: o.lastStepMs, eq: equipLook(o) });
+          ents.push({ i: o.id, k: 'p', n: o.name, x: o.x, y: o.y, d: o.dir, h: hpPct(o.hp, o.maxHp()), l: o.look, s: o.lastStepMs, eq: equipLook(o), sk: o.pvp.skull });
       for (const m of this.monsters.values())
         if (this.inView(p, m.x, m.y))
           ents.push({ i: m.id, k: 'm', n: m.name, x: m.x, y: m.y, d: m.dir, h: hpPct(m.hp, m.maxHp()), l: m.def.look, s: m.lastStepMs });

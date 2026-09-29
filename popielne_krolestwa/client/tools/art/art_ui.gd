@@ -168,6 +168,15 @@ static func icon(name: String) -> Image:
 				c.line(16 - sgn * 11, 27, 16 + sgn * 10, 5, ArtLib.METALS[2][3])
 				c.line(16 - sgn * 10, 27, 16 + sgn * 11, 5, ArtLib.METALS[2][4])
 				c.line(16 - sgn * 13, 22, 16 - sgn * 6, 27, ArtLib.GOLD[3])
+		"skull_white", "skull_red":
+			var bone := ArtLib.BONE if name == "skull_white" else [Color("4a0a0a"), Color("7a1414"), Color("b02020"), Color("d83a2a"), Color("f06a4a")]
+			c.shaded_ellipse(16, 13, 11, 10, bone)
+			c.shaded_rect(10, 20, 12, 7, bone)
+			c.ellipse(11.5, 14, 3, 3.2, Color("140c0e"))
+			c.ellipse(20.5, 14, 3, 3.2, Color("140c0e"))
+			c.polygon(PackedVector2Array([Vector2(16, 17), Vector2(14, 21), Vector2(18, 21)]), Color("140c0e"))
+			for i in 3:
+				c.rect(12 + i * 3, 24, 1, 3, Color("140c0e"))
 		"heal":
 			c.shaded_ellipse(16, 16, 13, 13, [Color("0e2a16"), Color("16401e"), Color("1e5628")])
 			c.shaded_rect(13, 6, 6, 20, [Color("2a8a3a"), Color("4ac25a"), Color("8af09a")])

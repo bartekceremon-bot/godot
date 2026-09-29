@@ -26,8 +26,10 @@ func _ready() -> void:
 
 func set_stats(s: Dictionary) -> void:
 	var to_next := int(s.expNext) - int(s.exp)
-	_info.text = "%s\nPoziom: %d\nDoświadczenie: %d (do awansu: %d)\nZdrowie: %d/%d   Mana: %d/%d" % [
-		GameData.my_name, int(s.lvl), int(s.exp), to_next, int(s.hp), int(s.mhp), int(s.mp), int(s.mmp)]
+	var skull := {"": "brak", "white": "biała", "red": "CZERWONA"}.get(str(s.get("skull", "")), "brak") as String
+	_info.text = "%s\nPoziom: %d\nDoświadczenie: %d (do awansu: %d)\nZdrowie: %d/%d   Mana: %d/%d\nBłogosławieństwa: %d/5   Czaszka: %s%s" % [
+		GameData.my_name, int(s.lvl), int(s.exp), to_next, int(s.hp), int(s.mhp), int(s.mp), int(s.mmp),
+		int(s.get("bless", 0)), skull, ("   (blokada strefy ochronnej: %d s)" % int(s.pzLock)) if int(s.get("pzLock", 0)) > 0 else ""]
 	for c in _skills.get_children():
 		c.queue_free()
 	for key in GameData.SKILL_LABELS:

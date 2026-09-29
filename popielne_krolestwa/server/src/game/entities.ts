@@ -43,6 +43,55 @@ export function allocEntityId(): number {
   return nextEntityId++;
 }
 
+/** Chwilowe efekty (umiejętności broni). Czasy w ms od epoki. */
+export class StatusEffects {
+  stunUntil = 0;
+  slowUntil = 0;
+  parryUntil = 0;
+  frenzyUntil = 0;
+  ironskinUntil = 0;
+  ironskinArmor = 0;
+  bleedUntil = 0;
+  bleedNextAt = 0;
+  bleedDamage = 0;
+  /** Id gracza, który wywołał krwawienie (zasługa za zabójstwo). */
+  bleedSource = 0;
+
+  stunned(now: number) {
+    return now < this.stunUntil;
+  }
+  slowed(now: number) {
+    return now < this.slowUntil;
+  }
+}
+
+/** Czaszka gracza: biała (atak na niewinnego), czerwona (wiele niesprawiedliwych zabójstw). */
+export type Skull = '' | 'white' | 'red';
+
+/** Stan PvP zapisywany w bazie (kolumna characters.pvp). */
+export interface PvpState {
+  skull: Skull;
+  skullUntil: number;
+  /** Czasy niesprawiedliwych zabójstw (ostatnie 24 h). */
+  unjustKills: number[];
+  /** Liczba błogosławieństw (0–5) – zmniejszają karę za śmierć. */
+  blessings: number;
+}
+
+export function loadPvp(json: string | undefined): PvpState {
+  const d: PvpState = { skull: '', skullUntil: 0, unjustKills: [], blessings: 0 };
+  try {
+    const v = JSON.parse(json || '{}');
+    if (v.skull === 'white' || v.skull === 'red') d.skull = v.skull;
+    d.skullUntil = Number(v.skullUntil) || 0;
+    d.unjustKills = Array.isArray(v.unjustKills) ? v.unjustKills.filter((t: unknown) => Number.isFinite(t)) : [];
+    d.blessings = Math.max(0, Math.min(5, Math.floor(Number(v.blessings) || 0)));
+  } catch {
+    /* domyślne */
+  }
+  return d;
+}
+
 export interface Creature {
   id: number;
   name: string;
@@ -75,6 +124,14 @@ export class Player implements Creature {
   gathering: { nodeId: number; nextAt: number } | null = null;
   /** NPC, z którym gracz aktualnie rozmawia (0 = brak). */
   talkingTo = 0;
+  /** Efekty umiejętności (ogłuszenie, parowanie…). */
+  readonly status = new StatusEffects();
+  /** PvP: czaszka, zabójstwa, błogosławieństwa. */
+  pvp: PvpState = { skull: '', skullUntil: 0, unjustKills: [], blessings: 0 };
+  /** Gracze, którzy ostatnio nas zaatakowali (id -> do kiedy wolno im oddać bez czaszki). */
+  readonly aggressors = new Map<number, number>();
+  /** Po ataku na gracza nie wolno wejść do strefy ochronnej (anty-ucieczka). */
+  pzLockUntil = 0;
   /** Otwarte okno ekonomii w kliencie – do odświeżania po dostawach. */
   openWindow: '' | 'depot' | 'market' | 'shop' | 'craft' = '';
 
@@ -189,6 +246,9 @@ export class Player implements Creature {
         return [d.id, st.level, Math.floor((st.fame / fameForNextLevel(st.level)) * 100)];
       }),
       gather: this.gathering?.nodeId ?? 0,
+      skull: this.pvp.skull,
+      bless: this.pvp.blessings,
+      pzLock: Math.max(0, Math.ceil((this.pzLockUntil - Date.now()) / 1000)),
     };
   }
 }
@@ -252,6 +312,7 @@ export class Monster implements Creature {
   nextMoveAt = 0;
   nextAttackAt = 0;
   lastStepMs = 0;
+  readonly status = new StatusEffects();
 
   constructor(def: MonsterDef, x: number, y: number, spawnIndex: number) {
     this.def = def;
