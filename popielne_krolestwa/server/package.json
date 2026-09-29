@@ -1,0 +1,24 @@
+{
+  "name": "popielne-krolestwa-server",
+  "version": "0.1.0",
+  "description": "Autorytatywny serwer gry Popielne Królestwa (ETAP 1)",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/src/index.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node --disable-warning=ExperimentalWarning dist/src/index.js",
+    "dev": "npm run build && npm start",
+    "test": "npm run build && node --disable-warning=ExperimentalWarning --test 'dist/test/**/*.test.js'",
+    "bot": "node --disable-warning=ExperimentalWarning dist/src/tools/bot.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13",
+    "typescript": "^5.7.0"
+  }
+}
