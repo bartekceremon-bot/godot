@@ -1,0 +1,119 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_game"]
+[ext_resource type="Shader" path="res://shaders/world_ground.gdshader" id="2_ground"]
+[ext_resource type="Texture2D" path="res://assets/world/terrain/grass.png" id="3_grass"]
+[ext_resource type="Texture2D" path="res://assets/world/terrain/dirt.png" id="4_dirt"]
+[ext_resource type="Texture2D" path="res://assets/world/terrain/sand.png" id="5_sand"]
+[ext_resource type="Texture2D" path="res://assets/world/terrain/ash.png" id="6_ash"]
+[ext_resource type="Texture2D" path="res://assets/world/terrain/floor.png" id="7_floor"]
+[ext_resource type="Texture2D" path="res://assets/world/terrain/marble.png" id="8_marble"]
+[ext_resource type="Texture2D" path="res://assets/world/terrain/water.png" id="9_water"]
+[ext_resource type="Texture2D" path="res://assets/world/terrain/noise.png" id="10_noise"]
+[ext_resource type="TileSet" path="res://assets/world/objects_tileset.tres" id="11_tiles"]
+[ext_resource type="Script" path="res://scripts/game/ground_layer.gd" id="12_items"]
+[ext_resource type="Script" path="res://scripts/game/fx_layer.gd" id="13_fx"]
+[ext_resource type="Texture2D" path="res://assets/fx/soft_dot.png" id="14_dot"]
+[ext_resource type="Shader" path="res://shaders/vignette.gdshader" id="15_vignette"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ground"]
+shader = ExtResource("2_ground")
+shader_parameter/map_size = Vector2(96, 96)
+shader_parameter/tex_grass = ExtResource("3_grass")
+shader_parameter/tex_dirt = ExtResource("4_dirt")
+shader_parameter/tex_sand = ExtResource("5_sand")
+shader_parameter/tex_ash = ExtResource("6_ash")
+shader_parameter/tex_floor = ExtResource("7_floor")
+shader_parameter/tex_marble = ExtResource("8_marble")
+shader_parameter/tex_water = ExtResource("9_water")
+shader_parameter/noise_tex = ExtResource("10_noise")
+
+[sub_resource type="Gradient" id="Gradient_ash"]
+offsets = PackedFloat32Array(0, 0.2, 0.8, 1)
+colors = PackedColorArray(0.75, 0.72, 0.7, 0, 0.75, 0.72, 0.7, 0.55, 0.6, 0.58, 0.56, 0.45, 0.5, 0.5, 0.5, 0)
+
+[sub_resource type="Gradient" id="Gradient_ember"]
+offsets = PackedFloat32Array(0, 0.3, 1)
+colors = PackedColorArray(1, 0.85, 0.4, 0, 1, 0.55, 0.15, 0.9, 0.8, 0.2, 0.05, 0)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vignette"]
+shader = ExtResource("15_vignette")
+shader_parameter/strength = 0.55
+shader_parameter/tint = Color(0.12, 0.05, 0.03, 1)
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_game")
+
+[node name="Ground" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_ground")
+offset_right = 3072.0
+offset_bottom = 3072.0
+mouse_filter = 2
+
+[node name="GroundItems" type="Node2D" parent="."]
+script = ExtResource("12_items")
+
+[node name="World" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Objects" type="TileMapLayer" parent="World"]
+y_sort_enabled = true
+tile_set = ExtResource("11_tiles")
+
+[node name="Fx" type="Node2D" parent="."]
+script = ExtResource("13_fx")
+
+[node name="Night" type="CanvasModulate" parent="."]
+
+[node name="Camera" type="Camera2D" parent="."]
+zoom = Vector2(2, 2)
+position_smoothing_enabled = true
+position_smoothing_speed = 9.0
+
+[node name="Ash" type="CPUParticles2D" parent="Camera"]
+position = Vector2(0, -220)
+amount = 70
+lifetime = 9.0
+preprocess = 9.0
+texture = ExtResource("14_dot")
+emission_shape = 3
+emission_rect_extents = Vector2(420, 10)
+direction = Vector2(0.3, 1)
+spread = 25.0
+gravity = Vector2(6, 8)
+initial_velocity_min = 8.0
+initial_velocity_max = 20.0
+angular_velocity_min = -40.0
+angular_velocity_max = 40.0
+scale_amount_min = 0.12
+scale_amount_max = 0.3
+color_ramp = SubResource("Gradient_ash")
+
+[node name="Embers" type="CPUParticles2D" parent="Camera"]
+position = Vector2(0, 200)
+amount = 14
+lifetime = 7.0
+preprocess = 7.0
+texture = ExtResource("14_dot")
+emission_shape = 3
+emission_rect_extents = Vector2(420, 10)
+direction = Vector2(0.2, -1)
+spread = 30.0
+gravity = Vector2(4, -6)
+initial_velocity_min = 10.0
+initial_velocity_max = 25.0
+scale_amount_min = 0.1
+scale_amount_max = 0.22
+color_ramp = SubResource("Gradient_ember")
+
+[node name="Vignette" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="Rect" type="ColorRect" parent="Vignette"]
+material = SubResource("ShaderMaterial_vignette")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

@@ -1,0 +1,85 @@
+[gd_resource type="TileSet" load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://shaders/tree_sway.gdshader" id="1_713tr"]
+[ext_resource type="Texture2D" path="res://assets/world/objects.png" id="2_i0pr0"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_codqf"]
+shader = ExtResource("1_713tr")
+shader_parameter/strength = null
+shader_parameter/bottom_uv = null
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_1lolr"]
+texture = ExtResource("2_i0pr0")
+texture_region_size = Vector2i(32, 32)
+5:2/0 = 0
+5:2/0/y_sort_origin = -17
+4:2/0 = 0
+4:2/0/y_sort_origin = -17
+15:0/size_in_atlas = Vector2i(1, 2)
+15:0/0 = 0
+15:0/0/texture_origin = Vector2i(0, 16)
+15:0/0/y_sort_origin = -17
+0:2/0 = 0
+0:2/0/y_sort_origin = -17
+1:2/0 = 0
+1:2/0/y_sort_origin = -17
+2:2/0 = 0
+2:2/0/y_sort_origin = -17
+3:2/0 = 0
+3:2/0/y_sort_origin = -17
+14:0/size_in_atlas = Vector2i(1, 2)
+14:0/0 = 0
+14:0/0/texture_origin = Vector2i(0, 16)
+14:0/0/y_sort_origin = -17
+7:2/0 = 0
+7:2/0/y_sort_origin = -17
+0:0/size_in_atlas = Vector2i(2, 2)
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(0, 16)
+0:0/0/material = SubResource("ShaderMaterial_codqf")
+0:0/0/y_sort_origin = -17
+2:0/size_in_atlas = Vector2i(2, 2)
+2:0/0 = 0
+2:0/0/texture_origin = Vector2i(0, 16)
+2:0/0/material = SubResource("ShaderMaterial_codqf")
+2:0/0/y_sort_origin = -17
+4:0/size_in_atlas = Vector2i(2, 2)
+4:0/0 = 0
+4:0/0/texture_origin = Vector2i(0, 16)
+4:0/0/material = SubResource("ShaderMaterial_codqf")
+4:0/0/y_sort_origin = -17
+6:0/size_in_atlas = Vector2i(2, 2)
+6:0/0 = 0
+6:0/0/texture_origin = Vector2i(0, 16)
+6:0/0/material = SubResource("ShaderMaterial_codqf")
+6:0/0/y_sort_origin = -17
+8:0/size_in_atlas = Vector2i(1, 2)
+8:0/0 = 0
+8:0/0/texture_origin = Vector2i(0, 16)
+8:0/0/y_sort_origin = -17
+9:0/size_in_atlas = Vector2i(1, 2)
+9:0/0 = 0
+9:0/0/texture_origin = Vector2i(0, 16)
+9:0/0/y_sort_origin = -17
+10:0/size_in_atlas = Vector2i(1, 2)
+10:0/0 = 0
+10:0/0/texture_origin = Vector2i(0, 16)
+10:0/0/y_sort_origin = -17
+11:0/size_in_atlas = Vector2i(1, 2)
+11:0/0 = 0
+11:0/0/texture_origin = Vector2i(0, 16)
+11:0/0/y_sort_origin = -17
+12:0/size_in_atlas = Vector2i(1, 2)
+12:0/0 = 0
+12:0/0/texture_origin = Vector2i(0, 16)
+12:0/0/y_sort_origin = -17
+13:0/size_in_atlas = Vector2i(1, 2)
+13:0/0 = 0
+13:0/0/texture_origin = Vector2i(0, 16)
+13:0/0/y_sort_origin = -17
+6:2/0 = 0
+6:2/0/y_sort_origin = -17
+
+[resource]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_1lolr")

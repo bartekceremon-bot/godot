@@ -5,9 +5,17 @@ extends Node2D
 ## ale serwer ma ostatnie słowo – przy odrzuceniu kroku przysyła "pos" i klient się koryguje.
 
 const EntityView := preload("res://scripts/game/entity_view.gd")
+const EntityScene := preload("res://scenes/entity.tscn")
+const TorchScene := preload("res://scenes/torch.tscn")
 const FxLayer := preload("res://scripts/game/fx_layer.gd")
 const GroundLayer := preload("res://scripts/game/ground_layer.gd")
 const Hud := preload("res://scripts/ui/hud.gd")
+
+## Identyfikatory terenu dla shadera (world_ground.gdshader).
+const TERRAIN := {".": 0, ",": 1, "s": 2, "a": 3, "f": 4, "x": 5, "~": 6}
+## Cykl dnia i nocy (sekundy czasu rzeczywistego) – wspólny dla wszystkich graczy.
+const DAY_CYCLE := 1440.0
+const NIGHT_COLOR := Color(0.34, 0.37, 0.58)
 
 const TS := 32
 const TAP_MAX_MOVE := 24.0
@@ -17,12 +25,19 @@ const DIRS: Array[Vector2i] = [
 	Vector2i(1, -1), Vector2i(1, 1), Vector2i(-1, 1), Vector2i(-1, -1),
 ]
 
-var tilemap: TileMapLayer
-var ground: GroundLayer
-var creatures: Node2D
-var fx: FxLayer
-var camera: Camera2D
+@onready var ground_rect: ColorRect = $Ground
+@onready var ground: GroundLayer = $GroundItems
+@onready var creatures: Node2D = $World
+@onready var objects: TileMapLayer = $World/Objects
+@onready var fx: FxLayer = $Fx
+@onready var night_modulate: CanvasModulate = $Night
+@onready var camera: Camera2D = $Camera
 var hud: Hud
+var _torches: Array = []
+var _shake := 0.0
+## 0 = dzień, 1 = pełna noc.
+var night := 0.0
+var _night_ready := false
 
 ## id -> EntityView
 var entities: Dictionary = {}
@@ -45,25 +60,13 @@ var _touch_start: Dictionary = {}
 
 
 func _ready() -> void:
-	tilemap = TileMapLayer.new()
-	tilemap.tile_set = Sprites.tileset()
-	add_child(tilemap)
-	ground = GroundLayer.new()
-	add_child(ground)
-	creatures = Node2D.new()
-	creatures.y_sort_enabled = true
-	add_child(creatures)
-	fx = FxLayer.new()
-	add_child(fx)
-	camera = Camera2D.new()
-	camera.zoom = Vector2(2, 2)
-	add_child(camera)
 	camera.make_current()
 	hud = Hud.new()
 	hud.game = self
+	hud.layer = 2
 	add_child(hud)
-
 	_build_map()
+	apply_effects()
 	me = _create_entity(GameData.my_id)
 	me.is_me = true
 	me.kind = "p"
@@ -78,17 +81,125 @@ func _build_map() -> void:
 	_astar.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	_astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	_astar.update()
+	# Mapa typów terenu dla shadera (1 piksel = 1 kafelek).
+	var terrain := Image.create(GameData.map_w, GameData.map_h, false, Image.FORMAT_R8)
 	for y in GameData.map_h:
 		var row: String = GameData.map_rows[y]
 		for x in GameData.map_w:
 			var ch := row[x]
-			tilemap.set_cell(Vector2i(x, y), 0, Sprites.atlas_coords(ch, x, y))
+			terrain.set_pixel(x, y, Color(_terrain_under(ch, x, y) / 255.0, 0, 0))
 			if not GameData.WALKABLE.contains(ch):
 				_astar.set_point_solid(Vector2i(x, y), true)
+			_place_object(ch, x, y)
+	var mat := ground_rect.material as ShaderMaterial
+	mat.set_shader_parameter("map_tex", ImageTexture.create_from_image(terrain))
+	mat.set_shader_parameter("map_size", Vector2(GameData.map_w, GameData.map_h))
+	ground_rect.size = Vector2(GameData.map_w, GameData.map_h) * TS
+	_place_torches()
+
+
+## Teren pod obiektem (drzewo stoi na trawie albo popiele, mur na bruku...).
+func _terrain_under(ch: String, x: int, y: int) -> int:
+	if TERRAIN.has(ch):
+		return TERRAIN[ch]
+	if ch in ["#", "D", "M", "K", "W", "P"]:
+		return 4
+	# Drzewa i skały: najczęstszy teren w sąsiedztwie.
+	var counts := {}
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			var c := GameData.tile_at(x + dx, y + dy)
+			if _is_ground(c):
+				counts[c] = counts.get(c, 0) + 1
+	var best := "."
+	for c in counts:
+		if counts[c] > counts.get(best, 0):
+			best = c
+	return TERRAIN.get(best, 0)
+
+
+static func _is_ground(c: String) -> bool:
+	return c in [".", "a", "s", ","]
+
+
+func _hash(x: int, y: int) -> int:
+	return absi((x * 73856093) ^ (y * 19349663))
+
+
+## Obiekty świata w TileMapLayer (sortowanie Y z postaciami).
+func _place_object(ch: String, x: int, y: int) -> void:
+	var name := ""
+	match ch:
+		"T":
+			name = "tree_%d" % (_hash(x, y) % 4)
+		"r":
+			var ash := GameData.tile_at(x - 1, y) == "a" or GameData.tile_at(x + 1, y) == "a" or GameData.tile_at(x, y + 1) == "a"
+			name = ("rock_ash_%d" if ash else "rock_%d") % (_hash(x, y) % 2)
+		"#":
+			var front := GameData.tile_at(x, y + 1) != "#"
+			name = ("wall_front_%d" if front else "wall_inner_%d") % (_hash(x, y) % 3)
+		"D":
+			name = "chest"
+		"M":
+			name = "stall"
+		"K":
+			name = "anvil"
+		"W":
+			name = "workbench"
+		"P":
+			name = "furnace"
+	if name != "":
+		objects.set_cell(Vector2i(x, y), 0, Sprites.object_coords(name))
+
+
+## Pochodnie przy bramach miasta, w narożnikach świątyni i ogień w piecu rafinerii.
+func _place_torches() -> void:
+	## [pozycja, czy pokazać sprite pochodni]
+	var spots: Array = []
+	for y in GameData.map_h:
+		for x in GameData.map_w:
+			var ch := GameData.tile_at(x, y)
+			if ch == "#":
+				# Mur przy bramie (poziomej lub pionowej).
+				for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+					var g: Vector2i = Vector2i(x, y) + d
+					var gc := GameData.tile_at(g.x, g.y)
+					var horizontal: bool = d.y == 0
+					var is_gate := GameData.is_walkable(g.x, g.y) and gc != "#"
+					if is_gate and horizontal and GameData.tile_at(g.x, g.y - 1) != "#" and GameData.tile_at(g.x, g.y + 1) != "#" \
+							and GameData.tile_at(x, y + 1) != "#":
+						spots.append([Vector2(x, y) * TS + Vector2(0, -14), true])
+						break
+			elif ch == "P":
+				# Palenisko pieca rafinerii: sam ogień i światło.
+				spots.append([Vector2(x, y) * TS + Vector2(-0.5, 14), false])
+			elif ch == "x" and GameData.tile_at(x - 1, y) != "x" and GameData.tile_at(x, y - 1) != "x":
+				spots.append([Vector2(x - 1, y - 1) * TS, true])
+			elif ch == "x" and GameData.tile_at(x + 1, y) != "x" and GameData.tile_at(x, y - 1) != "x":
+				spots.append([Vector2(x + 1, y - 1) * TS, true])
+	for sp in spots:
+		var t := TorchScene.instantiate()
+		t.position = sp[0]
+		t.show_sprite = sp[1]
+		creatures.add_child(t)
+		_torches.append(t)
+
+
+## Włącza/wyłącza efekty (cząsteczki, światła, winieta) – ustawienie w menu.
+func apply_effects() -> void:
+	var on := Config.effects
+	$Camera/Ash.emitting = on
+	$Camera/Ash.visible = on
+	$Camera/Embers.emitting = on
+	$Camera/Embers.visible = on
+	$Vignette.visible = on
+	for t in _torches:
+		t.get_node("Fire").emitting = on
+		t.night = night
 
 
 func _create_entity(id: int) -> EntityView:
-	var e := EntityView.new()
+	var e: EntityView = EntityScene.instantiate()
 	e.id = id
 	creatures.add_child(e)
 	entities[id] = e
@@ -134,6 +245,8 @@ func _on_message(msg: Dictionary) -> void:
 			for f in msg.l:
 				fx.spawn(f)
 				_fx_sound(f)
+				if f.k == "num" and f.c == "dmg":
+					_on_damage(Vector2i(int(f.x), int(f.y)))
 		"chat":
 			hud.add_chat("[color=#f0e070]%s:[/color] %s" % [msg.from, _escape(str(msg.text))])
 			if entities.has(int(msg.id)):
@@ -162,11 +275,27 @@ func _on_snapshot(msg: Dictionary) -> void:
 		view.apply(e, id == GameData.my_id)
 	for id in entities.keys():
 		if not seen.has(id) and id != GameData.my_id:
-			entities[id].queue_free()
+			entities[id].vanish()
 			entities.erase(id)
 	ground.set_items(msg.g)
 	_set_target(target_id)
 	_update_labels()
+	_update_minimap()
+
+
+func _update_minimap() -> void:
+	var dots := []
+	for id in entities:
+		var e: EntityView = entities[id]
+		if e.is_me or e.kind == "r":
+			continue
+		var col := Color(0.4, 1, 0.4)
+		if e.kind == "m":
+			col = Color(1, 0.3, 0.25)
+		elif e.kind == "n":
+			col = Color(1, 0.85, 0.3)
+		dots.append([e.tile, col])
+	hud.minimap.update_view(my_pos, dots)
 
 
 ## Nazwy złóż widoczne tylko w pobliżu; okna NPC zamykane po odejściu od NPC.
@@ -183,6 +312,16 @@ func _update_labels() -> void:
 		if n == null or _dist(n.tile, my_pos) > 3:
 			_talking_npc = 0
 			hud.close_npc_windows()
+
+
+## Trafienie: błysk istoty na kafelku, wstrząs kamery gdy trafiono nas.
+func _on_damage(t: Vector2i) -> void:
+	for id in entities:
+		var e: EntityView = entities[id]
+		if e.tile == t and e.kind != "r":
+			e.flash()
+	if t == my_pos:
+		_shake = 0.25
 
 
 func _set_target(id: int) -> void:
@@ -341,6 +480,12 @@ func _process(delta: float) -> void:
 	if me == null:
 		return
 	camera.position = me.position + Vector2(TS / 2.0, TS / 2.0)
+	_update_day_night(delta)
+	if _shake > 0.0:
+		_shake -= delta
+		camera.offset = Vector2(randf_range(-3, 3), randf_range(-3, 3)) * (_shake / 0.25)
+	else:
+		camera.offset = Vector2.ZERO
 	_move_cooldown -= delta
 	if _move_cooldown > 0.0:
 		return
@@ -463,6 +608,7 @@ func _try_step(step: Vector2i, from_path: bool) -> bool:
 	me.move_to(dest, dur, dir)
 	me.gathering = false
 	_update_labels()
+	_update_minimap()
 	return true
 
 
@@ -470,6 +616,38 @@ static func _facing(step: Vector2i) -> int:
 	if absi(step.x) > absi(step.y):
 		return 1 if step.x > 0 else 3
 	return 2 if step.y > 0 else 0
+
+
+## Pora dnia z zegara (wspólna dla wszystkich): długi dzień, zmierzch, noc, świt.
+func _update_day_night(_delta: float) -> void:
+	var t := fmod(Time.get_unix_time_from_system(), DAY_CYCLE) / DAY_CYCLE
+	# 0.00–0.60 dzień, 0.60–0.70 zmierzch, 0.70–0.92 noc, 0.92–1.00 świt.
+	var n := 0.0
+	if t > 0.6 and t <= 0.7:
+		n = (t - 0.6) / 0.1
+	elif t > 0.7 and t <= 0.92:
+		n = 1.0
+	elif t > 0.92:
+		n = 1.0 - (t - 0.92) / 0.08
+	n = smoothstep(0.0, 1.0, n)
+	# Podgląd pory dnia (testy / zrzuty): argument --night albo --day.
+	if "--night" in OS.get_cmdline_user_args():
+		n = 1.0
+	elif "--day" in OS.get_cmdline_user_args():
+		n = 0.0
+	if _night_ready and absf(n - night) < 0.002:
+		return
+	_night_ready = true
+	night = n
+	var evening := Color(1.0, 0.82, 0.7)
+	var c := Color.WHITE.lerp(evening, clampf(n * 2.0, 0.0, 1.0)).lerp(NIGHT_COLOR, clampf(n * 1.5 - 0.5, 0.0, 1.0))
+	night_modulate.color = c
+	for tr in _torches:
+		tr.night = n
+	if me:
+		me.light.enabled = n > 0.05 and Config.effects
+		me.light.energy = 0.9 * n
+	hud.set_time_of_day(n)
 
 
 func logout() -> void:

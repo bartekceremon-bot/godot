@@ -40,7 +40,7 @@ Serwer jest autorytatywny – klient wysyła wyłącznie intencje.
 | `auth_error` | `text` | Błąd logowania/rejestracji. |
 | `welcome` | `id`, `name`, `map{w,h,rows}`, `items[]`, `spells[]`, `recipes[]`, `stations`, `specs[]`, `tierSpecReq[]`, `qualities[]` | Po zalogowaniu: mapa i definicje danych. |
 | `pos` | `x`, `y`, `d` | Autorytatywna pozycja własnej postaci (start, korekta, teleport). |
-| `snap` | `e[]`, `g[]` | Stan widocznego obszaru – wysyłany tylko przy zmianie. `e`: istoty `{i,k,n,x,y,d,h,l,s}` – `k`: `p` gracz, `m` potwór, `n` NPC, `r` złoże (`h` = % pozostałych jednostek, `l` = `node_<rodzaj>_<tier>`); `g`: przedmioty na ziemi `{i,x,y,it,c,q}`. |
+| `snap` | `e[]`, `g[]` | Stan widocznego obszaru – wysyłany tylko przy zmianie. `e`: istoty `{i,k,n,x,y,d,h,l,s,eq?}` – `eq` (gracze): id założonych przedmiotów [głowa, tułów, nogi, stopy, broń, tarcza]; `k`: `p` gracz, `m` potwór, `n` NPC, `r` złoże (`h` = % pozostałych jednostek, `l` = `node_<rodzaj>_<tier>`); `g`: przedmioty na ziemi `{i,x,y,it,c,q}`. |
 | `stats` | `hp,mhp,mp,mmp,lvl,exp,expCur,expNext,step,target,skills{nazwa:[poziom,%]},cap,weight,specs[[id,poziom,%]],gather` | Statystyki własnej postaci. |
 | `inv` | `bag[]`, `eq{}` | Plecak (20 slotów, `null` = pusty) i ekwipunek. Stos: `{item,count,q?}` (q = jakość 1–5). |
 | `npc_dialog` | `id`, `name`, `text`, `keywords[]` | Odpowiedź NPC. |

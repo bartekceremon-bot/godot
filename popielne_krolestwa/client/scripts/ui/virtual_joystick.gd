@@ -51,8 +51,13 @@ func _update(pos: Vector2) -> void:
 	queue_redraw()
 
 
+const BASE_TEX := preload("res://assets/ui/joystick_base.png")
+const KNOB_TEX := preload("res://assets/ui/joystick_knob.png")
+
+
 func _draw() -> void:
 	var c := size / 2.0
-	draw_circle(c, RADIUS, Color(0, 0, 0, 0.28))
-	draw_arc(c, RADIUS, 0, TAU, 48, Color(0.9, 0.6, 0.3, 0.5), 3.0)
-	draw_circle(c + _knob_offset, KNOB, Color(0.9, 0.6, 0.3, 0.55 if _touch_index >= 0 else 0.35))
+	draw_texture_rect(BASE_TEX, Rect2(c - Vector2(RADIUS, RADIUS), Vector2(RADIUS, RADIUS) * 2), false)
+	var k := c + _knob_offset
+	draw_texture_rect(KNOB_TEX, Rect2(k - Vector2(KNOB, KNOB), Vector2(KNOB, KNOB) * 2), false,
+		Color(1, 1, 1, 1.0 if _touch_index >= 0 else 0.75))

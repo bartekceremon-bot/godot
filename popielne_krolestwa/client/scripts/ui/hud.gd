@@ -12,6 +12,7 @@ const MarketPanel := preload("res://scripts/ui/market_panel.gd")
 const CraftPanel := preload("res://scripts/ui/craft_panel.gd")
 const SpecsPanel := preload("res://scripts/ui/specs_panel.gd")
 const AmountDialog := preload("res://scripts/ui/amount_dialog.gd")
+const Minimap := preload("res://scripts/ui/minimap.gd")
 
 const CHAT_LINES := 60
 
@@ -53,6 +54,8 @@ var market: MarketPanel
 var craft: CraftPanel
 var specs: SpecsPanel
 var amount: AmountDialog
+var minimap: Minimap
+var _time_label: Label
 
 
 func _ready() -> void:
@@ -83,31 +86,25 @@ func _build_status() -> void:
 	panel.add_child(box)
 	_lvl_label = UiTheme.label(GameData.my_name, 20, UiTheme.ACCENT)
 	box.add_child(_lvl_label)
-	var hp := _bar(Color(0.8, 0.15, 0.12), 26)
+	var hp := _bar("hp", 26)
 	_hp_bar = hp[0]
 	_hp_label = hp[1]
 	box.add_child(_hp_bar)
-	var mp := _bar(Color(0.2, 0.35, 0.9), 26)
+	var mp := _bar("mp", 26)
 	_mp_bar = mp[0]
 	_mp_label = mp[1]
 	box.add_child(_mp_bar)
-	_exp_bar = _bar(Color(0.85, 0.7, 0.2), 8)[0]
+	_exp_bar = _bar("exp", 12)[0]
 	box.add_child(_exp_bar)
 
 
 ## Pasek z napisem w środku. Zwraca [ProgressBar, Label].
-func _bar(color: Color, height: int) -> Array:
+func _bar(kind: String, height: int) -> Array:
 	var bar := ProgressBar.new()
 	bar.custom_minimum_size = Vector2(300, height)
 	bar.show_percentage = false
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = color
-	fill.set_corner_radius_all(3)
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.05, 0.03, 0.03, 0.9)
-	bg.set_corner_radius_all(3)
-	bar.add_theme_stylebox_override("fill", fill)
-	bar.add_theme_stylebox_override("background", bg)
+	bar.add_theme_stylebox_override("fill", UiTheme.tex_box("bar_" + kind, 6, 0))
+	bar.add_theme_stylebox_override("background", UiTheme.tex_box("bar_bg", 6, 0))
 	var l := UiTheme.label("", 16)
 	l.set_anchors_preset(Control.PRESET_FULL_RECT)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -117,31 +114,42 @@ func _bar(color: Color, height: int) -> Array:
 
 
 func _build_top_buttons() -> void:
+	var col := VBoxContainer.new()
+	col.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	col.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	col.position = Vector2(-12, 12)
+	col.add_theme_constant_override("separation", 6)
+	col.alignment = BoxContainer.ALIGNMENT_END
+	_root.add_child(col)
 	var row := HBoxContainer.new()
-	row.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	row.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	row.position = Vector2(-12, 12)
-	row.add_theme_constant_override("separation", 8)
-	_root.add_child(row)
-	var bag := UiTheme.button("Plecak", "bag", Vector2(0, 64))
-	bag.pressed.connect(func(): _toggle(_inventory))
-	row.add_child(bag)
-	var ch := UiTheme.button("Postać", "", Vector2(0, 64))
-	ch.pressed.connect(func(): _toggle(_character))
-	row.add_child(ch)
-	var sp := UiTheme.button("Spec.", "", Vector2(0, 64))
-	sp.pressed.connect(func(): _toggle(specs))
-	row.add_child(sp)
-	var online := UiTheme.button("Online", "", Vector2(0, 64))
-	online.pressed.connect(func(): Net.send({"t": "who"}))
-	row.add_child(online)
-	var menu := UiTheme.button("Menu", "", Vector2(0, 64))
-	menu.pressed.connect(func(): _toggle(_menu))
-	row.add_child(menu)
+	row.add_theme_constant_override("separation", 6)
+	col.add_child(row)
+	var defs := [
+		["bag", "Plecak", func(): _toggle(_inventory)],
+		["character", "Postać", func(): _toggle(_character)],
+		["specs", "Specjalizacje", func(): _toggle(specs)],
+		["people", "Gracze online", func(): Net.send({"t": "who"})],
+		["menu", "Menu", func(): _toggle(_menu)],
+	]
+	for d in defs:
+		var b := UiTheme.button("", d[0], Vector2(68, 68))
+		b.tooltip_text = d[1]
+		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		b.pressed.connect(d[2])
+		row.add_child(b)
+	# Minimapa i pora dnia pod przyciskami.
+	var mm_row := HBoxContainer.new()
+	mm_row.alignment = BoxContainer.ALIGNMENT_END
+	mm_row.add_theme_constant_override("separation", 8)
+	col.add_child(mm_row)
+	var info := VBoxContainer.new()
+	_time_label = UiTheme.label("", 16, Color(1, 0.9, 0.6))
+	info.add_child(_time_label)
 	_perf = UiTheme.label("", 14, Color(0.7, 0.7, 0.7))
-	_perf.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_perf.position = Vector2(-200, 84)
-	_root.add_child(_perf)
+	info.add_child(_perf)
+	mm_row.add_child(info)
+	minimap = Minimap.new()
+	mm_row.add_child(minimap)
 
 
 func _build_joystick() -> void:
@@ -281,6 +289,15 @@ func _build_windows() -> void:
 		Config.save_settings()
 		set_fps_text.call())
 	box.add_child(fps)
+	var fx_btn := UiTheme.button("", "", Vector2(320, 60))
+	var set_fx_text := func(): fx_btn.text = "Efekty graficzne: %s" % ("wysokie" if Config.effects else "niskie")
+	set_fx_text.call()
+	fx_btn.pressed.connect(func():
+		Config.effects = not Config.effects
+		Config.save_settings()
+		game.apply_effects()
+		set_fx_text.call())
+	box.add_child(fx_btn)
 	var logout := UiTheme.button("Wyloguj", "", Vector2(320, 60))
 	logout.pressed.connect(func(): game.logout())
 	box.add_child(logout)
@@ -474,6 +491,16 @@ func show_death(by: String, lost: int) -> void:
 	_death_label.text = "ZGINĄŁEŚ\nZabójca: %s\nStracone doświadczenie: %d" % [by, lost]
 	_death.show()
 	get_tree().create_timer(3.0).timeout.connect(_death.hide)
+
+
+## Pora dnia (0 = dzień, 1 = noc) – napis przy minimapie.
+func set_time_of_day(n: float) -> void:
+	var t := "Dzień"
+	if n > 0.85:
+		t = "Noc"
+	elif n > 0.05:
+		t = "Zmierzch"
+	_time_label.text = t
 
 
 func joystick_vector() -> Vector2:

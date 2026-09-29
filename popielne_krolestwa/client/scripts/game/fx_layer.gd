@@ -16,6 +16,35 @@ func _center(x, y) -> Vector2:
 	return Vector2(float(x) * TS + TS / 2.0, float(y) * TS + TS / 2.0)
 
 
+const DOT := preload("res://assets/fx/soft_dot.png")
+
+
+## Jednorazowy wybuch cząsteczek (iskry trafienia, awans, zbieranie).
+func burst(pos: Vector2, color: Color, amount: int, speed: float, gravity: float = 60.0, life: float = 0.5) -> void:
+	if not Config.effects:
+		return
+	var p := CPUParticles2D.new()
+	p.position = pos
+	p.texture = DOT
+	p.one_shot = true
+	p.explosiveness = 0.95
+	p.amount = amount
+	p.lifetime = life
+	p.spread = 180.0
+	p.initial_velocity_min = speed * 0.4
+	p.initial_velocity_max = speed
+	p.gravity = Vector2(0, gravity)
+	p.scale_amount_min = 0.15
+	p.scale_amount_max = 0.35
+	var g := Gradient.new()
+	g.colors = PackedColorArray([color.lightened(0.4), color, Color(color, 0.0)])
+	g.offsets = PackedFloat32Array([0.0, 0.3, 1.0])
+	p.color_ramp = g
+	add_child(p)
+	p.emitting = true
+	get_tree().create_timer(life + 0.2).timeout.connect(p.queue_free)
+
+
 ## Dodaje efekt z pakietu "fx" serwera.
 func spawn(f: Dictionary) -> void:
 	var p := _center(f.x, f.y)
@@ -29,10 +58,14 @@ func spawn(f: Dictionary) -> void:
 			_add({"kind": "text", "pos": p, "text": str(int(f.v)), "col": col, "dur": 1.0, "rise": 24.0, "size": 10})
 			if f.c == "dmg":
 				_add({"kind": "splat", "pos": p, "dur": 0.35})
+				burst(p, Color(0.9, 0.15, 0.1), 10, 70.0)
+			elif f.c == "heal":
+				burst(p, Color(0.4, 1.0, 0.5), 10, 40.0, -40.0, 0.8)
 		"miss":
 			_add({"kind": "puff", "pos": p, "dur": 0.4, "col": Color(0.8, 0.8, 0.8)})
 		"block":
 			_add({"kind": "puff", "pos": p, "dur": 0.4, "col": Color(0.5, 0.7, 1)})
+			burst(p, Color(0.7, 0.85, 1.0), 6, 60.0)
 		"puff":
 			_add({"kind": "puff", "pos": p, "dur": 0.5, "col": Color(0.6, 0.6, 0.6)})
 		"shot":
@@ -43,8 +76,10 @@ func spawn(f: Dictionary) -> void:
 			_add({"kind": "death", "pos": p, "dur": 3.0})
 		"levelup":
 			_add({"kind": "sparkle", "pos": p, "dur": 1.2, "col": Color(1, 0.85, 0.3)})
+			burst(p, Color(1, 0.8, 0.3), 40, 120.0, -30.0, 1.2)
 			_add({"kind": "text", "pos": p, "text": "AWANS!", "col": Color(1, 0.85, 0.3), "dur": 2.0, "rise": 30.0, "size": 12})
 		"gather":
+			burst(p, Color(0.85, 0.75, 0.5), 8, 50.0, 90.0, 0.5)
 			var d := GameData.item_def(str(f.get("item", "")))
 			_add({"kind": "text", "pos": p - Vector2(0, 8), "text": "+%d %s" % [int(f.v), str(d.name).get_slice(" (", 0)], "col": Color(0.6, 1, 0.5), "dur": 1.4, "rise": 20.0, "size": 8})
 		"craft":

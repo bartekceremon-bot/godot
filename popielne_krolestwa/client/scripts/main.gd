@@ -2,7 +2,7 @@ extends Node
 ## Główny węzeł: przełącza ekran logowania i grę.
 
 const LoginScreen := preload("res://scripts/ui/login_screen.gd")
-const Game := preload("res://scripts/game/game.gd")
+const GameScene := preload("res://scenes/game.tscn")
 
 var _current: Node = null
 
@@ -41,7 +41,7 @@ func show_login(status: String) -> void:
 func _on_message(msg: Dictionary) -> void:
 	if msg.t == "welcome":
 		GameData.load_welcome(msg)
-		var game := Game.new()
+		var game := GameScene.instantiate()
 		_swap(game)
 
 

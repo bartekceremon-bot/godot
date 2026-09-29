@@ -28,7 +28,15 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 10)
 	panel.add_child(box)
 
+	var logo := TextureRect.new()
+	logo.texture = load("res://assets/splash.png")
+	logo.custom_minimum_size = Vector2(0, 96)
+	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	box.add_child(logo)
 	var title := UiTheme.label("POPIELNE KRÓLESTWA", 44, UiTheme.ACCENT)
+	title.add_theme_constant_override("outline_size", 10)
+	title.add_theme_color_override("font_outline_color", Color("2a0e06"))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var sub := UiTheme.label("Świat spłonął. Odbuduj go.", 20, Color(0.75, 0.7, 0.65))
@@ -72,7 +80,7 @@ func _ready() -> void:
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_status)
 
-	var ver := UiTheme.label("v%s  •  ETAP 2" % ProjectSettings.get_setting("application/config/version"), 14, Color(0.5, 0.45, 0.4))
+	var ver := UiTheme.label("v%s  •  ETAP 2+" % ProjectSettings.get_setting("application/config/version"), 14, Color(0.5, 0.45, 0.4))
 	ver.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	ver.position = Vector2(-180, -30)
 	add_child(ver)
@@ -82,15 +90,48 @@ func _ready() -> void:
 
 
 func _build_background() -> void:
-	# Tło: kafelki popiołu i trawy przyciemnione.
+	# Tło: spalona ziemia (tekstura terenu), unoszący się popiół i żar, winieta.
 	var bg := TextureRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.stretch_mode = TextureRect.STRETCH_TILE
-	var img := Sprites.draw_tile("a", 1)
-	img.resize(64, 64, Image.INTERPOLATE_NEAREST)
+	var img: Image = load("res://assets/world/terrain/ash.png").get_image()
+	img.resize(256, 256, Image.INTERPOLATE_NEAREST)
 	bg.texture = ImageTexture.create_from_image(img)
-	bg.modulate = Color(0.55, 0.5, 0.5)
+	bg.modulate = Color(0.75, 0.68, 0.66)
 	add_child(bg)
+	var dot: Texture2D = load("res://assets/fx/soft_dot.png")
+	for kind in ["ash", "ember"]:
+		var p := CPUParticles2D.new()
+		p.texture = dot
+		p.amount = 60 if kind == "ash" else 25
+		p.lifetime = 10.0
+		p.preprocess = 10.0
+		p.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+		p.emission_rect_extents = Vector2(900, 10)
+		p.position = Vector2(640, -20 if kind == "ash" else 740)
+		p.direction = Vector2(0.3, 1) if kind == "ash" else Vector2(0.2, -1)
+		p.spread = 25.0
+		p.gravity = Vector2(8, 10) if kind == "ash" else Vector2(5, -12)
+		p.initial_velocity_min = 20.0
+		p.initial_velocity_max = 50.0
+		p.scale_amount_min = 0.3 if kind == "ash" else 0.2
+		p.scale_amount_max = 0.7 if kind == "ash" else 0.45
+		var g := Gradient.new()
+		if kind == "ash":
+			g.colors = PackedColorArray([Color(0.8, 0.78, 0.75, 0), Color(0.8, 0.78, 0.75, 0.6), Color(0.6, 0.58, 0.56, 0)])
+		else:
+			g.colors = PackedColorArray([Color(1, 0.85, 0.4, 0), Color(1, 0.55, 0.15, 1), Color(0.8, 0.2, 0.05, 0)])
+		g.offsets = PackedFloat32Array([0.0, 0.3, 1.0])
+		p.color_ramp = g
+		add_child(p)
+	var vig := ColorRect.new()
+	vig.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/vignette.gdshader")
+	mat.set_shader_parameter("strength", 0.8)
+	vig.material = mat
+	add_child(vig)
 
 
 func _line_edit(text: String, placeholder: String) -> LineEdit:

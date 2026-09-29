@@ -1,0 +1,85 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/game/entity_view.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/fx/soft_dot.png" id="2_dot"]
+[ext_resource type="Shader" path="res://shaders/hit_flash.gdshader" id="3_flash"]
+[ext_resource type="Texture2D" path="res://assets/fx/soft_light.png" id="4_light"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flash"]
+resource_local_to_scene = true
+shader = ExtResource("3_flash")
+shader_parameter/flash = 0.0
+shader_parameter/flash_color = Color(1, 0.95, 0.9, 1)
+
+[node name="Entity" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Shadow" type="Sprite2D" parent="."]
+modulate = Color(0, 0, 0, 0.5)
+position = Vector2(16, 29)
+scale = Vector2(1.5, 0.5)
+texture = ExtResource("2_dot")
+
+[node name="Layers" type="Node2D" parent="."]
+material = SubResource("ShaderMaterial_flash")
+
+[node name="Body" type="Sprite2D" parent="Layers"]
+use_parent_material = true
+position = Vector2(0, -2)
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 32)
+
+[node name="Legs" type="Sprite2D" parent="Layers"]
+visible = false
+use_parent_material = true
+position = Vector2(0, -2)
+centered = false
+region_enabled = true
+
+[node name="Feet" type="Sprite2D" parent="Layers"]
+visible = false
+use_parent_material = true
+position = Vector2(0, -2)
+centered = false
+region_enabled = true
+
+[node name="Armor" type="Sprite2D" parent="Layers"]
+visible = false
+use_parent_material = true
+position = Vector2(0, -2)
+centered = false
+region_enabled = true
+
+[node name="Head" type="Sprite2D" parent="Layers"]
+visible = false
+use_parent_material = true
+position = Vector2(0, -2)
+centered = false
+region_enabled = true
+
+[node name="Weapon" type="Sprite2D" parent="Layers"]
+visible = false
+use_parent_material = true
+position = Vector2(0, -2)
+centered = false
+region_enabled = true
+
+[node name="Shield" type="Sprite2D" parent="Layers"]
+visible = false
+use_parent_material = true
+position = Vector2(0, -2)
+centered = false
+region_enabled = true
+
+[node name="Overlay" type="Node2D" parent="."]
+z_index = 5
+texture_filter = 2
+
+[node name="Light" type="PointLight2D" parent="."]
+position = Vector2(16, 16)
+enabled = false
+color = Color(1, 0.82, 0.6, 1)
+energy = 0.0
+texture = ExtResource("4_light")
+texture_scale = 7.0

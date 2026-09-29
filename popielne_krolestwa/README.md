@@ -7,7 +7,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 2 – ekonomia** (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 2 – ekonomia + nowa oprawa graficzna** (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
@@ -69,6 +69,41 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 - **Udźwig:** 400 oz + 20 oz/poziom (widoczny w plecaku) – surowce ważą, transport ma znaczenie.
 - Postacie z ETAPU 1 są automatycznie migrowane (stare przedmioty → nowe T1/T2, narzędzia T1 w prezencie).
 
+## Oprawa graficzna (Godot 4.5)
+
+Klient korzysta z narzędzi silnika Godot, a nie tylko z rysowania w kodzie:
+
+| Element | Jak zrobiony w Godocie |
+|---------|------------------------|
+| Teren | **Shader** `shaders/world_ground.gdshader` na całą mapę: tekstury terenu 128×128 bez szwów, miękkie organiczne przejścia (trawa → droga → piasek → woda), animowana woda z pianą przy brzegu |
+| Drzewa, mury, stragany, piec | **TileSet** `assets/world/objects_tileset.tres` + `TileMapLayer` z **sortowaniem Y** (postać chowa się za drzewem/murem), drzewa kołyszą się (shader wiatru) |
+| Postacie | Scena `scenes/entity.tscn`: warstwy **paperdoll** – ciało + hełm, zbroja, nogi, buty, broń, tarcza zależnie od założonego ekwipunku (płyta/skóra/płótno, kolory tierów), animacja chodu 4 kierunki × 4 klatki, cień, biały błysk przy trafieniu (shader) |
+| Światło | `CanvasModulate` + `PointLight2D`: **cykl dnia i nocy** (24 min, wspólny dla wszystkich), pochodnie przy bramach i świątyni migoczą, piec rafinerii żarzy się, gracz nosi światło w nocy |
+| Cząsteczki | `CPUParticles2D`: opadający popiół i unoszący się żar (klimat świata), ogień pochodni, iskry trafień, wybuch przy awansie, drobiny przy zbieraniu |
+| Kamera | `Camera2D` z wygładzaniem i wstrząsem przy otrzymaniu obrażeń, winieta (shader) |
+| Interfejs | Motyw z teksturami **9-patch** (kamienne ramki z brązem, przyciski, sloty, paski HP/MP/EXP), ikony HUD, **minimapa**, joystick, ekran logowania z logo i popiołem |
+
+Sceny `scenes/game.tscn`, `scenes/entity.tscn`, `scenes/torch.tscn` można otwierać i edytować w edytorze Godota.
+W menu gry: **„Efekty graficzne: wysokie/niskie”** – wyłącza cząsteczki, światła i winietę na słabszych telefonach.
+
+### Grafiki (PNG) i ich podmiana
+
+Wszystkie grafiki leżą w `client/assets/` jako zwykłe pliki PNG (atlasy) opisane w `assets/atlas_index.json`.
+Tworzy je generator pixel artu `client/tools/build_art.gd` (kod w `client/tools/art/`: paleta, cieniowanie z ditheringiem,
+szum bez szwów) – licencja CC0. Po zmianie generatora:
+
+```bash
+tools/build_assets.sh        # PNG + TileSet + import do projektu
+```
+
+Grafika może zostać podmieniona na ręcznie narysowaną: wystarczy zachować rozmiary i układ atlasów
+(np. `characters/layers.png`: arkusze 128×128, kolumny = klatki chodu, wiersze = kierunek N/E/S/W).
+Podgląd atlasów: `godot --headless --path client --script res://tools/preview_art.gd -- podglad.png`.
+
+> Dlaczego generator, a nie gotowa paczka grafik? Środowisko, w którym powstaje projekt, nie ma dostępu do serwisów
+> z darmowymi assetami (kenney.nl, itch.io, opengameart). Pipeline jest przygotowany tak, aby w każdej chwili
+> wstawić profesjonalne grafiki (np. CC0 od Kenneya) bez zmian w kodzie gry.
+
 ## Struktura projektu
 
 ```
@@ -95,13 +130,16 @@ popielne_krolestwa/
 │   └── Dockerfile
 ├── client/                  # Godot 4.5 (GDScript)
 │   ├── project.godot, export_presets.cfg
-│   ├── scripts/autoload/    # Config, Net, GameData, Sprites (grafika), Sfx (dźwięk)
+│   ├── scenes/              # main, game (świat, światło, cząsteczki), entity (postać), torch
+│   ├── shaders/             # teren, kołysanie drzew, błysk trafienia, winieta
+│   ├── assets/              # grafiki PNG (atlasy), TileSet .tres, atlas_index.json
+│   ├── scripts/autoload/    # Config, Net, GameData, Sprites (atlasy grafik), Sfx (dźwięk)
 │   ├── scripts/game/        # scena gry, istoty, efekty, loot
 │   ├── scripts/ui/          # logowanie, HUD, joystick, plecak, postać, NPC, sklep, depozyt,
 │   │                        # rynek, rzemiosło, specjalizacje, okno ilości/ceny
 │   ├── scripts/debug/       # automatyczny test klienta
-│   └── tools/generate_art.gd, sprite_sheet.gd  # ikona/splash, arkusz podglądu grafik
-└── tools/build_apk.sh       # budowanie APK (debug / release)
+│   └── tools/               # build_art.gd + art/ (generator pixel artu), build_tileset.gd, preview_art.gd
+└── tools/                   # build_apk.sh (APK debug/release), build_assets.sh (grafiki)
 ```
 
 ---

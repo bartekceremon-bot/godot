@@ -12,6 +12,8 @@ var server_url := "ws://192.168.1.100:7171"
 var account_name := ""
 var sound_enabled := true
 var show_fps := false
+## Efekty graficzne (cząsteczki, światła, winieta) – można wyłączyć na słabszych telefonach.
+var effects := true
 
 
 func _ready() -> void:
@@ -26,6 +28,7 @@ func load_settings() -> void:
 	account_name = cfg.get_value("account", "name", account_name)
 	sound_enabled = cfg.get_value("audio", "enabled", sound_enabled)
 	show_fps = cfg.get_value("video", "show_fps", show_fps)
+	effects = cfg.get_value("video", "effects", effects)
 
 
 func save_settings() -> void:
@@ -34,6 +37,7 @@ func save_settings() -> void:
 	cfg.set_value("account", "name", account_name)
 	cfg.set_value("audio", "enabled", sound_enabled)
 	cfg.set_value("video", "show_fps", show_fps)
+	cfg.set_value("video", "effects", effects)
 	cfg.save(PATH)
 
 

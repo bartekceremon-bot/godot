@@ -703,7 +703,7 @@ export class World {
       const ents: object[] = [];
       for (const o of this.players.values())
         if (this.inView(p, o.x, o.y))
-          ents.push({ i: o.id, k: 'p', n: o.name, x: o.x, y: o.y, d: o.dir, h: hpPct(o.hp, o.maxHp()), l: o.look, s: o.lastStepMs });
+          ents.push({ i: o.id, k: 'p', n: o.name, x: o.x, y: o.y, d: o.dir, h: hpPct(o.hp, o.maxHp()), l: o.look, s: o.lastStepMs, eq: equipLook(o) });
       for (const m of this.monsters.values())
         if (this.inView(p, m.x, m.y))
           ents.push({ i: m.id, k: 'm', n: m.name, x: m.x, y: m.y, d: m.dir, h: hpPct(m.hp, m.maxHp()), l: m.def.look, s: m.lastStepMs });
@@ -742,6 +742,11 @@ export class World {
   broadcastSystem(text: string, exceptId = 0) {
     for (const p of this.players.values()) if (p.id !== exceptId) this.sendSystem(p, text);
   }
+}
+
+/** Wygląd ekwipunku (id przedmiotów) – klient rysuje go na postaci: „jesteś tym, co nosisz”. */
+function equipLook(p: Player): string[] {
+  return EQUIP_SLOTS.map((slot) => p.inventory.equipment[slot]?.item ?? '');
 }
 
 function hpPct(hp: number, max: number) {
