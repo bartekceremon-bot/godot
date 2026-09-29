@@ -29,6 +29,7 @@ func _maybe_start_autotest() -> void:
 	t.account = parts[1]
 	t.password = parts[2]
 	t.shots_dir = opts.get("shots", "")
+	t.scenario = opts.get("scenario", "etap2")
 	add_child(t)
 
 

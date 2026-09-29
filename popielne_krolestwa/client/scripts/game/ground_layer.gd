@@ -30,7 +30,7 @@ func _draw() -> void:
 		var g: Dictionary = items[id]
 		var p := Vector2(int(g.x), int(g.y)) * TS
 		var def := GameData.item_def(str(g.it))
-		draw_texture(Sprites.item_icon(str(def.icon)), p)
+		draw_texture(Sprites.item_icon_for(def), p)
 		if int(g.c) > 1:
 			draw_string_outline(font, p + Vector2(14, 30), str(int(g.c)), HORIZONTAL_ALIGNMENT_RIGHT, 16, 8, 2, Color.BLACK)
 			draw_string(font, p + Vector2(14, 30), str(int(g.c)), HORIZONTAL_ALIGNMENT_RIGHT, 16, 8, Color.WHITE)

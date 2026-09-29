@@ -12,20 +12,27 @@ import { World } from '../game/world';
 import { Player, Connection } from '../game/entities';
 import { Inventory } from '../game/inventory';
 import { defaultSkills, maxHpForLevel, maxMpForLevel, Skills } from '../game/progression';
+import { defaultSpecs, loadSpecs } from '../game/specs';
 import { hashPassword, verifyPassword, validateName, validatePassword } from '../auth';
 import { randInt } from '../util/rng';
 
-/** Ekwipunek startowy nowej postaci – broń wręcz i łuk, żeby przetestować oba style walki. */
+/**
+ * Ekwipunek startowy nowej postaci – broń wręcz i łuk (oba style walki)
+ * oraz narzędzia T1, żeby od razu zacząć zbieractwo.
+ */
 function starterInventory(): Inventory {
   const inv = new Inventory([], {
-    weapon: { item: 'rusty_sword', count: 1 },
-    shield: { item: 'wooden_shield', count: 1 },
-    body: { item: 'leather_armor', count: 1 },
+    weapon: { item: 'sword_t1', count: 1 },
+    shield: { item: 'shield_t1', count: 1 },
+    body: { item: 'leather_body_t1', count: 1 },
   });
-  inv.add('hunting_bow');
+  inv.add('bow_t1');
+  inv.add('woodaxe_t1');
+  inv.add('pickaxe_t1');
+  inv.add('sickle_t1');
   inv.add('hp_potion', 3);
   inv.add('mp_potion', 2);
-  inv.add('gold', 20);
+  inv.add('gold', 30);
   return inv;
 }
 
@@ -159,6 +166,7 @@ export class GameServer {
         look: randInt(0, 7),
         skills: JSON.stringify(defaultSkills()),
         inventory: JSON.stringify(starterInventory().toJSON()),
+        specs: JSON.stringify(defaultSpecs()),
       });
       account = db.findAccount(name)!;
       console.log(`[auth] nowe konto: ${name}`);
@@ -179,6 +187,9 @@ export class GameServer {
 
     const inv = JSON.parse(row.inventory);
     const skills = { ...defaultSkills(), ...(JSON.parse(row.skills) as Skills) };
+    const inventory = new Inventory(inv.bag, inv.equipment);
+    // Postać z ETAPU 1 (brak specjalizacji) dostaje jednorazowo narzędzia T1 do zbieractwa.
+    if (!row.specs || row.specs === '{}') for (const tool of ['woodaxe_t1', 'pickaxe_t1', 'sickle_t1']) inventory.add(tool);
     return new Player({
       charId: row.id,
       name: row.name,
@@ -190,7 +201,8 @@ export class GameServer {
       exp: row.exp,
       look: row.look,
       skills,
-      inventory: new Inventory(inv.bag, inv.equipment),
+      specs: loadSpecs(JSON.parse(row.specs || '{}')),
+      inventory,
     });
   }
 }

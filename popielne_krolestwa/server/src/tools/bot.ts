@@ -14,11 +14,11 @@ function runBot(n: number) {
   const name = `Bot${n}`;
   ws.on('open', () => {
     // Najpierw próba rejestracji; jeśli konto istnieje – logowanie.
-    ws.send(JSON.stringify({ t: 'register', v: 1, name, pass: 'botbot' }));
+    ws.send(JSON.stringify({ t: 'register', v: 2, name, pass: 'botbot' }));
   });
   ws.on('message', (data) => {
     const m = JSON.parse(data.toString());
-    if (m.t === 'auth_error') ws.send(JSON.stringify({ t: 'login', v: 1, name, pass: 'botbot' }));
+    if (m.t === 'auth_error') ws.send(JSON.stringify({ t: 'login', v: 2, name, pass: 'botbot' }));
     if (m.t === 'welcome') {
       console.log(`${name} zalogowany`);
       setInterval(() => ws.send(JSON.stringify({ t: 'move', d: Math.floor(Math.random() * 4) })), 400);

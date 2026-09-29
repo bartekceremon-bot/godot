@@ -77,26 +77,26 @@ after(async () => {
 test('rejestracja, logowanie, ruch, czat, widoczność innych graczy', async () => {
   const a = new TestClient(port);
   await a.open();
-  a.send({ t: 'register', v: 1, name: 'Ala', pass: 'tajne1' });
+  a.send({ t: 'register', v: 2, name: 'Ala', pass: 'tajne1' });
   const welcome = await a.wait((m) => m.t === 'welcome');
   assert.equal(welcome.name, 'Ala');
   assert.equal(welcome.map.rows.length, welcome.map.h);
   assert.ok(welcome.items.length > 5);
   const pos = await a.wait((m) => m.t === 'pos');
   const inv = await a.wait((m) => m.t === 'inv');
-  assert.equal(inv.eq.weapon.item, 'rusty_sword');
+  assert.equal(inv.eq.weapon.item, 'sword_t1');
 
   // Druga rejestracja tej samej nazwy musi się nie udać.
   const dup = new TestClient(port);
   await dup.open();
-  dup.send({ t: 'register', v: 1, name: 'ala', pass: 'xxxx' });
+  dup.send({ t: 'register', v: 2, name: 'ala', pass: 'xxxx' });
   assert.match((await dup.wait((m) => m.t === 'auth_error')).text, /zajęta/);
   dup.close();
 
   // Drugi gracz widzi pierwszego.
   const b = new TestClient(port);
   await b.open();
-  b.send({ t: 'register', v: 1, name: 'Bartek', pass: 'tajne2' });
+  b.send({ t: 'register', v: 2, name: 'Bartek', pass: 'tajne2' });
   await b.wait((m) => m.t === 'welcome');
   await b.wait((m) => m.t === 'snap' && m.e.some((e: Msg) => e.n === 'Ala'));
 
@@ -128,9 +128,9 @@ test('rejestracja, logowanie, ruch, czat, widoczność innych graczy', async () 
   await new Promise((r) => setTimeout(r, 200));
   const a2 = new TestClient(port);
   await a2.open();
-  a2.send({ t: 'login', v: 1, name: 'Ala', pass: 'zle' });
+  a2.send({ t: 'login', v: 2, name: 'Ala', pass: 'zle' });
   await a2.wait((m) => m.t === 'auth_error');
-  a2.send({ t: 'login', v: 1, name: 'Ala', pass: 'tajne1' });
+  a2.send({ t: 'login', v: 2, name: 'Ala', pass: 'tajne1' });
   const pos2 = await a2.wait((m) => m.t === 'pos');
   assert.equal(pos2.y, pos.y + 1);
   a2.close();
@@ -140,7 +140,7 @@ test('rejestracja, logowanie, ruch, czat, widoczność innych graczy', async () 
 test('walka: zabicie potwora daje doświadczenie i loot, podniesienie lootu', async () => {
   const c = new TestClient(port);
   await c.open();
-  c.send({ t: 'register', v: 1, name: 'Wojownik', pass: 'haslo' });
+  c.send({ t: 'register', v: 2, name: 'Wojownik', pass: 'haslo' });
   await c.wait((m) => m.t === 'welcome');
   const p = [...world.players.values()].find((x) => x.name === 'Wojownik')!;
 

@@ -30,7 +30,23 @@ export interface CharacterRow {
   skills: string;
   /** JSON: { bag, equipment } */
   inventory: string;
+  /** JSON: Specs (drzewko specjalizacji) */
+  specs: string;
   updated_at: number;
+}
+
+export interface MarketOrderRow {
+  id: number;
+  city: string;
+  char_id: number;
+  char_name: string;
+  side: 'buy' | 'sell';
+  item: string;
+  /** Sprzedaż: jakość przedmiotu; kupno: minimalna akceptowana jakość. */
+  quality: number;
+  price: number;
+  amount: number;
+  created_at: number;
 }
 
 /** Kolejne migracje schematu – dopisujemy nowe na końcu, nigdy nie zmieniamy starych. */
@@ -56,6 +72,27 @@ const MIGRATIONS: string[] = [
      inventory TEXT NOT NULL,
      updated_at INTEGER NOT NULL
    );`,
+  // ETAP 2: ekonomia – specjalizacje, depozyty, rynek.
+  `ALTER TABLE characters ADD COLUMN specs TEXT NOT NULL DEFAULT '{}';
+   CREATE TABLE depots (
+     char_id INTEGER NOT NULL REFERENCES characters(id),
+     city TEXT NOT NULL,
+     items TEXT NOT NULL,
+     PRIMARY KEY (char_id, city)
+   );
+   CREATE TABLE market_orders (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     city TEXT NOT NULL,
+     char_id INTEGER NOT NULL REFERENCES characters(id),
+     char_name TEXT NOT NULL,
+     side TEXT NOT NULL CHECK (side IN ('buy', 'sell')),
+     item TEXT NOT NULL,
+     quality INTEGER NOT NULL,
+     price INTEGER NOT NULL,
+     amount INTEGER NOT NULL,
+     created_at INTEGER NOT NULL
+   );
+   CREATE INDEX market_orders_city_item ON market_orders (city, item);`,
 ];
 
 export class Database {
@@ -111,10 +148,10 @@ export class Database {
   createCharacter(c: Omit<CharacterRow, 'id' | 'updated_at'>): number {
     const r = this.db
       .prepare(
-        `INSERT INTO characters (account_id, name, x, y, level, exp, hp, mp, look, skills, inventory, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO characters (account_id, name, x, y, level, exp, hp, mp, look, skills, inventory, specs, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(c.account_id, c.name, c.x, c.y, c.level, c.exp, c.hp, c.mp, c.look, c.skills, c.inventory, Date.now());
+      .run(c.account_id, c.name, c.x, c.y, c.level, c.exp, c.hp, c.mp, c.look, c.skills, c.inventory, c.specs, Date.now());
     return Number(r.lastInsertRowid);
   }
 
@@ -122,9 +159,67 @@ export class Database {
     this.db
       .prepare(
         `UPDATE characters SET x = ?, y = ?, level = ?, exp = ?, hp = ?, mp = ?, look = ?,
-           skills = ?, inventory = ?, updated_at = ? WHERE id = ?`,
+           skills = ?, inventory = ?, specs = ?, updated_at = ? WHERE id = ?`,
       )
-      .run(c.x, c.y, c.level, c.exp, c.hp, c.mp, c.look, c.skills, c.inventory, Date.now(), c.id);
+      .run(c.x, c.y, c.level, c.exp, c.hp, c.mp, c.look, c.skills, c.inventory, c.specs, Date.now(), c.id);
+  }
+
+  // --- Transakcje ---------------------------------------------------------------
+
+  /**
+   * Wykonuje funkcję w jednej transakcji SQL. Handel zapisuje w niej zarówno
+   * zmiany rynku/depozytu, jak i stan postaci – dzięki temu awaria serwera
+   * nie może zduplikować przedmiotów.
+   */
+  transaction<T>(fn: () => T): T {
+    this.db.exec('BEGIN');
+    try {
+      const r = fn();
+      this.db.exec('COMMIT');
+      return r;
+    } catch (e) {
+      this.db.exec('ROLLBACK');
+      throw e;
+    }
+  }
+
+  // --- Depozyty -----------------------------------------------------------------
+
+  loadDepot(charId: number, city: string): string | undefined {
+    const r = this.db.prepare('SELECT items FROM depots WHERE char_id = ? AND city = ?').get(charId, city) as
+      | { items: string }
+      | undefined;
+    return r?.items;
+  }
+
+  saveDepot(charId: number, city: string, items: string) {
+    this.db
+      .prepare(
+        `INSERT INTO depots (char_id, city, items) VALUES (?, ?, ?)
+         ON CONFLICT (char_id, city) DO UPDATE SET items = excluded.items`,
+      )
+      .run(charId, city, items);
+  }
+
+  // --- Rynek --------------------------------------------------------------------
+
+  loadMarketOrders(): MarketOrderRow[] {
+    return this.db.prepare('SELECT * FROM market_orders WHERE amount > 0').all() as unknown as MarketOrderRow[];
+  }
+
+  insertMarketOrder(o: Omit<MarketOrderRow, 'id'>): number {
+    const r = this.db
+      .prepare(
+        `INSERT INTO market_orders (city, char_id, char_name, side, item, quality, price, amount, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(o.city, o.char_id, o.char_name, o.side, o.item, o.quality, o.price, o.amount, o.created_at);
+    return Number(r.lastInsertRowid);
+  }
+
+  updateMarketOrderAmount(id: number, amount: number) {
+    if (amount <= 0) this.db.prepare('DELETE FROM market_orders WHERE id = ?').run(id);
+    else this.db.prepare('UPDATE market_orders SET amount = ? WHERE id = ?').run(amount, id);
   }
 
   close() {

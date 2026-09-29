@@ -25,6 +25,8 @@ func _ready() -> void:
 	_streams["death"] = _tone_sweep(300.0, 60.0, 0.5, "square", 0.35)
 	_streams["click"] = _tone_sweep(800.0, 800.0, 0.03, "square", 0.2)
 	_streams["shot"] = _noise_burst(0.07, 4000.0, 0.3)
+	_streams["craft"] = _arpeggio([392.0, 523.0, 659.0], 0.07)
+	_streams["gather"] = _noise_burst(0.06, 1500.0, 0.4)
 
 
 func play(name: String) -> void:

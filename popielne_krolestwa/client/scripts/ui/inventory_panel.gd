@@ -10,6 +10,7 @@ var _equip_grid: GridContainer
 var _details: Label
 var _actions: HBoxContainer
 var _gold: Label
+var _weight: Label
 var _bag: Array = []
 var _eq: Dictionary = {}
 ## Zaznaczony przedmiot: {"src": "bag"/"eq", "key": indeks lub nazwa slotu}
@@ -26,6 +27,8 @@ func _ready() -> void:
 	var title := UiTheme.label("Plecak i ekwipunek", 26, UiTheme.ACCENT)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
+	_weight = UiTheme.label("", 18, Color(0.8, 0.75, 0.7))
+	header.add_child(_weight)
 	_gold = UiTheme.label("", 20, Color(1, 0.85, 0.3))
 	header.add_child(_gold)
 	var close := UiTheme.button("X", "", Vector2(56, 56))
@@ -84,23 +87,13 @@ func _rebuild() -> void:
 
 
 func _slot_button(stack, placeholder: String) -> Button:
-	var b := Button.new()
-	b.custom_minimum_size = SLOT_SIZE
-	b.expand_icon = true
-	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	b.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-	b.add_theme_font_size_override("font_size", 14)
-	if stack is Dictionary:
-		var def := GameData.item_def(str(stack.item))
-		b.icon = Sprites.item_icon(str(def.icon))
-		if int(stack.count) > 1:
-			b.text = str(int(stack.count))
-			b.alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-	else:
-		b.text = placeholder
-		b.add_theme_color_override("font_color", Color(0.5, 0.45, 0.4))
-	return b
+	return UiTheme.item_slot(stack, placeholder, SLOT_SIZE)
+
+
+## Udźwig z pakietu stats.
+func set_weight(weight: float, cap: float) -> void:
+	_weight.text = "%.0f/%.0f oz  " % [weight, cap]
+	_weight.add_theme_color_override("font_color", Color(1, 0.5, 0.4) if weight > cap * 0.9 else Color(0.8, 0.75, 0.7))
 
 
 func _select(src: String, key) -> void:
@@ -113,7 +106,7 @@ func _select(src: String, key) -> void:
 		return
 	_selected = {"src": src, "key": key}
 	var def := GameData.item_def(str(stack.item))
-	_details.text = GameData.item_description(str(stack.item)) + ("  (x%d)" % int(stack.count) if int(stack.count) > 1 else "")
+	_details.text = GameData.item_description(str(stack.item), int(stack.get("q", 1))) + ("  (x%d)" % int(stack.count) if int(stack.count) > 1 else "")
 	if src == "eq":
 		_action("Zdejmij", {"t": "unequip", "slot": key})
 		return

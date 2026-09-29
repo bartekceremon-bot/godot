@@ -76,3 +76,68 @@ static func label(text: String, size: int = 22, color: Color = TEXT) -> Label:
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", color)
 	return l
+
+
+## Przycisk slotu z przedmiotem: ikona z tierem, liczba sztuk, ramka koloru jakości.
+static func item_slot(stack, placeholder: String = "", min_size := Vector2(72, 72)) -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = min_size
+	b.expand_icon = true
+	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	b.add_theme_font_size_override("font_size", 14)
+	b.pressed.connect(func(): Sfx.play("click"))
+	if stack is Dictionary:
+		var def := GameData.item_def(str(stack.item))
+		b.icon = Sprites.item_icon_for(def)
+		var q := int(stack.get("q", 1))
+		if q > 1:
+			var col: Color = Sprites.QUALITY_COLORS[q]
+			for state in ["normal", "hover", "pressed"]:
+				var sb := _box(Color(0.22, 0.15, 0.11), col, 3, 6)
+				b.add_theme_stylebox_override(state, sb)
+		if int(stack.count) > 1:
+			b.text = _short_count(int(stack.count))
+			b.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+	else:
+		b.text = placeholder
+		b.add_theme_color_override("font_color", Color(0.5, 0.45, 0.4))
+	return b
+
+
+static func _short_count(n: int) -> String:
+	if n >= 1000000:
+		return "%dM" % (n / 1000000)
+	if n >= 10000:
+		return "%dk" % (n / 1000)
+	return str(n)
+
+
+## Mała ikona przedmiotu do wierszy list.
+static func item_icon_rect(item_id: String, size: int = 40) -> TextureRect:
+	var t := TextureRect.new()
+	t.texture = Sprites.item_icon_for(GameData.item_def(item_id))
+	t.custom_minimum_size = Vector2(size, size)
+	t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	t.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	t.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	return t
+
+
+## Przewijana lista (VBox w ScrollContainer). Zwraca [scroll, vbox].
+static func scroll_list(min_size: Vector2) -> Array:
+	var sc := ScrollContainer.new()
+	sc.custom_minimum_size = min_size
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_theme_constant_override("separation", 4)
+	sc.add_child(box)
+	return [sc, box]
+
+
+static func clear(node: Node) -> void:
+	for c in node.get_children():
+		node.remove_child(c)
+		c.queue_free()

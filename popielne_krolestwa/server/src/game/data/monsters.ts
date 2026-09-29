@@ -30,6 +30,8 @@ export interface MonsterDef {
   /** Czas odrodzenia w ms. */
   respawnMs: number;
   loot: LootEntry[];
+  /** Zwierzęta: tier skóry zdobywanej przy oskórowaniu (specjalizacja Oskórowywacz). */
+  hideTier?: number;
 }
 
 const defs: MonsterDef[] = [
@@ -50,6 +52,26 @@ const defs: MonsterDef[] = [
       { item: 'gold', chance: 0.6, min: 1, max: 4 },
       { item: 'meat', chance: 0.25 },
     ],
+    hideTier: 1,
+  },
+  {
+    id: 'boar',
+    name: 'Dzik',
+    look: 'boar',
+    hp: 45,
+    maxDamage: 13,
+    armor: 2,
+    defense: 4,
+    stepMs: 450,
+    attackMs: 2000,
+    exp: 20,
+    aggroRange: 4,
+    respawnMs: 25_000,
+    loot: [
+      { item: 'gold', chance: 0.5, min: 1, max: 6 },
+      { item: 'meat', chance: 0.6, min: 1, max: 2 },
+    ],
+    hideTier: 2,
   },
   {
     id: 'wolf',
@@ -66,9 +88,9 @@ const defs: MonsterDef[] = [
     respawnMs: 30_000,
     loot: [
       { item: 'gold', chance: 0.6, min: 2, max: 10 },
-      { item: 'wolf_pelt', chance: 0.35 },
       { item: 'meat', chance: 0.4, min: 1, max: 2 },
     ],
+    hideTier: 3,
   },
   {
     id: 'skeleton',
@@ -85,16 +107,31 @@ const defs: MonsterDef[] = [
     respawnMs: 45_000,
     loot: [
       { item: 'gold', chance: 0.85, min: 5, max: 25 },
-      { item: 'bone', chance: 0.5 },
+      { item: 'bone', chance: 0.5, min: 1, max: 2 },
       { item: 'hp_potion', chance: 0.12 },
-      { item: 'hatchet', chance: 0.07 },
-      { item: 'club', chance: 0.07 },
-      { item: 'leather_helmet', chance: 0.08 },
-      { item: 'leather_legs', chance: 0.08 },
-      { item: 'leather_boots', chance: 0.08 },
-      { item: 'chain_armor', chance: 0.04 },
-      { item: 'ash_sword', chance: 0.03 },
+      { item: 'ore_t3', chance: 0.25, min: 1, max: 3 },
+      { item: 'stone_t3', chance: 0.2, min: 1, max: 3 },
     ],
+  },
+  {
+    id: 'hound',
+    name: 'Żarowy ogar',
+    look: 'hound',
+    hp: 170,
+    maxDamage: 38,
+    armor: 7,
+    defense: 8,
+    stepMs: 330,
+    attackMs: 2000,
+    exp: 110,
+    aggroRange: 7,
+    respawnMs: 50_000,
+    loot: [
+      { item: 'gold', chance: 0.8, min: 8, max: 30 },
+      { item: 'meat', chance: 0.5, min: 1, max: 3 },
+      { item: 'mp_potion', chance: 0.1 },
+    ],
+    hideTier: 4,
   },
 ];
 

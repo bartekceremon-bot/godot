@@ -21,5 +21,5 @@ export const config = {
   viewRadiusX: 13,
   viewRadiusY: 9,
   /** Wersja protokołu – klient i serwer muszą się zgadzać. */
-  protocolVersion: 1,
+  protocolVersion: 2,
 };

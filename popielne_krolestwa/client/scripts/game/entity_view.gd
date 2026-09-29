@@ -12,6 +12,10 @@ var dir := 2
 var tile := Vector2i.ZERO
 var is_me := false
 var targeted := false
+## Złoża: etykieta widoczna tylko w pobliżu gracza (żeby nie zaśmiecać ekranu).
+var show_label := true
+## Własna postać zbiera surowiec – animowany pasek nad głową.
+var gathering := false
 
 var _from := Vector2.ZERO
 var _to := Vector2.ZERO
@@ -86,11 +90,15 @@ func _process(delta: float) -> void:
 	elif _frame != 0:
 		_frame = 0
 		_refresh()
+	if gathering:
+		queue_redraw()
 
 
 func _refresh() -> void:
 	_sprite.texture = Sprites.creature(look, dir, _frame)
-	_sprite.position = Vector2(0, -4)
+	_sprite.position = Vector2(0, 0) if kind == "r" else Vector2(0, -4)
+	# Złoża pod istotami, NPC i gracze normalnie (sortowanie po Y).
+	z_index = -1 if kind == "r" else 0
 	queue_redraw()
 
 
@@ -98,11 +106,24 @@ func _draw() -> void:
 	if targeted:
 		draw_rect(Rect2(1, 1, TS - 2, TS - 2), Color(1, 0.15, 0.1), false, 1.5)
 	var font := ThemeDB.fallback_font
+	if kind == "r":
+		if show_label:
+			draw_string_outline(font, Vector2(-44, -2), display_name, HORIZONTAL_ALIGNMENT_CENTER, 120, 7, 2, Color.BLACK)
+			draw_string(font, Vector2(-44, -2), display_name, HORIZONTAL_ALIGNMENT_CENTER, 120, 7, Color(0.85, 0.95, 0.8))
+		return
+	if kind == "n":
+		draw_string_outline(font, Vector2(-44, -8), display_name, HORIZONTAL_ALIGNMENT_CENTER, 120, 8, 2, Color.BLACK)
+		draw_string(font, Vector2(-44, -8), display_name, HORIZONTAL_ALIGNMENT_CENTER, 120, 8, Color(1, 0.9, 0.4))
+		return
+	if gathering:
+		var t := fmod(Time.get_ticks_msec() / 900.0, 1.0)
+		draw_rect(Rect2(4, -22, 24, 4), Color(0, 0, 0, 0.7))
+		draw_rect(Rect2(4, -22, 24.0 * t, 4), Color(0.5, 0.9, 0.4))
 	var col := Color(0.4, 1, 0.4) if kind == "p" else Color(1, 0.85, 0.5)
 	if is_me:
 		col = Color(0.6, 0.85, 1)
-	draw_string_outline(font, Vector2(-24, -13), display_name, HORIZONTAL_ALIGNMENT_CENTER, 80, 8, 2, Color.BLACK)
-	draw_string(font, Vector2(-24, -13), display_name, HORIZONTAL_ALIGNMENT_CENTER, 80, 8, col)
+	draw_string_outline(font, Vector2(-44, -13), display_name, HORIZONTAL_ALIGNMENT_CENTER, 120, 8, 2, Color.BLACK)
+	draw_string(font, Vector2(-44, -13), display_name, HORIZONTAL_ALIGNMENT_CENTER, 120, 8, col)
 	var bar_col := Color(0.2, 0.8, 0.2)
 	if hp_pct < 60:
 		bar_col = Color(0.9, 0.8, 0.1)

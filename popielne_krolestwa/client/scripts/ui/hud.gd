@@ -5,6 +5,13 @@ extends CanvasLayer
 const Joystick := preload("res://scripts/ui/virtual_joystick.gd")
 const InventoryPanel := preload("res://scripts/ui/inventory_panel.gd")
 const CharacterPanel := preload("res://scripts/ui/character_panel.gd")
+const NpcDialog := preload("res://scripts/ui/npc_dialog.gd")
+const ShopPanel := preload("res://scripts/ui/shop_panel.gd")
+const DepotPanel := preload("res://scripts/ui/depot_panel.gd")
+const MarketPanel := preload("res://scripts/ui/market_panel.gd")
+const CraftPanel := preload("res://scripts/ui/craft_panel.gd")
+const SpecsPanel := preload("res://scripts/ui/specs_panel.gd")
+const AmountDialog := preload("res://scripts/ui/amount_dialog.gd")
 
 const CHAT_LINES := 60
 
@@ -37,6 +44,15 @@ var _mp_potion_btn: Button
 
 var _bag: Array = []
 var _eq: Dictionary = {}
+var _specs: Array = []
+
+var npc_dialog: NpcDialog
+var shop: ShopPanel
+var depot: DepotPanel
+var market: MarketPanel
+var craft: CraftPanel
+var specs: SpecsPanel
+var amount: AmountDialog
 
 
 func _ready() -> void:
@@ -113,6 +129,9 @@ func _build_top_buttons() -> void:
 	var ch := UiTheme.button("Postać", "", Vector2(0, 64))
 	ch.pressed.connect(func(): _toggle(_character))
 	row.add_child(ch)
+	var sp := UiTheme.button("Spec.", "", Vector2(0, 64))
+	sp.pressed.connect(func(): _toggle(specs))
+	row.add_child(sp)
 	var online := UiTheme.button("Online", "", Vector2(0, 64))
 	online.pressed.connect(func(): Net.send({"t": "who"}))
 	row.add_child(online)
@@ -226,6 +245,20 @@ func _build_windows() -> void:
 	_character.hide()
 	_root.add_child(_character)
 
+	# Okna ETAPU 2 (ekonomia).
+	npc_dialog = NpcDialog.new()
+	shop = ShopPanel.new()
+	depot = DepotPanel.new()
+	market = MarketPanel.new()
+	craft = CraftPanel.new()
+	specs = SpecsPanel.new()
+	for w in [npc_dialog, shop, depot, market, craft, specs]:
+		w.set("hud", self)
+		_root.add_child(w)
+	for w in [shop, depot, market, craft]:
+		w.closed.connect(func(): Net.send({"t": "close"}))
+	amount = AmountDialog.new()
+
 	_online = _simple_window("Gracze online")
 	_online_list = UiTheme.label("", 20)
 	_online.get_child(0).add_child(_online_list)
@@ -263,6 +296,7 @@ func _build_windows() -> void:
 	_death_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_death_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_death.add_child(_death_label)
+	_root.add_child(amount)
 
 
 ## Proste okno z tytułem i przyciskiem zamknięcia. Zawartość dodaje się do get_child(0).
@@ -288,11 +322,28 @@ func _simple_window(title: String) -> PanelContainer:
 	return w
 
 
+func _all_windows() -> Array:
+	return [_inventory, _character, _online, _menu, shop, depot, market, craft, specs]
+
+
 func _toggle(w: Control) -> void:
 	var show_it := not w.visible
-	for other in [_inventory, _character, _online, _menu]:
-		other.hide()
+	for other in _all_windows():
+		if other.visible and other.has_method("close_window"):
+			other.close_window()
+		else:
+			other.hide()
 	w.visible = show_it
+
+
+## Pokazuje okno ekonomii (zamyka inne duże okna, zostawia dialog NPC).
+func _open_window(w: Control) -> void:
+	for other in _all_windows():
+		if other != w:
+			other.hide()
+	amount.hide()
+	npc_dialog.hide()
+	w.show()
 
 
 # ============================================================================
@@ -307,6 +358,9 @@ func update_stats(s: Dictionary) -> void:
 	_mp_bar.max_value = float(s.mmp)
 	_mp_bar.value = float(s.mp)
 	_mp_label.text = "%d / %d" % [int(s.mp), int(s.mmp)]
+	_inventory.set_weight(float(s.get("weight", 0)), float(s.get("cap", 400)))
+	_specs = s.get("specs", [])
+	specs.set_specs(_specs)
 	var span := maxf(1.0, float(s.expNext) - float(s.expCur))
 	_exp_bar.max_value = 100
 	_exp_bar.value = (float(s.exp) - float(s.expCur)) / span * 100.0
@@ -319,10 +373,60 @@ func update_inventory(msg: Dictionary) -> void:
 	_inventory.set_data(_bag, _eq)
 	_hp_potion_btn.text = str(_count("hp_potion"))
 	_mp_potion_btn.text = str(_count("mp_potion"))
+	for w in [shop, depot, market, craft]:
+		w.refresh()
 
 
 func equipped(slot: String):
 	return _eq.get(slot)
+
+
+func bag() -> Array:
+	return _bag
+
+
+func count_item(item: String) -> int:
+	return _count(item)
+
+
+func spec_level(id: String) -> int:
+	for s in _specs:
+		if str(s[0]) == id:
+			return int(s[1])
+	return 1
+
+
+# --- Okna NPC / ekonomii (wywoływane z game.gd) ---
+
+func show_npc_dialog(msg: Dictionary) -> void:
+	npc_dialog.show_dialog(msg)
+
+
+func show_shop(msg: Dictionary) -> void:
+	shop.show_shop(msg)
+	_open_window(shop)
+
+
+func show_depot(msg: Dictionary) -> void:
+	depot.show_depot(msg)
+	_open_window(depot)
+
+
+func show_market(msg: Dictionary) -> void:
+	market.show_market(msg)
+	_open_window(market)
+
+
+func show_craft(msg: Dictionary) -> void:
+	craft.show_station(msg)
+	_open_window(craft)
+
+
+## Gracz odszedł – zamykamy okna związane z NPC.
+func close_npc_windows() -> void:
+	npc_dialog.hide()
+	for w in [shop, depot, market, craft]:
+		w.close_window()
 
 
 func _count(item: String) -> int:

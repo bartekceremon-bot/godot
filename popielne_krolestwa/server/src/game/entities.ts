@@ -2,7 +2,10 @@
  * Obiekty żyjące w świecie: gracze, potwory, przedmioty na ziemi.
  */
 import { MonsterDef } from './data/monsters';
-import { getItem } from './data/items';
+import { getItem, QUALITY_MULT } from './data/items';
+import { NpcDef } from './data/npcs';
+import { NodeKind, NODE_NAMES, nodeCharges } from './data/resources';
+import { Specs, SPEC_DEFS, fameForNextLevel, TIER_SPEC_REQ } from './specs';
 import { Inventory } from './inventory';
 import { Skills, maxHpForLevel, maxMpForLevel, stepMsForLevel, levelForExp, expForLevel, skillPercent } from './progression';
 import { SKILL_NAMES } from './data/items';
@@ -65,7 +68,15 @@ export class Player implements Creature {
   /** Wariant wyglądu (kolor stroju) – losowany przy tworzeniu postaci. */
   look: number;
   skills: Skills;
+  specs: Specs;
   inventory: Inventory;
+
+  /** Zbieranie w toku: złoże i czas ukończenia kolejnej jednostki. */
+  gathering: { nodeId: number; nextAt: number } | null = null;
+  /** NPC, z którym gracz aktualnie rozmawia (0 = brak). */
+  talkingTo = 0;
+  /** Otwarte okno ekonomii w kliencie – do odświeżania po dostawach. */
+  openWindow: '' | 'depot' | 'market' | 'shop' | 'craft' = '';
 
   /** Id atakowanego potwora (0 = brak celu). */
   targetId = 0;
@@ -93,6 +104,7 @@ export class Player implements Creature {
     exp: number;
     look: number;
     skills: Skills;
+    specs: Specs;
     inventory: Inventory;
   }) {
     this.charId = opts.charId;
@@ -104,17 +116,30 @@ export class Player implements Creature {
     this.level = levelForExp(opts.exp);
     this.look = opts.look;
     this.skills = opts.skills;
+    this.specs = opts.specs;
     this.inventory = opts.inventory;
     this.hp = Math.min(opts.hp, this.maxHp());
     this.mp = Math.min(opts.mp, this.maxMp());
   }
 
   maxHp() {
-    return maxHpForLevel(this.level);
+    return maxHpForLevel(this.level) + this.inventory.equipmentStat('hpBonus');
   }
 
   maxMp() {
-    return maxMpForLevel(this.level);
+    return maxMpForLevel(this.level) + this.inventory.equipmentStat('mpBonus');
+  }
+
+  /** Udźwig w oz. (ETAP 4: wierzchowce zwiększą go dodatkowo). */
+  capacity() {
+    return 400 + (this.level - 1) * 20;
+  }
+
+  /** Ile jeszcze sztuk przedmiotu zmieści się w plecaku z uwzględnieniem udźwigu. */
+  canCarry(itemId: string, q = 1): number {
+    const w = getItem(itemId)?.weight ?? 0;
+    const byWeight = w > 0 ? Math.floor((this.capacity() - this.inventory.weight()) / w + 1e-9) : Infinity;
+    return Math.max(0, Math.min(byWeight, this.inventory.spaceFor(itemId, q)));
   }
 
   stepMs() {
@@ -129,6 +154,11 @@ export class Player implements Creature {
   shield() {
     const s = this.inventory.equipment.shield;
     return s ? getItem(s.item) : undefined;
+  }
+
+  /** Mnożnik jakości założonego przedmiotu w slocie. */
+  qualityMult(slot: 'weapon' | 'shield') {
+    return QUALITY_MULT[this.inventory.equipment[slot]?.q ?? 1];
   }
 
   send(msg: object) {
@@ -152,7 +182,60 @@ export class Player implements Creature {
       step: this.stepMs(),
       target: this.targetId,
       skills,
+      cap: this.capacity(),
+      weight: this.inventory.weight(),
+      specs: SPEC_DEFS.map((d) => {
+        const st = this.specs[d.id];
+        return [d.id, st.level, Math.floor((st.fame / fameForNextLevel(st.level)) * 100)];
+      }),
+      gather: this.gathering?.nodeId ?? 0,
     };
+  }
+}
+
+/** NPC stojący w mieście. */
+export class Npc {
+  readonly id = allocEntityId();
+  readonly def: NpcDef;
+  readonly x: number;
+  readonly y: number;
+  dir: Dir = 2;
+
+  constructor(def: NpcDef) {
+    this.def = def;
+    this.x = def.x;
+    this.y = def.y;
+  }
+}
+
+/** Złoże surowca. */
+export class ResourceNode {
+  readonly id = allocEntityId();
+  readonly kind: NodeKind;
+  readonly tier: number;
+  readonly x: number;
+  readonly y: number;
+  readonly name: string;
+  charges: number;
+  /** Kiedy złoże się odnowi (0 = aktywne). */
+  respawnAt = 0;
+
+  constructor(kind: NodeKind, tier: number, x: number, y: number) {
+    this.kind = kind;
+    this.tier = tier;
+    this.x = x;
+    this.y = y;
+    this.name = `${NODE_NAMES[kind][tier]} (T${tier})`;
+    this.charges = nodeCharges(tier);
+  }
+
+  maxCharges() {
+    return nodeCharges(this.tier);
+  }
+
+  /** Wymagany poziom specjalizacji zbierackiej. */
+  specReq() {
+    return TIER_SPEC_REQ[this.tier];
   }
 }
 
@@ -190,5 +273,7 @@ export interface GroundItem {
   y: number;
   item: string;
   count: number;
+  /** Jakość (1–5). */
+  q: number;
   expiresAt: number;
 }

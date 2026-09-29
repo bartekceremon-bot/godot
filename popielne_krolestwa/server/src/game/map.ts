@@ -8,9 +8,12 @@
  *   .  trawa            ,  droga / most        s  piasek
  *   f  posadzka miasta  x  posadzka świątyni   a  popiół
  *   #  mur              T  drzewo              r  skała
- *   ~  woda             D  skrzynia depozytu (ETAP 2)
+ *   ~  woda             D  skrzynia depozytu
+ *   M  stragan rynku    K  kowadło           W  stół rzemieślniczy   P  piec rafinerii
  */
 import { SeededRng } from '../util/rng';
+import { NODE_KINDS, NodeKind } from './data/resources';
+import { NPCS } from './data/npcs';
 
 export interface TileInfo {
   walkable: boolean;
@@ -32,6 +35,10 @@ const TILE_INFO: Record<string, TileInfo> = {
   r: { walkable: false, blocksSight: true, protectionZone: false },
   '~': { walkable: false, blocksSight: false, protectionZone: false },
   D: { walkable: false, blocksSight: false, protectionZone: true },
+  M: { walkable: false, blocksSight: false, protectionZone: true },
+  K: { walkable: false, blocksSight: false, protectionZone: true },
+  W: { walkable: false, blocksSight: false, protectionZone: true },
+  P: { walkable: false, blocksSight: false, protectionZone: true },
 };
 
 const OUTSIDE: TileInfo = { walkable: false, blocksSight: true, protectionZone: false };
@@ -42,6 +49,14 @@ export interface SpawnPoint {
   y: number;
   /** Ile potworów utrzymuje ten punkt. */
   count: number;
+}
+
+/** Złoże surowca w świecie (drzewo, głaz, żyła rudy, włókna). */
+export interface NodeSpawn {
+  kind: NodeKind;
+  tier: number;
+  x: number;
+  y: number;
 }
 
 export interface Point {
@@ -56,13 +71,15 @@ export class GameMap {
   /** Miejsce odrodzenia graczy (świątynia). */
   readonly temple: Point;
   readonly spawns: SpawnPoint[] = [];
+  readonly nodes: NodeSpawn[] = [];
 
-  constructor(width: number, height: number, tiles: string[][], temple: Point, spawns: SpawnPoint[]) {
+  constructor(width: number, height: number, tiles: string[][], temple: Point, spawns: SpawnPoint[], nodes: NodeSpawn[] = []) {
     this.width = width;
     this.height = height;
     this.tiles = tiles;
     this.temple = temple;
     this.spawns = spawns;
+    this.nodes = nodes;
   }
 
   tileAt(x: number, y: number): string {
@@ -193,8 +210,12 @@ export function generateWorld(): GameMap {
   }
   // Świątynia (miejsce odrodzenia).
   for (let y = midY - 3; y <= midY - 1; y++) for (let x = midX - 2; x <= midX + 3; x++) set(x, y, 'x');
-  // Skrzynie depozytu (aktywne od ETAPU 2).
+  // Skrzynie depozytu, stragany rynku, kowadło, stół rzemieślniczy, piec rafinerii.
   for (let x = c.x0 + 2; x <= c.x0 + 5; x++) set(x, c.y0 + 2, 'D');
+  for (let x = c.x1 - 6; x <= c.x1 - 2; x++) set(x, c.y0 + 2, 'M');
+  set(43, 54, 'K');
+  set(46, 54, 'W');
+  set(40, 50, 'P');
   // Kilka murków wewnątrz – domy.
   for (let x = c.x1 - 6; x <= c.x1 - 2; x++) set(x, c.y1 - 4, '#');
   for (let y = c.y1 - 4; y <= c.y1 - 1; y++) set(c.x1 - 6, y, '#');
@@ -224,6 +245,11 @@ export function generateWorld(): GameMap {
     { monster: 'rat', x: 46, y: 33, count: 3 },
     { monster: 'rat', x: 52, y: 63, count: 3 },
     { monster: 'rat', x: 32, y: 60, count: 2 },
+    // Dziki – średni dystans (skóra T2).
+    { monster: 'boar', x: 26, y: 32, count: 3 },
+    { monster: 'boar', x: 70, y: 44, count: 3 },
+    { monster: 'boar', x: 64, y: 72, count: 2 },
+    { monster: 'boar', x: 22, y: 56, count: 2 },
     // Wilki – dalej, w lasach.
     { monster: 'wolf', x: 16, y: 44, count: 3 },
     { monster: 'wolf', x: 40, y: 80, count: 3 },
@@ -234,6 +260,9 @@ export function generateWorld(): GameMap {
     { monster: 'skeleton', x: 74, y: 20, count: 3 },
     { monster: 'skeleton', x: 84, y: 12, count: 2 },
     { monster: 'skeleton', x: 86, y: 26, count: 2 },
+    // Żarowe ogary – głębiej w Popielisku (skóra T4).
+    { monster: 'hound', x: 80, y: 7, count: 2 },
+    { monster: 'hound', x: 90, y: 18, count: 2 },
   ];
   for (const s of spawns)
     for (let y = s.y - 1; y <= s.y + 1; y++)
@@ -260,7 +289,49 @@ export function generateWorld(): GameMap {
     for (let yy = 0; yy < MAP_H; yy++) for (let xx = 0; xx < MAP_W; xx++) reach[yy][xx] = r2[yy][xx];
   }
 
-  return new GameMap(MAP_W, MAP_H, t, temple, spawns);
+  const nodes = placeNodes(t, rng, temple, spawns);
+  return new GameMap(MAP_W, MAP_H, t, temple, spawns, nodes);
+}
+
+/**
+ * Rozmieszcza złoża surowców. Tier zależy od odległości od miasta (dalej = lepiej),
+ * a rodzaj od terenu (Popielisko: ruda i kamień, reszta: głównie drewno i włókna).
+ */
+function placeNodes(t: string[][], rng: SeededRng, temple: Point, spawns: SpawnPoint[]): NodeSpawn[] {
+  const nodes: NodeSpawn[] = [];
+  const taken = new Set<string>();
+  for (const n of NPCS) taken.add(`${n.x},${n.y}`);
+  for (const s of spawns) taken.add(`${s.x},${s.y}`);
+  const quota = [0, 45, 40, 30, 22];
+  const count = [0, 0, 0, 0, 0];
+  let attempts = 0;
+  while (attempts++ < 20000 && count.slice(1).some((c, i) => c < quota[i + 1])) {
+    const x = rng.int(3, MAP_W - 4);
+    const y = rng.int(3, MAP_H - 4);
+    const tile = t[y][x];
+    if ((tile !== '.' && tile !== 'a' && tile !== 's') || taken.has(`${x},${y}`)) continue;
+    const d = Math.max(Math.abs(x - temple.x), Math.abs(y - temple.y));
+    const ash = tile === 'a';
+    let tier = d < 12 ? 0 : d < 22 ? 1 : d < 32 ? 2 : d < 42 ? 3 : 4;
+    if (ash) tier = d >= 36 ? 4 : 3;
+    if (tier === 0 || count[tier] >= quota[tier]) continue;
+    // Drzewa rosną przy lasach, ruda i kamień – na Popielisku i w skałach.
+    let trees = 0;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (t[y + dy]?.[x + dx] === 'T') trees++;
+    let kind: NodeKind;
+    const r = rng.next();
+    if (ash) kind = r < 0.45 ? 'ore' : r < 0.85 ? 'stone' : 'fiber';
+    else if (trees >= 3) kind = r < 0.7 ? 'wood' : 'fiber';
+    else kind = NODE_KINDS[rng.int(0, 3)];
+    // Nie blokujemy ciasnych przejść – złoże musi mieć wokół sporo wolnego miejsca.
+    let free = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (TILE_INFO[t[y + dy][x + dx]]?.walkable) free++;
+    if (free < 8) continue;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) taken.add(`${x + dx},${y + dy}`);
+    nodes.push({ kind, tier, x, y });
+    count[tier]++;
+  }
+  return nodes;
 }
 
 function floodFill(t: string[][], start: Point): boolean[][] {

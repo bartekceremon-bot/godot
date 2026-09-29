@@ -7,13 +7,13 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 1 – grywalne MVP** (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 2 – ekonomia** (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
 ## Spis treści
 
-1. [Co działa w ETAPIE 1](#co-działa-w-etapie-1)
+1. [Co działa w ETAPIE 1](#co-działa-w-etapie-1) i [ETAPIE 2](#co-doszło-w-etapie-2--ekonomia)
 2. [Struktura projektu](#struktura-projektu)
 3. [Szybki start – tryb „lokalny serwer” (komputer + telefon w tej samej sieci Wi-Fi)](#szybki-start--tryb-lokalny-serwer)
 4. [Serwer na VPS (Docker)](#serwer-na-vps-docker)
@@ -22,7 +22,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 7. [Podpisywanie kluczem release](#podpisywanie-kluczem-release)
 8. [Sterowanie](#sterowanie)
 9. [Testy](#testy)
-10. [Decyzje podjęte w ETAPIE 1](#decyzje-podjęte-w-etapie-1)
+10. [Decyzje podjęte w ETAPIE 1](#decyzje-podjęte-w-etapie-1) i [ETAPIE 2](#decyzje-podjęte-w-etapie-2)
 11. [Plan etapów](#plan-etapów)
 12. [Grafika, dźwięk, licencje](#grafika-dźwięk-licencje)
 
@@ -42,6 +42,33 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 - Widok innych graczy online, czat globalny z dymkami nad głową, lista `/online`.
 - Wykrywanie serwera w sieci lokalnej (przycisk **„Szukaj w LAN”**).
 
+## Co doszło w ETAPIE 2 – ekonomia
+
+- **Zbieractwo:** ok. 140 złóż na mapie – drzewa (drewno), głazy (kamień), żyły rudy, kępy włókien – w tierach
+  **T1–T4**: im dalej od miasta, tym wyższy tier (T3–T4 na Popielisku). Dotknij złoża – postać podejdzie i będzie
+  zbierać, dopóki złoże się nie wyczerpie (odnawia się po 1–2 min). Wymaga narzędzia (siekiera drwala, kilof, sierp)
+  o tierze ≥ tieru złoża. **Skóry** pochodzą z upolowanych zwierząt: szczur T1, **dzik** T2 (nowy), wilk T3,
+  **żarowy ogar** T4 (nowy, Popielisko).
+- **Drzewko specjalizacji** (przycisk **Spec.**): Drwal, Kamieniarz, Górnik, Zbieracz, Oskórowywacz, Rafinacja,
+  Kowalstwo, Rzemiosło. Poziom rośnie od używania, odblokowuje tiery (T2 od 3, T3 od 6, T4 od 10), daje szansę
+  na dodatkowy surowiec i lepszą jakość wyrobów.
+- **Rafinacja** (Rafinator Zenon): kłody → deski, kamień → bloki, ruda → sztaby, włókno → płótno, skóra surowa →
+  wyprawiona. T1 = 1 surowiec, T2+ = 2 surowce + 1 materiał tieru niżej (jak w Albionie).
+- **Rzemiosło** – ~80 receptur T1–T4: Kuźnia (Kowal Gerwazy: miecze, topory, buławy, tarcze, pancerz płytowy,
+  narzędzia) i Pracownia (Rzemieślniczka Jadwiga: łuki, pancerz skórzany i materiałowy).
+  **Jakość** wyrobu: Zwykły → Dobry → Wyjątkowy → Doskonały → Arcydzieło (+0–30% do statystyk, kolorowa ramka).
+  Brak klas – trzy typy pancerzy: płyta (pancerz), skóra (pancerz + zdrowie), płótno (mana).
+  **Premia miasta:** Popielgród zwraca 25% materiałów przy rafinacji i 15% przy rzemiośle.
+- **Rynek miejski** (Rynkowa Wanda): zlecenia sprzedaży i kupna między graczami, natychmiastowy zakup/sprzedaż,
+  dopasowywanie zleceń, jakość minimalna, podatek 3%, anulowanie. Towar i złoto z transakcji trafiają do depozytu.
+  Każde miasto ma osobny rynek (kolejne miasta w dalszych etapach).
+- **Depozyt** (Bankier Oskar): osobny w każdym mieście, do 100 pozycji.
+- **NPC ze słowami kluczowymi** (jak w Tibii): dotknij NPC albo napisz przy nim „witaj”, potem słowo z listy
+  (np. „handel”, „rynek”, „depozyt”, „kuźnia”). **Kupiec Borys** sprzedaje narzędzia T1 i mikstury, skupuje wszystko
+  za 20% wartości.
+- **Udźwig:** 400 oz + 20 oz/poziom (widoczny w plecaku) – surowce ważą, transport ma znaczenie.
+- Postacie z ETAPU 1 są automatycznie migrowane (stare przedmioty → nowe T1/T2, narzędzia T1 w prezencie).
+
 ## Struktura projektu
 
 ```
@@ -59,8 +86,10 @@ popielne_krolestwa/
 │   │   ├── game/world.ts    # symulacja świata: ruch, walka, AI, loot, czat
 │   │   ├── game/map.ts      # generator mapy + linia wzroku
 │   │   ├── game/entities.ts # gracz, potwór, przedmiot na ziemi
-│   │   ├── game/inventory.ts, combat.ts, progression.ts
-│   │   ├── game/data/       # przedmioty, potwory, czary (balans tylko tutaj)
+│   │   ├── game/inventory.ts, combat.ts, progression.ts, specs.ts
+│   │   ├── game/systems/    # zbieractwo, ekonomia (NPC, sklep, depozyt, rynek, rzemiosło)
+│   │   ├── game/economy/    # księga zleceń rynku, magazyn depozytów
+│   │   ├── game/data/       # przedmioty T1–T4, receptury, NPC i miasta, złoża, potwory, czary
 │   │   └── tools/bot.ts     # boty testowe
 │   ├── test/                # testy jednostkowe i integracyjne
 │   └── Dockerfile
@@ -68,9 +97,10 @@ popielne_krolestwa/
 │   ├── project.godot, export_presets.cfg
 │   ├── scripts/autoload/    # Config, Net, GameData, Sprites (grafika), Sfx (dźwięk)
 │   ├── scripts/game/        # scena gry, istoty, efekty, loot
-│   ├── scripts/ui/          # logowanie, HUD, joystick, plecak, postać
+│   ├── scripts/ui/          # logowanie, HUD, joystick, plecak, postać, NPC, sklep, depozyt,
+│   │                        # rynek, rzemiosło, specjalizacje, okno ilości/ceny
 │   ├── scripts/debug/       # automatyczny test klienta
-│   └── tools/generate_art.gd  # generator ikony i ekranu startowego
+│   └── tools/generate_art.gd, sprite_sheet.gd  # ikona/splash, arkusz podglądu grafik
 └── tools/build_apk.sh       # budowanie APK (debug / release)
 ```
 
@@ -269,6 +299,9 @@ w `client/export_presets.cfg`. Google Play wymaga formatu AAB – to wymaga eksp
 | Plecak / ekwipunek | **Plecak** → dotknij przedmiotu → Użyj / Załóż / Zdejmij / Upuść | – |
 | Skille, poziom | **Postać** | – |
 | Czat | pole na dole; `/online`, `/pomoc` | Enter |
+| Zbieranie | dotknij złoża (drzewo, głaz, żyła, włókna) | kliknięcie |
+| Rozmowa z NPC | dotknij NPC → przyciski słów kluczowych (lub pisz w czacie) | kliknięcie |
+| Specjalizacje | **Spec.** | – |
 
 Wręcz postać sama podchodzi do celu; z łukiem zatrzymuje się w zasięgu strzału (6 pól, potrzebna linia wzroku).
 
@@ -286,6 +319,8 @@ Automatyczny test klienta (logowanie, ruch, walka, czar, plecak, zrzuty ekranu):
 
 ```bash
 godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp/zrzuty
+# scenariusz ETAPU 2 (domyślny): NPC, sklep, zbieranie, rafinacja, rynek, depozyt, specjalizacje
+# scenariusz ETAPU 1: dodaj --scenario=etap1
 ```
 
 ---
@@ -319,10 +354,34 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 17. **Deterministyczny generator mapy** (stały seed) – ten sam świat po każdym restarcie; w ETAPIE 2+
     mapa może zostać zapisana jako plik i edytowana ręcznie.
 
+## Decyzje podjęte w ETAPIE 2
+
+1. **Tiery T1–T4 w zielonej strefie** (T3–T4 daleko od miasta i na Popielisku). W ETAPIE 3 obszary T4+ staną się
+   strefą żółtą/czerwoną zgodnie z koncepcją świata.
+2. **Ekwipunek generowany z szablonów** (20 szablonów × 4 tiery) – statystyki rosną o 30% na tier; wymagany poziom
+   postaci T2: 6, T3: 12, T4: 20 (Tibia) + wymagana specjalizacja do wytworzenia (Albion).
+3. **Jakość** jest cechą egzemplarza (`q` w stosie), nie osobnym przedmiotem – stosy łączą się tylko przy tej samej jakości.
+4. **Skóry z polowania, nie ze złóż** – każde zwierzę daje skórę swojego tieru, jeśli poziom Oskórowywacza wystarcza.
+5. **Narzędzia wystarczy mieć w plecaku** (bez osobnego slotu i bez zużycia) – prościej na telefonie; wytrzymałość
+   może dojść przy balansie (ETAP 5).
+6. **Potwory nie wypadają już gotowego ekwipunku** – tylko złoto, surowce i mikstury. Ekwipunek tworzą gracze
+   (NPC sprzedaje wyłącznie narzędzia T1 i mikstury).
+7. **Złoto pozostaje przedmiotem w plecaku** (jak w Tibii, a w ETAPIE 3 będzie tracone przy śmierci w PvP).
+   Rynek realizuje płatności z plecaka, a wpływy/zakupy „na odległość” trafiają do depozytu miasta.
+8. **Anty-duplikacja:** każda operacja rynku/depozytu wykonuje się w jednej transakcji SQL razem z zapisem postaci.
+9. **Rynek:** nowe zlecenie najpierw realizuje się z czekającymi (po ich cenie), reszta czeka w księdze; podatek 3%
+   płaci sprzedający; limit 20 zleceń na gracza; zlecenia nie wygasają (wygasanie – ETAP 5).
+10. **Zwrot materiałów** (jak „resource return rate” w Albionie) jako premia miasta; każde z 3 miast dostanie inną premię,
+    gdy pojawią się pozostałe miasta.
+11. **Złoża nie blokują ruchu** (można przez nie przejść) – żeby losowo rozmieszczone złoża nie zamykały przejść;
+    NPC blokują pole jak potwory.
+12. **Okna handlu otwiera rozmowa z NPC** (zamiast osobnych kafelków-przycisków) – spójne z Tibią i wygodne na dotyku;
+    odejście od NPC zamyka okna.
+
 ## Plan etapów
 
-- [x] **ETAP 1** – grywalne MVP (ten dokument).
-- [ ] **ETAP 2** – ekonomia: zbieractwo, crafting, tiery T1–T4, rynek miejski, NPC handlarze, depozyt.
+- [x] **ETAP 1** – grywalne MVP.
+- [x] **ETAP 2** – ekonomia: zbieractwo, crafting, tiery T1–T4, rynek miejski, NPC handlarze, depozyt.
 - [ ] **ETAP 3** – PvP: strefy żółta i czerwona, full loot, czaszki, kara za śmierć, błogosławieństwa.
 - [ ] **ETAP 4** – gildie, Czarna Strefa (Popielisko), terytoria, bossowie świata, wierzchowce.
 - [ ] **ETAP 5** – balans, tutorial, ustawienia grafiki, optymalizacja baterii, ikona i ekran startowy.

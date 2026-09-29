@@ -44,6 +44,11 @@ func spawn(f: Dictionary) -> void:
 		"levelup":
 			_add({"kind": "sparkle", "pos": p, "dur": 1.2, "col": Color(1, 0.85, 0.3)})
 			_add({"kind": "text", "pos": p, "text": "AWANS!", "col": Color(1, 0.85, 0.3), "dur": 2.0, "rise": 30.0, "size": 12})
+		"gather":
+			var d := GameData.item_def(str(f.get("item", "")))
+			_add({"kind": "text", "pos": p - Vector2(0, 8), "text": "+%d %s" % [int(f.v), str(d.name).get_slice(" (", 0)], "col": Color(0.6, 1, 0.5), "dur": 1.4, "rise": 20.0, "size": 8})
+		"craft":
+			_add({"kind": "sparkle", "pos": p, "dur": 0.9, "col": Color(1, 0.7, 0.3)})
 		"words":
 			_add({"kind": "text", "pos": p - Vector2(0, 26), "text": str(f.text), "col": Color(1, 0.6, 0.2), "dur": 1.6, "rise": 6.0, "size": 9})
 

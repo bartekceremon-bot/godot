@@ -3,7 +3,7 @@ extends Node
 
 const PATH := "user://settings.cfg"
 ## Musi zgadzać się z config.protocolVersion na serwerze.
-const PROTOCOL_VERSION := 1
+const PROTOCOL_VERSION := 2
 const DEFAULT_PORT := 7171
 ## Port UDP do wykrywania serwera w sieci lokalnej (tryb „lokalny serwer”).
 const DISCOVERY_PORT := 7172

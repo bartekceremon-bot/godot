@@ -9,9 +9,16 @@ import { config } from '../config';
 import { Database } from '../db/database';
 import { GameMap, generateWorld } from './map';
 import { MONSTERS } from './data/monsters';
-import { ITEM_LIST, getItem, EquipSlot, EQUIP_SLOTS, SkillName } from './data/items';
+import { ITEM_LIST, getItem, EquipSlot, EQUIP_SLOTS, SkillName, rawId, QUALITY_NAMES } from './data/items';
 import { SPELLS, SPELL_LIST, findSpellByWords, healAmount } from './data/spells';
-import { Player, Monster, GroundItem, MOVE_VECTORS, allocEntityId, dirFromDelta } from './entities';
+import { RECIPE_LIST, STATION_NAMES } from './data/recipes';
+import { NPCS } from './data/npcs';
+import { Player, Monster, GroundItem, MOVE_VECTORS, allocEntityId, dirFromDelta, Npc, ResourceNode } from './entities';
+import { DepotStore } from './economy/depot';
+import { Market } from './economy/market';
+import { GatheringSystem } from './systems/gathering';
+import { EconomySystem } from './systems/economy';
+import { SPEC_DEFS, TIER_SPEC_REQ, addFame, bonusYieldChance, fameForTier } from './specs';
 import { addSkillTries, levelForExp } from './progression';
 import { playerMaxDamage, rollDamage, distanceHitChance, playerDefense, chebyshev, FIST_ATTACK } from './combat';
 import { randInt, chance } from '../util/rng';
@@ -52,6 +59,12 @@ export class World {
   readonly players = new Map<number, Player>();
   readonly monsters = new Map<number, Monster>();
   readonly groundItems = new Map<number, GroundItem>();
+  readonly npcs = new Map<number, Npc>();
+  readonly nodes = new Map<number, ResourceNode>();
+  readonly depots: DepotStore;
+  readonly market: Market;
+  readonly gathering = new GatheringSystem(this);
+  readonly economy = new EconomySystem(this);
   private spawnStates: SpawnState[] = [];
   private fxQueue: Fx[] = [];
   private timer: NodeJS.Timeout | null = null;
@@ -60,6 +73,23 @@ export class World {
   constructor(db: Database, map: GameMap = generateWorld()) {
     this.db = db;
     this.map = map;
+    this.depots = new DepotStore(db);
+    this.market = new Market(db, {
+      deliverItem: (charId, city, item, count, q) => this.deliver(charId, city, item, count, q),
+      deliverGold: (charId, city, amount) => this.deliver(charId, city, 'gold', amount, 1),
+      notify: (charId, text) => {
+        const p = this.findPlayerByCharId(charId);
+        if (p) this.sendSystem(p, text);
+      },
+    });
+    for (const def of NPCS) {
+      const n = new Npc(def);
+      this.npcs.set(n.id, n);
+    }
+    for (const ns of map.nodes) {
+      const n = new ResourceNode(ns.kind, ns.tier, ns.x, ns.y);
+      this.nodes.set(n.id, n);
+    }
     this.map.spawns.forEach((s, i) => {
       const st: SpawnState = { alive: new Set(), pending: [] };
       this.spawnStates.push(st);
@@ -96,6 +126,11 @@ export class World {
       map: { w: this.map.width, h: this.map.height, rows: this.map.toRows() },
       items: ITEM_LIST,
       spells: SPELL_LIST,
+      recipes: RECIPE_LIST,
+      stations: STATION_NAMES,
+      specs: SPEC_DEFS,
+      tierSpecReq: TIER_SPEC_REQ,
+      qualities: QUALITY_NAMES,
     });
     p.send({ t: 'pos', x: p.x, y: p.y, d: p.dir });
     p.inventory.dirty = true;
@@ -128,6 +163,7 @@ export class World {
       look: p.look,
       skills: JSON.stringify(p.skills),
       inventory: JSON.stringify(p.inventory.toJSON()),
+      specs: JSON.stringify(p.specs),
     });
   }
 
@@ -153,7 +189,7 @@ export class World {
       case 'pickup':
         return this.handlePickup(p, Number(msg.id));
       case 'equip':
-        return this.reportError(p, p.inventory.equipFromBag(Number(msg.slot)));
+        return this.reportError(p, p.inventory.equipFromBag(Number(msg.slot), p.level));
       case 'unequip':
         if (!EQUIP_SLOTS.includes(msg.slot as EquipSlot)) return;
         return this.reportError(p, p.inventory.unequip(msg.slot as EquipSlot));
@@ -163,7 +199,45 @@ export class World {
         return this.handleDrop(p, Number(msg.slot), msg.count === undefined ? undefined : Number(msg.count));
       case 'who':
         return p.send({ t: 'online', list: [...this.players.values()].map((o) => ({ n: o.name, l: o.level })) });
+      // --- ETAP 2: ekonomia ---
+      case 'gather':
+        return this.gathering.start(p, Number(msg.id), now);
+      case 'npc':
+        return this.economy.talk(p, Number(msg.id), String(msg.word ?? ''));
+      case 'close':
+        p.openWindow = '';
+        return;
+      case 'shop_buy':
+        return this.economy.shopBuy(p, String(msg.item ?? ''), msg.count);
+      case 'shop_sell':
+        return this.economy.shopSell(p, msg.slot, msg.count);
+      case 'depot_put':
+        return this.economy.depotPut(p, msg.slot, msg.count);
+      case 'depot_take':
+        return this.economy.depotTake(p, msg.index, msg.count);
+      case 'market_buy':
+        return this.economy.marketBuy(p, msg);
+      case 'market_sell':
+        return this.economy.marketSell(p, msg);
+      case 'market_order':
+        return this.economy.marketOrder(p, msg);
+      case 'market_cancel':
+        return this.economy.marketCancel(p, msg.id);
+      case 'craft':
+        return this.economy.craft(p, String(msg.recipe ?? ''), msg.count);
     }
+  }
+
+  /** Dostawa do depozytu (rynek) – także dla graczy offline. */
+  private deliver(charId: number, city: string, item: string, count: number, q: number) {
+    if (count <= 0) return;
+    this.depots.add(charId, city, item, count, q, true);
+    const p = this.findPlayerByCharId(charId);
+    if (p && p.openWindow === 'depot') this.economy.sendDepot(p, city);
+  }
+
+  addFx(f: Fx) {
+    this.fxQueue.push(f);
   }
 
   private reportError(p: Player, err: string | null) {
@@ -182,6 +256,8 @@ export class World {
     }
     const diagonal = dx !== 0 && dy !== 0;
     const step = Math.round(p.stepMs() * (diagonal ? 1.4 : 1));
+    p.gathering = null;
+    p.talkingTo = 0;
     p.x = nx;
     p.y = ny;
     p.dir = dirFromDelta(dx, dy, p.dir);
@@ -191,8 +267,9 @@ export class World {
 
   private canPlayerStep(x: number, y: number): boolean {
     if (!this.map.isWalkable(x, y)) return false;
-    // Gracze nie blokują się nawzajem (zapobiega blokowaniu bram), potwory tak.
+    // Gracze nie blokują się nawzajem (zapobiega blokowaniu bram), potwory i NPC tak.
     for (const m of this.monsters.values()) if (m.x === x && m.y === y) return false;
+    for (const n of this.npcs.values()) if (n.x === x && n.y === y) return false;
     return true;
   }
 
@@ -207,6 +284,7 @@ export class World {
       this.sendSystem(p, 'Nie możesz walczyć w strefie ochronnej.');
       return;
     }
+    p.gathering = null;
     p.targetId = id;
   }
 
@@ -219,6 +297,9 @@ export class World {
 
     if (now - p.lastChatAt < CHAT_INTERVAL_MS) return;
     p.lastChatAt = now;
+
+    // Słowa kluczowe NPC (Tibia): „witaj”, „handel”… przy NPC trafiają do niego.
+    if (!text.startsWith('/') && this.economy.handleChat(p, text)) return;
 
     if (text.startsWith('/')) {
       const cmd = text.slice(1).split(' ')[0].toLowerCase();
@@ -239,10 +320,11 @@ export class World {
   private handlePickup(p: Player, id: number) {
     const g = this.groundItems.get(id);
     if (!g || chebyshev(p.x, p.y, g.x, g.y) > 1) return;
-    const left = p.inventory.add(g.item, g.count);
+    const canTake = Math.min(g.count, p.canCarry(g.item, g.q));
+    const left = g.count - canTake + p.inventory.add(g.item, canTake, g.q);
     const taken = g.count - left;
     if (taken === 0) {
-      this.sendSystem(p, 'Brak miejsca w plecaku.');
+      this.sendSystem(p, 'Nie uniesiesz tego (udźwig lub plecak pełny).');
       return;
     }
     if (left > 0) g.count = left;
@@ -274,7 +356,7 @@ export class World {
     if (!Number.isInteger(slot) || slot < 0 || slot >= p.inventory.bag.length) return;
     const s = p.inventory.takeFromBag(slot, count);
     if (!s) return;
-    this.addGroundItem(p.x, p.y, s.item, s.count);
+    this.addGroundItem(p.x, p.y, s.item, s.count, s.q ?? 1);
   }
 
   // =========================================================================
@@ -315,6 +397,7 @@ export class World {
 
   tick(now: number) {
     this.tickSpawns(now);
+    this.gathering.tickNodes(now);
     for (const m of this.monsters.values()) this.tickMonster(m, now);
     for (const p of this.players.values()) this.tickPlayer(p, now);
     for (const [id, g] of this.groundItems) if (g.expiresAt <= now) this.groundItems.delete(id);
@@ -332,6 +415,10 @@ export class World {
       p.hp = Math.min(p.maxHp(), p.hp + 1 + Math.floor(p.level / 3));
       p.mp = Math.min(p.maxMp(), p.mp + 2 + Math.floor(p.level / 3));
     }
+    // Zdjęcie ekwipunku z premią do HP/many może obniżyć maksimum.
+    if (p.hp > p.maxHp()) p.hp = p.maxHp();
+    if (p.mp > p.maxMp()) p.mp = p.maxMp();
+    if (p.gathering) this.gathering.tick(p, now);
     // Automatyczny atak celu
     if (!p.targetId) return;
     const m = this.monsters.get(p.targetId);
@@ -362,7 +449,8 @@ export class World {
         return;
       }
     }
-    const maxDmg = playerMaxDamage(weapon?.attack ?? FIST_ATTACK, skill, p.level);
+    const attack = weapon?.attack ? weapon.attack * p.qualityMult('weapon') : FIST_ATTACK;
+    const maxDmg = playerMaxDamage(attack, skill, p.level);
     const dmg = rollDamage(maxDmg, m.def.armor, m.def.defense);
     this.damageMonster(m, dmg, p);
   }
@@ -390,6 +478,19 @@ export class World {
       if (!chance(l.chance)) continue;
       this.addGroundItem(m.x, m.y, l.item, randInt(l.min ?? 1, l.max ?? 1));
     }
+    // Oskórowanie zwierzęcia – skóra zależna od tieru zwierzęcia i specjalizacji zabójcy.
+    if (m.def.hideTier) {
+      const t = m.def.hideTier;
+      const spec = killer.specs.skinner;
+      if (spec.level >= TIER_SPEC_REQ[t]) {
+        const n = 1 + (chance(bonusYieldChance(spec.level)) ? 1 : 0);
+        this.addGroundItem(m.x, m.y, rawId('hide', t), n);
+        if (addFame(killer.specs, 'skinner', fameForTier(t) * n))
+          this.sendSystem(killer, `Specjalizacja Oskórowywacz – poziom ${spec.level}!`);
+      } else {
+        this.sendSystem(killer, `Za mało doświadczenia, by oskórować (Oskórowywacz ${TIER_SPEC_REQ[t]}).`);
+      }
+    }
     this.giveExp(killer, m.def.exp);
     this.sendSystem(killer, `Pokonałeś: ${m.name}. +${m.def.exp} doświadczenia.`);
   }
@@ -412,18 +513,18 @@ export class World {
     this.sendSystem(p, `Awans: ${SKILL_LABELS[skill]} – poziom ${p.skills[skill].level}.`);
   }
 
-  private addGroundItem(x: number, y: number, item: string, count: number) {
+  private addGroundItem(x: number, y: number, item: string, count: number, q = 1) {
     // Stos tego samego przedmiotu na tym samym polu łączymy.
     const def = getItem(item);
     if (def?.stackable)
       for (const g of this.groundItems.values())
-        if (g.x === x && g.y === y && g.item === item) {
+        if (g.x === x && g.y === y && g.item === item && g.q === q) {
           g.count += count;
           g.expiresAt = Date.now() + GROUND_ITEM_TTL_MS;
           return;
         }
     const id = allocEntityId();
-    this.groundItems.set(id, { id, x, y, item, count, expiresAt: Date.now() + GROUND_ITEM_TTL_MS });
+    this.groundItems.set(id, { id, x, y, item, count, q, expiresAt: Date.now() + GROUND_ITEM_TTL_MS });
   }
 
   // =========================================================================
@@ -552,7 +653,11 @@ export class World {
     const shield = p.shield();
     const weapon = p.weapon();
     if (shield && addSkillTries(p.skills, 'shielding', 1)) this.announceSkill(p, 'shielding');
-    const def = playerDefense(shield?.defense ?? 0, weapon?.defense ?? 0, p.skills.shielding.level);
+    const def = playerDefense(
+      (shield?.defense ?? 0) * p.qualityMult('shield'),
+      (weapon?.defense ?? 0) * p.qualityMult('weapon'),
+      p.skills.shielding.level,
+    );
     const dmg = rollDamage(m.def.maxDamage, p.inventory.totalArmor(), def);
     if (dmg <= 0) {
       this.fxQueue.push({ x: p.x, y: p.y, k: 'block' });
@@ -602,9 +707,14 @@ export class World {
       for (const m of this.monsters.values())
         if (this.inView(p, m.x, m.y))
           ents.push({ i: m.id, k: 'm', n: m.name, x: m.x, y: m.y, d: m.dir, h: hpPct(m.hp, m.maxHp()), l: m.def.look, s: m.lastStepMs });
+      for (const n of this.npcs.values())
+        if (this.inView(p, n.x, n.y)) ents.push({ i: n.id, k: 'n', n: n.def.name, x: n.x, y: n.y, d: n.dir, h: 100, l: n.def.look, s: 0 });
+      for (const r of this.nodes.values())
+        if (!r.respawnAt && this.inView(p, r.x, r.y))
+          ents.push({ i: r.id, k: 'r', n: r.name, x: r.x, y: r.y, d: 2, h: hpPct(r.charges, r.maxCharges()), l: `node_${r.kind}_${r.tier}`, s: 0 });
       const ground: object[] = [];
       for (const g of this.groundItems.values())
-        if (this.inView(p, g.x, g.y)) ground.push({ i: g.id, x: g.x, y: g.y, it: g.item, c: g.count });
+        if (this.inView(p, g.x, g.y)) ground.push({ i: g.id, x: g.x, y: g.y, it: g.item, c: g.count, q: g.q });
 
       const snap = JSON.stringify({ t: 'snap', e: ents, g: ground });
       if (snap !== p.lastSnapshot) {

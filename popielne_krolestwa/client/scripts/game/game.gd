@@ -36,6 +36,10 @@ var stats: Dictionary = {}
 var _move_cooldown := 0.0
 var _path: Array[Vector2i] = []
 var _pending_pickup := 0
+## Akcja do wykonania po dojściu: {"type": "gather"/"npc", "id": ...}
+var _pending_action: Dictionary = {}
+## NPC, z którym trwa rozmowa (okna zamykają się po odejściu).
+var _talking_npc := 0
 var _astar := AStarGrid2D.new()
 var _touch_start: Dictionary = {}
 
@@ -110,7 +114,20 @@ func _on_message(msg: Dictionary) -> void:
 			stats = msg
 			step_ms = int(msg.step)
 			_set_target(int(msg.target))
+			me.gathering = int(msg.get("gather", 0)) != 0
+			me.queue_redraw()
 			hud.update_stats(msg)
+		"npc_dialog":
+			_talking_npc = int(msg.id)
+			hud.show_npc_dialog(msg)
+		"shop":
+			hud.show_shop(msg)
+		"depot":
+			hud.show_depot(msg)
+		"market":
+			hud.show_market(msg)
+		"craft_open":
+			hud.show_craft(msg)
 		"inv":
 			hud.update_inventory(msg)
 		"fx":
@@ -149,6 +166,23 @@ func _on_snapshot(msg: Dictionary) -> void:
 			entities.erase(id)
 	ground.set_items(msg.g)
 	_set_target(target_id)
+	_update_labels()
+
+
+## Nazwy złóż widoczne tylko w pobliżu; okna NPC zamykane po odejściu od NPC.
+func _update_labels() -> void:
+	for id in entities:
+		var e: EntityView = entities[id]
+		if e.kind == "r":
+			var near := _dist(e.tile, my_pos) <= 3
+			if near != e.show_label:
+				e.show_label = near
+				e.queue_redraw()
+	if _talking_npc != 0:
+		var n: EntityView = entities.get(_talking_npc)
+		if n == null or _dist(n.tile, my_pos) > 3:
+			_talking_npc = 0
+			hud.close_npc_windows()
 
 
 func _set_target(id: int) -> void:
@@ -174,6 +208,8 @@ func _fx_sound(f: Dictionary) -> void:
 			Sfx.play("heal")
 		"levelup":
 			Sfx.play("levelup")
+		"gather":
+			Sfx.play("gather")
 
 
 static func _escape(t: String) -> String:
@@ -235,11 +271,30 @@ func _screen_to_tile(screen_pos: Vector2) -> Vector2i:
 
 func _on_tap(tile: Vector2i) -> void:
 	fx.tap_marker(tile)
+	_pending_action = {}
 	# 1. Potwór na kafelku -> atak (drugi tap – przerwanie ataku).
 	for id in entities:
 		var e: EntityView = entities[id]
 		if e.kind == "m" and e.tile == tile:
 			attack(id)
+			return
+	# 1b. NPC -> rozmowa (podejdź, jeśli daleko).
+	for id in entities:
+		var e: EntityView = entities[id]
+		if e.kind == "n" and e.tile == tile:
+			_pending_action = {"type": "npc", "id": id, "tile": tile, "range": 3}
+			if _dist(tile, my_pos) > 3:
+				_path = _find_path(tile, true)
+			return
+	# 1c. Złoże surowca -> zbieraj (podejdź na sąsiednie pole).
+	for id in entities:
+		var e: EntityView = entities[id]
+		if e.kind == "r" and e.tile == tile:
+			_pending_action = {"type": "gather", "id": id, "tile": tile, "range": 1}
+			if _dist(tile, my_pos) > 1 or tile == my_pos:
+				_path = _find_path(tile, true)
+				if tile == my_pos:
+					_path = _step_off()
 			return
 	# 2. Przedmiot na ziemi -> podnieś (podejdź, jeśli daleko).
 	var item_id := ground.item_at(tile)
@@ -264,7 +319,7 @@ func _find_path(to: Vector2i, stop_adjacent: bool) -> Array[Vector2i]:
 	var blocked: Array[Vector2i] = []
 	for id in entities:
 		var e: EntityView = entities[id]
-		if e.kind == "m" and e.tile != to and _astar.region.has_point(e.tile) and not _astar.is_point_solid(e.tile):
+		if (e.kind == "m" or e.kind == "n") and e.tile != to and _astar.region.has_point(e.tile) and not _astar.is_point_solid(e.tile):
 			_astar.set_point_solid(e.tile, true)
 			blocked.append(e.tile)
 	var target_solid := _astar.is_point_solid(to)
@@ -296,6 +351,7 @@ func _process(delta: float) -> void:
 	if input.length() > 0.3:
 		_path.clear()
 		_pending_pickup = 0
+		_pending_action = {}
 		_try_step(_quantize(input), false)
 		return
 
@@ -307,6 +363,16 @@ func _process(delta: float) -> void:
 			return
 		if _try_step(step, true):
 			_path.pop_front()
+		return
+
+	if not _pending_action.is_empty():
+		var a := _pending_action
+		_pending_action = {}
+		if _dist(a.tile, my_pos) <= int(a.range) and a.tile != my_pos:
+			if a.type == "npc":
+				Net.send({"t": "npc", "id": a.id, "word": "witaj"})
+			else:
+				Net.send({"t": "gather", "id": a.id})
 		return
 
 	if _pending_pickup != 0:
@@ -350,6 +416,17 @@ static func _keyboard_vector() -> Vector2:
 	return v
 
 
+## Krok na dowolne wolne sąsiednie pole (gdy stoimy na złożu).
+func _step_off() -> Array[Vector2i]:
+	var r: Array[Vector2i] = []
+	for d in DIRS:
+		var t := my_pos + d
+		if GameData.is_walkable(t.x, t.y):
+			r.append(t)
+			break
+	return r
+
+
 static func _quantize(v: Vector2) -> Vector2i:
 	var idx := int(round(v.angle() / (PI / 4.0))) % 8
 	var ang := idx * PI / 4.0
@@ -364,7 +441,7 @@ func _try_step(step: Vector2i, from_path: bool) -> bool:
 	if free:
 		for id in entities:
 			var e: EntityView = entities[id]
-			if e.kind == "m" and e.tile == dest:
+			if (e.kind == "m" or e.kind == "n") and e.tile == dest:
 				free = false
 				break
 	var dir := _facing(step)
@@ -384,6 +461,8 @@ func _try_step(step: Vector2i, from_path: bool) -> bool:
 	my_pos = dest
 	my_dir = dir
 	me.move_to(dest, dur, dir)
+	me.gathering = false
+	_update_labels()
 	return true
 
 
