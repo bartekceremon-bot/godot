@@ -83,6 +83,8 @@ func rebirth() -> bool:
 	s.ash_total = int(s.ash_total) + gain
 	s.rebirths = int(s.rebirths) + 1
 	var start := start_stage()
+	# Osiągnięcia liczą rekordy całej gry – zapamiętaj je przed wyzerowaniem.
+	gm.achievements.remember()
 	s.gold = 0.0
 	s.level = 1
 	s.xp = 0.0

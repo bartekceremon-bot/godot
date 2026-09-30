@@ -46,7 +46,10 @@ func _ready() -> void:
 		func(): await _shot("09_mapa"); ui.show_tab("shop"); return 0.8,
 		func(): await _shot("10_sklep"); ui.show_tab("mounts"); return 0.8,
 		func(): await _shot("11_stajnia"); ui.show_tab("prestige"); return 0.8,
-		func(): await _shot("12_oltarz"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
+		func(): await _shot("12_oltarz"); ui.show_tab("achievements"); return 0.8,
+		func(): await _shot("12b_osiagniecia"); ui.show_daily(); return 0.8,
+		func(): await _shot("12c_codzienna"); _press("Odbierz nagrodę"); return 0.5,
+		func(): await _expect_no_modal("Odbierz nagrodę dnia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
 			g.spells.cast("fireball")

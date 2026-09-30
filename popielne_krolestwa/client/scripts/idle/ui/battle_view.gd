@@ -31,6 +31,7 @@ var _weather: CPUParticles3D
 var _embers: CPUParticles3D
 var _rim: OmniLight3D
 var _enemy_h := 3.0
+var _smoke: Array = []
 var _region_id := ""
 var _hero_key := ""
 var _merc_key := ""
@@ -200,6 +201,7 @@ func _build_diorama(reg: Dictionary) -> void:
 		_prop(k, str(props[i % props.size()]), rng)
 		k.reset()
 		k.jitter = 0.05
+	_ruins(k, reg, rng)
 	var mi := MeshInstance3D.new()
 	mi.mesh = k.commit()
 	mi.material_override = _obj_mat
@@ -217,6 +219,138 @@ func _build_diorama(reg: Dictionary) -> void:
 			_weather = _particles(Color(0.9, 0.78, 0.5, 0.5), Vector3(2.5, -0.1, 0), 80, 3.0, 0.025)
 	if _weather:
 		add_child(_weather)
+	# Słupy dymu nad ruinami (gęstsze w krainach popiołu i ognia).
+	for c in _smoke:
+		c.queue_free()
+	_smoke.clear()
+	var hot := str(reg.biome) in ["ash", "fire", "volcano"]
+	for pos: Vector3 in [Vector3(8.5, 0.5, -2.8), Vector3(9.5, 0.5, 4.2)] + ([Vector3(7.5, 0.5, 0.8)] if hot else []):
+		var sm := _smoke_column(Color(0.16, 0.14, 0.14, 0.42) if hot else Color(0.45, 0.44, 0.44, 0.22))
+		sm.position = pos
+		add_child(sm)
+		_smoke.append(sm)
+
+
+## Ruiny za przeciwnikiem (jak na projekcie ekranu): wyszczerbione mury z oknami, rozbite wieże,
+## gruz; w krainach popiołu i ognia – ciemny kamień z żarzącymi się szczelinami.
+func _ruins(k: MeshKit, reg: Dictionary, rng: RandomNumberGenerator) -> void:
+	var biome := str(reg.biome)
+	var hot := biome in ["ash", "fire", "volcano"]
+	var stone := Color(0.46, 0.44, 0.42)
+	match biome:
+		"desert":
+			stone = Color(0.72, 0.6, 0.42)
+		"snow":
+			stone = Color(0.6, 0.63, 0.68)
+		"swamp", "forest":
+			stone = Color(0.38, 0.4, 0.36)
+	if hot:
+		stone = Color(0.2, 0.18, 0.19)
+	var count := 7 if hot else 5
+	for i in count:
+		# Łuk za areną: od lewej do prawej strony kadru, coraz dalej na bokach.
+		var t := (float(i) + rng.randf_range(-0.25, 0.25)) / float(count - 1) * 2.0 - 1.0
+		var pos := Vector3(7.0 + absf(t) * 1.2 + rng.randf_range(-0.6, 0.9), 0, 1.0 + t * 5.2)
+		var yaw := PI / 2.0 + t * 0.5 + rng.randf_range(-0.2, 0.2)
+		var sc := rng.randf_range(0.9, 1.3)
+		k.place(pos, yaw, sc)
+		var col := stone.lerp(stone.darkened(0.3), rng.randf())
+		if i % 3 == 1:
+			_ruin_tower(k, col, rng, hot)
+		else:
+			_ruin_wall(k, col, rng, hot)
+		k.reset()
+	# Gruz i odłamki na arenie i przed murami.
+	for i in 14:
+		var pos := Vector3(rng.randf_range(3.0, 9.0), 0, rng.randf_range(-5.0, 6.5))
+		if _blocks_view(pos) or pos.distance_to(Vector3(1.5, 0, 0.5)) < 2.4:
+			continue
+		var c := stone.lerp(stone.lightened(0.15), rng.randf())
+		k.blob(pos + Vector3(0, 0.12, 0), Vector3(rng.randf_range(0.25, 0.6), rng.randf_range(0.15, 0.35), rng.randf_range(0.25, 0.5)), c, 2, 5, 0.3)
+	k.jitter = 0.05
+
+
+func _ruin_wall(k: MeshKit, col: Color, rng: RandomNumberGenerator, hot: bool) -> void:
+	var cols := rng.randi_range(6, 10)
+	var w := 0.55
+	var h := rng.randf_range(2.6, 4.2)
+	var x0 := -cols * w / 2.0
+	var win := rng.randi_range(1, cols - 2)
+	for i in cols:
+		# Wyszczerbiony szczyt: wysokość opada ku jednemu końcowi i skacze losowo.
+		var hi := h * (1.0 - absf(float(i) / cols - 0.35) * 0.9) * rng.randf_range(0.65, 1.05)
+		var x := x0 + i * w + w / 2.0
+		var c := col.lerp(col.lightened(0.12), rng.randf() * 0.5)
+		if i == win or i == win + 1:
+			# Okno: dół muru, łuk (nadproże) nad otworem.
+			k.box(Vector3(x, 0, 0), Vector3(w, 1.0, 0.5), c)
+			if hi > 2.4:
+				k.box(Vector3(x, 2.1, 0), Vector3(w, hi - 2.1, 0.5), c)
+		else:
+			k.box(Vector3(x, 0, 0), Vector3(w, hi, 0.5), c, Vector2(0.9, 0.9))
+		if rng.randf() < 0.3:
+			k.box(Vector3(x + rng.randf_range(-0.2, 0.2), 0, 0.6), Vector3(0.4, 0.25, 0.35), c.darkened(0.1))
+	if hot:
+		k.glow = 1.0
+		for i in 3:
+			var x := x0 + rng.randf_range(0.3, cols * w - 0.3)
+			k.box(Vector3(x, 0.05, 0.26), Vector3(0.05, rng.randf_range(0.4, 1.2), 0.02), Color(1.0, 0.45, 0.1))
+		k.glow = 0.0
+
+
+func _ruin_tower(k: MeshKit, col: Color, rng: RandomNumberGenerator, hot: bool) -> void:
+	var r := rng.randf_range(0.9, 1.3)
+	var h := rng.randf_range(3.5, 5.5)
+	k.cyl(Vector3.ZERO, r * 1.05, r, h * 0.6, 10, col, false)
+	# Rozbita korona: segmenty różnej wysokości.
+	for i in 10:
+		var a := TAU * (i + 0.5) / 10.0
+		var sh := h * rng.randf_range(0.05, 0.4)
+		if rng.randf() < 0.25:
+			continue
+		k.box(Vector3(cos(a) * r * 0.9, h * 0.6, sin(a) * r * 0.9), Vector3(0.5, sh, 0.5), col.lightened(rng.randf() * 0.1))
+	# Okno-strzelnica.
+	k.glow = 1.0 if hot else 0.0
+	k.box(Vector3(-r * 1.0, h * 0.35, 0), Vector3(0.06, 0.6, 0.22), Color(1.0, 0.5, 0.15) if hot else Color(0.05, 0.05, 0.06))
+	k.glow = 0.0
+
+
+## Unoszący się dym (miękkie, obracające się do kamery plamy).
+func _smoke_column(col: Color) -> CPUParticles3D:
+	var p := CPUParticles3D.new()
+	var q := QuadMesh.new()
+	q.size = Vector2(1.6, 1.6)
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.albedo_texture = load("res://assets/fx/soft_dot.png")
+	m.vertex_color_use_as_albedo = true
+	m.albedo_color = col
+	q.material = m
+	p.mesh = q
+	p.amount = 22
+	p.lifetime = 9.0
+	p.preprocess = 9.0
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	p.emission_sphere_radius = 0.7
+	p.direction = Vector3(0.1, 1, 0.05)
+	p.spread = 12
+	p.initial_velocity_min = 0.5
+	p.initial_velocity_max = 0.9
+	p.gravity = Vector3(0.12, 0.05, 0)
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 1.6
+	var sc := Curve.new()
+	sc.add_point(Vector2(0, 0.6))
+	sc.add_point(Vector2(1, 2.8))
+	p.scale_amount_curve = sc
+	var g := Gradient.new()
+	g.set_color(0, Color(1, 1, 1, 0.0))
+	g.add_point(0.15, Color(1, 1, 1, 1.0))
+	g.set_color(g.get_point_count() - 1, Color(1, 1, 1, 0.0))
+	p.color_ramp = g
+	return p
 
 
 ## Czy obiekt stałby między kamerą a areną (korytarz widoku zza pleców bohatera)?

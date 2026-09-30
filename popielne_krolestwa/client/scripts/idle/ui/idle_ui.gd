@@ -46,14 +46,13 @@ static func theme() -> Theme:
 	_ui_font = ui_font(600)
 	t.default_font = _ui_font
 	t.default_font_size = 22
-	var normal := glass(Color(0.075, 0.065, 0.085, 0.86), Color(1.0, 0.62, 0.3, 0.38), 14, 2, Color(0, 0, 0, 0.5), 6)
-	normal.set_content_margin_all(10)
-	var hover := normal.duplicate()
-	hover.border_color = Color(1.0, 0.7, 0.4, 0.75)
-	var pressed := glass(Color(0.32, 0.13, 0.04, 0.94), EMBER, 14, 2, Color(1.0, 0.45, 0.1, 0.55), 14)
-	pressed.set_content_margin_all(10)
-	var disabled := glass(Color(0.05, 0.05, 0.06, 0.62), Color(0.45, 0.4, 0.35, 0.22), 14, 2, Color(0, 0, 0, 0.3), 4)
-	disabled.set_content_margin_all(10)
+	# Kamienne płyty „Popiół i żar” (assets/ui/ash): zwykła, wciśnięta/aktywna z żarem, wyłączona – przygaszona.
+	var normal := ash_box("stone_panel", 26, 10)
+	var hover := ash_box("stone_panel", 26, 10)
+	hover.modulate_color = Color(1.12, 1.08, 1.04)
+	var pressed := ash_box("tile_on", 26, 10)
+	var disabled := ash_box("stone_panel", 26, 10)
+	disabled.modulate_color = Color(0.55, 0.52, 0.5, 0.9)
 	for cls in ["Button", "OptionButton", "CheckButton"]:
 		t.set_stylebox("normal", cls, normal)
 		t.set_stylebox("hover", cls, hover)
@@ -65,8 +64,8 @@ static func theme() -> Theme:
 	t.set_color("font_pressed_color", "Button", Color(1.0, 0.95, 0.8))
 	t.set_color("font_hover_color", "Button", Color(1.0, 0.9, 0.7))
 	t.set_color("font_disabled_color", "Button", Color(0.55, 0.5, 0.46))
-	t.set_stylebox("panel", "PanelContainer", glass())
-	t.set_stylebox("panel", "Panel", glass())
+	t.set_stylebox("panel", "PanelContainer", ash_box("slot", 18, 12))
+	t.set_stylebox("panel", "Panel", ash_box("slot", 18, 12))
 	var grab := StyleBoxFlat.new()
 	grab.bg_color = Color(1.0, 0.6, 0.25, 0.55)
 	grab.set_corner_radius_all(4)
@@ -87,8 +86,10 @@ static func theme() -> Theme:
 
 static func card(bg := Color(0.065, 0.058, 0.078, 0.86), border := Color(1.0, 0.65, 0.35, 0.22)) -> PanelContainer:
 	var p := PanelContainer.new()
-	var sb := glass(bg, border, 16, 2, Color(0, 0, 0, 0.45), 8)
-	sb.set_content_margin_all(14)
+	# Karta = ciemny kamienny kafel; kolor obramowania (np. „gotowe”, rzadkość) jako cienka poświata.
+	var sb := ash_box("slot", 18, 14)
+	if border.a > 0.5:
+		sb.modulate_color = Color(1, 1, 1).lerp(border, 0.25)
 	p.add_theme_stylebox_override("panel", sb)
 	return p
 

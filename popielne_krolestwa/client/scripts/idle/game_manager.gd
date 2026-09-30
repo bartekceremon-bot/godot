@@ -47,6 +47,8 @@ var prestige: PrestigeManager
 var save: SaveManager
 var offline: OfflineProgressManager
 var audio: AudioManager
+var daily: DailyManager
+var achievements: AchievementManager
 
 ## Wynik postępu offline z ostatniego uruchomienia (pokazywany w oknie „Witaj ponownie!”).
 var offline_report: Dictionary = {}
@@ -75,6 +77,8 @@ func _ready() -> void:
 	save = SaveManager.new(self)
 	offline = OfflineProgressManager.new(self)
 	audio = AudioManager.new(self)
+	daily = DailyManager.new(self)
+	achievements = AchievementManager.new(self)
 	set_process(false)
 
 
@@ -94,6 +98,7 @@ func new_state() -> Dictionary:
 		"prestige": {}, "boosts": {}, "craft_xp": 0.0, "craft_lvl": 1,
 		"market": {}, "stats": {"kills": 0, "taps": 0, "gold": 0.0, "bosses": 0, "crits": 0, "spells": 0},
 		"settings": {"sound": true, "auto_potion": true, "effects": true},
+		"daily": {"day": 0, "last": ""}, "ach": {"claimed": {}, "best_stage": 1, "best_level": 1},
 	}
 
 

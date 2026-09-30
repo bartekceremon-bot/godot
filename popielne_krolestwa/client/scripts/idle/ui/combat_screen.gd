@@ -35,6 +35,7 @@ var _elvl_l: Label
 var _plvl_l: Label
 var _team_btn: Button
 var _team_dot: Label
+var _menu_dot: Label
 var _atk_btn: Button
 var _atk_held := -1.0
 var _auto_click_btn: Button
@@ -43,6 +44,8 @@ var _gold_pop: PanelContainer
 var _gold_pop_l: Label
 var _gold_pop_sum := 0.0
 var _gold_tw: Tween
+var _edge: TextureRect
+var _edge_tw: Tween
 var _auto_btn: Button
 var _goals_box: VBoxContainer
 var _php: ProgressBar
@@ -98,6 +101,26 @@ func setup(main: IdleMain) -> void:
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(shade)
+	# Żarzące się krawędzie ekranu przy krytyku i zabiciu bossa.
+	_edge = TextureRect.new()
+	var eg := Gradient.new()
+	eg.set_color(0, Color(1.0, 0.4, 0.08, 0.0))
+	eg.add_point(0.62, Color(1.0, 0.4, 0.08, 0.0))
+	eg.set_color(eg.get_point_count() - 1, Color(1.0, 0.45, 0.1, 0.85))
+	var et := GradientTexture2D.new()
+	et.gradient = eg
+	et.fill = GradientTexture2D.FILL_RADIAL
+	et.fill_from = Vector2(0.5, 0.5)
+	et.fill_to = Vector2(1.05, 1.05)
+	et.width = 64
+	et.height = 64
+	_edge.texture = et
+	_edge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_edge.stretch_mode = TextureRect.STRETCH_SCALE
+	_edge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_edge.modulate.a = 0.0
+	add_child(_edge)
 	_fx_layer = Control.new()
 	_fx_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fx_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -287,6 +310,7 @@ func _build_header() -> void:
 	mid.add_child(rcol)
 	var menu := _side_button(Sprites.icon("menu"), "MENU")
 	menu.pressed.connect(ui._open_menu)
+	_menu_dot = ui._dot(menu)
 	rcol.add_child(menu.get_parent())
 	_auto_btn = _side_button(Sprites.icon("map"), "AUTO ETAP")
 	_auto_btn.toggle_mode = true
@@ -494,6 +518,9 @@ func refresh_badges() -> void:
 		n += 1
 	_team_dot.visible = n > 0
 	_team_dot.text = str(n)
+	var m := gm.achievements.ready_count() + (1 if gm.daily.available() else 0)
+	_menu_dot.visible = m > 0
+	_menu_dot.text = str(m)
 
 
 # --- Dotyk ------------------------------------------------------------------------
@@ -520,9 +547,21 @@ func _over_button(gp: Vector2) -> bool:
 	return false
 
 
+func _flash_edge(strength: float) -> void:
+	if not bool(gm.s.settings.get("effects", true)):
+		return
+	if _edge_tw:
+		_edge_tw.kill()
+	_edge.modulate.a = maxf(_edge.modulate.a, strength)
+	_edge_tw = _edge.create_tween()
+	_edge_tw.tween_property(_edge, "modulate:a", 0.0, 0.35 + strength * 0.3)
+
+
 ## ATAK!: cios od razu, przytrzymanie – seria jak przy przytrzymaniu palca na scenie.
 func _attack_press() -> void:
 	_tap_at(_enemy_pos() + Vector2(randf_range(-40, 40), randf_range(-30, 50)))
+	var br := _atk_btn.get_global_rect()
+	_spark(br.position - global_position + Vector2(randf_range(0.2, 0.8) * br.size.x, 6), Color(1.0, 0.55, 0.15))
 	_atk_btn.pivot_offset = _atk_btn.size / 2.0
 	var tw := _atk_btn.create_tween()
 	tw.tween_property(_atk_btn, "scale", Vector2(0.96, 0.94), 0.05)
@@ -793,6 +832,7 @@ func _on_hit(amount: float, crit: bool, source: String) -> void:
 	if crit:
 		gm.audio.play("crit", 0.08)
 		_spark(_enemy_pos(), Color(1.0, 0.7, 0.2))
+		_flash_edge(0.45)
 
 
 func _on_killed(info: Dictionary) -> void:
@@ -803,6 +843,8 @@ func _on_killed(info: Dictionary) -> void:
 	_float("+%s PD" % IdleDB.fmt(float(info.xp)), pos + Vector2(80, -10), Color(0.8, 0.62, 1.0), 24, false)
 	ui.fly_coins(global_position + pos, 3 + boss * 4)
 	_pop_gold(float(info.gold))
+	if boss > 0:
+		_flash_edge(1.0)
 	if boss > 0:
 		ui.banner("Pokonano: %s!" % info.name, "+%s zł  •  +%s XP" % [IdleDB.fmt(float(info.gold)), IdleDB.fmt(float(info.xp))], Color(1.0, 0.85, 0.35))
 

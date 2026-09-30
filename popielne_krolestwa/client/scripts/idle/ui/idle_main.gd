@@ -116,6 +116,9 @@ func _start_game() -> void:
 	else:
 		_menu_screen.queue_free()
 	_build_game()
+	# Codzienna nagroda (od drugiej sesji) – pod oknem „Witaj ponownie!”.
+	if gm.daily.available() and int(gm.s.stats.kills) > 0:
+		show_daily()
 	if not gm.offline_report.is_empty():
 		_show_offline(gm.offline_report)
 	elif int(gm.s.stats.kills) == 0:
@@ -473,11 +476,16 @@ func _make_panel(id: String) -> IdlePanel:
 			return StatsPanel.new()
 		"settings":
 			return SettingsPanel.new()
+		"achievements":
+			return AchievementsPanel.new()
 	return null
 
 
 func _open_menu() -> void:
-	var items := [["Drużyna – najemnicy", "character", "heroes"], ["Stajnia – wierzchowce", "mount", "mounts"], ["Ołtarz Popiołu – odrodzenie", "prestige", "prestige"],
+	var ach := gm.achievements.ready_count()
+	var items := [["Codzienna nagroda" + ("  (gotowa!)" if gm.daily.available() else ""), "chest", "daily"],
+		["Osiągnięcia" + ("  (%d do odebrania)" % ach if ach > 0 else ""), "quest", "achievements"],
+		["Drużyna – najemnicy", "character", "heroes"], ["Stajnia – wierzchowce", "mount", "mounts"], ["Ołtarz Popiołu – odrodzenie", "prestige", "prestige"],
 		["Postać i statystyki", "character", "stats"], ["Ustawienia", "menu", "settings"]]
 	var box := IdleUI.vbox(10)
 	var m: Control
@@ -490,9 +498,77 @@ func _open_menu() -> void:
 		var tab := str(it[2])
 		b.pressed.connect(func():
 			close_modal(m)
-			show_tab(tab))
+			if tab == "daily":
+				show_daily()
+			else:
+				show_tab(tab))
 		box.add_child(b)
 	m = modal("Menu", box)
+
+
+## Codzienna nagroda: 7 kamiennych kafli serii, dzisiejszy świeci; przycisk odbioru.
+func show_daily() -> void:
+	var v := IdleUI.vbox(12)
+	var avail := gm.daily.available()
+	var today := gm.daily.current_day()
+	v.add_child(IdleUI.label("Wracaj codziennie – seria 7 dni, siódmego dnia epicka skrzynia. Opuszczony dzień zaczyna serię od nowa.", 19, UiTheme.TEXT, true))
+	var grid := GridContainer.new()
+	grid.columns = 4
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	v.add_child(grid)
+	for i in DailyManager.REWARDS.size():
+		var r: Dictionary = DailyManager.REWARDS[i]
+		var p := PanelContainer.new()
+		var cur := i == today
+		p.add_theme_stylebox_override("panel", IdleUI.ash_box("tile_on" if cur and avail else "slot", 26 if cur and avail else 18, 8))
+		p.custom_minimum_size = Vector2(0, 150)
+		p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		if i < today or (cur and not avail):
+			p.modulate = Color(0.55, 0.55, 0.55)
+		var b := IdleUI.vbox(2)
+		b.alignment = BoxContainer.ALIGNMENT_CENTER
+		p.add_child(b)
+		var d := IdleUI.hud_label("DZIEŃ %d" % (i + 1), 15, Color(1.0, 0.75, 0.35) if cur else Color(0.85, 0.82, 0.78), 4)
+		d.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		b.add_child(d)
+		var main_id := "gold"
+		var txt := ""
+		if r.has("items"):
+			main_id = str(r.items[0][0])
+			txt = "%d× %s" % [int(r.items[0][1]), IdleUI.item_name(gm.db, main_id)] if not main_id.begins_with("chest_") else IdleUI.item_name(gm.db, main_id)
+		elif r.has("gems"):
+			main_id = "gems"
+			txt = "%d żarokr." % int(r.gems)
+		if r.has("gold_kills"):
+			txt = ("%s zł" % IdleDB.fmt(gm.daily.gold_of(r))) + ("" if txt == "" else "\n+ " + txt)
+		elif r.has("gems") and main_id != "gems":
+			txt += "\n+ %d żarokr." % int(r.gems)
+		var ic := IdleUI.icon_rect(IdleUI.item_tex(gm.db, main_id), 48)
+		ic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		b.add_child(ic)
+		var l := IdleUI.label(txt, 13, Color(0.92, 0.9, 0.84), true)
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		b.add_child(l)
+		if i < today or (cur and not avail):
+			var ok := IdleUI.hud_label("✔", 22, IdleUI.GOOD, 4)
+			ok.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			b.add_child(ok)
+		grid.add_child(p)
+	var m: Control
+	var btn := IdleUI.button("Odbierz nagrodę dnia %d" % (today + 1) if avail else "Odebrano – wróć jutro", Vector2(0, 88), 26)
+	btn.disabled = not avail
+	btn.pressed.connect(func():
+		var got := gm.daily.claim()
+		close_modal(m)
+		if not got.is_empty():
+			gm.audio.play("levelup")
+			for it in got:
+				toast_msg("+%s %s" % [IdleDB.fmt(float(it[1])), IdleUI.item_name(gm.db, str(it[0]))], IdleUI.GOLD_COL)
+			if combat:
+				fly_coins(combat.enemy_global_pos(), 8))
+	v.add_child(btn)
+	m = modal("Codzienna nagroda", v)
 
 
 func _process(delta: float) -> void:

@@ -11,13 +11,16 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 1.2.0)
+## Popielne Królestwa Idle (wersja 1.3.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
 | System | Jak działa |
 |---|---|
 | Ekran walki (1.2) | Oprawa „Popiół i żar” wg projektu ekranu: kamienny pasek ZŁOTO / PD / STREFA z plakietkami (żarokryształy, poziom, popiół), portret bohatera z paskami zdrowia i many, nagłówek „[WRÓG - PZ: a / b]” z paskiem w żelaznej ramie, plakietka LVL i pasek etapu (u bossa – czas), duży przycisk **ATAK!** (przytrzymanie = seria), kafle AUTO KLIK (3 ciosy/s przy otwartej grze), 4 czary ze stanem [GOTOWY]/[CD]/[MP] i mikstury, kamienne kafle nawigacji INWENTARZ / TWORZENIE / CZARY / ZADANIA / MAPA / SKLEP (zakładki wysuwają się nad walką). Kamera zza pleców bohatera, potwory przeskalowane do jednej, dużej wysokości. Grafiki: `tools/textures/gen_ui_ash.py` + ikony wycięte z projektu (`assets/ui/ash`). |
+| Oprawa 1.3 | Za areną ruiny (wyszczerbione mury z oknami, rozbite wieże, gruz; w Popielisku i Świątyni Ognia – ciemny kamień z żarzącymi się szczelinami) i słupy dymu. Kamienne przyciski, karty i zakładki we wszystkich panelach i w menu głównym. Krytyk rozżarza krawędzie ekranu, ATAK! sypie iskrami. |
+| Codzienna nagroda (menu) | Seria 7 dni: złoto, mikstury, żarokryształy, skrzynie; 7. dnia epicka skrzynia i 100 żarokryształów. Opuszczony dzień zaczyna serię od nowa. Okno pojawia się samo przy starcie gry. |
+| Osiągnięcia (menu) | 8 osiągnięć po 4–5 stopni (Łowca, Pogromca bossów, Wędrowiec, Weteran, Niezmordowana pięść, Ostrze losu, Adept magii, Feniks); liczą całe dzieje bohatera, także sprzed odrodzeń; nagrody w żarokryształach. Kropka na przycisku MENU pokazuje, co czeka na odbiór. |
 | Walka | Dotknij przeciwnika albo przycisku ATAK! (przytrzymanie – 8 ciosów/s). Krytyki, liczby obrażeń, cząsteczki, wstrząs ekranu, dźwięki. Modele 3D bohatera (w założonym ekwipunku), drużyny i potworów z gry MMO na dioramie regionu z pogodą. |
 | Najemnicy (DRUŻYNA pod portretem) | 15 najemników ze świata MMO (Strażnik Popielgrodu, Kapłanka Wiesława, Kowal Gerwazy, Mistrz gildii Zawisza, Mag Szronogrodu…) daje DPS; koszt ×1,07 na poziom, kamienie milowe ×2. Trening ciosu zwiększa obrażenia kliknięcia. Zakup ×1 / ×10 / ×100 / MAKS. |
 | Regiony (MAPA) | 8 krain po 10 etapów: Łąki Popielgrodu, Puszcza, Moczary, Złote Piaski, Góry Pogorzelne, Szronowe Pustkowia, Popielisko, Świątynia Ognia; potem Kręgi Popiołu. 10 wrogów na etap, na 5. etapie elita, na 10. boss regionu (Herszt Rozbójników, Pradawny Drzewiec, Matka Moczarów, Pustynny Czerw, Władca Gór, Król Szronu, Czempion Popiołu, Żarogniew). |

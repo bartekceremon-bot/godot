@@ -28,7 +28,6 @@ var gm: IdleGame
 var view: BattleView
 var _logo: TextureRect
 var _play: Button
-var _play_box: StyleBoxFlat
 var _fade: ColorRect
 var _t := 0.0
 var _fx_t := 1.5
@@ -177,21 +176,17 @@ func _build_ui() -> void:
 	var save := gm.save.load_game()
 	if not save.is_empty():
 		_content.add_child(_save_card(save))
-	_play = Button.new()
+	# Kamienna płyta z żarem – jak przycisk ATAK! na ekranie walki.
+	_play = IdleUI.ash_button("stone_button", 44)
 	_play.text = "KONTYNUUJ" if not save.is_empty() else "ROZPOCZNIJ PRZYGODĘ"
-	_play.custom_minimum_size = Vector2(0, 104)
+	_play.custom_minimum_size = Vector2(0, 124)
 	_play.add_theme_font_override("font", UiTheme.TITLE_FONT)
-	_play.add_theme_font_size_override("font_size", 34)
-	_play_box = IdleUI.glass(Color(0.46, 0.16, 0.04, 0.92), Color(1.0, 0.8, 0.45, 0.95), 20, 3, Color(1.0, 0.42, 0.08, 0.6), 18)
-	var pressed := _play_box.duplicate()
-	pressed.bg_color = Color(0.7, 0.28, 0.06, 0.95)
-	for st in ["normal", "hover"]:
-		_play.add_theme_stylebox_override(st, _play_box)
-	_play.add_theme_stylebox_override("pressed", pressed)
-	_play.add_theme_color_override("font_color", Color(1.0, 0.95, 0.82))
-	_play.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 0.92))
-	_play.add_theme_constant_override("outline_size", 6)
-	_play.add_theme_color_override("font_outline_color", Color(0.25, 0.06, 0.0, 0.9))
+	_play.add_theme_font_size_override("font_size", 36)
+	_play.add_theme_color_override("font_color", Color(0.95, 0.92, 0.88))
+	_play.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.92))
+	_play.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.6))
+	_play.add_theme_constant_override("outline_size", 9)
+	_play.add_theme_color_override("font_outline_color", Color(0.1, 0.07, 0.06))
 	_play.pressed.connect(func():
 		Sfx.play("levelup")
 		play_pressed.emit())
@@ -251,9 +246,9 @@ func _subtitle(text: String) -> Control:
 
 func _chip(text: String) -> Control:
 	var p := PanelContainer.new()
-	var sb := IdleUI.glass(Color(0.06, 0.05, 0.06, 0.7), Color(1.0, 0.65, 0.35, 0.3), 12, 1, Color(0, 0, 0, 0.3), 4)
-	sb.content_margin_left = 12
-	sb.content_margin_right = 12
+	var sb := IdleUI.ash_box("badge", 22, 4)
+	sb.content_margin_left = 20
+	sb.content_margin_right = 20
 	sb.content_margin_top = 4
 	sb.content_margin_bottom = 4
 	p.add_theme_stylebox_override("panel", sb)
@@ -264,14 +259,18 @@ func _chip(text: String) -> Control:
 ## Karta zapisu: bohater, etap, kraina, złoto, kiedy grano.
 func _save_card(s: Dictionary) -> Control:
 	var c := PanelContainer.new()
-	c.add_theme_stylebox_override("panel", IdleUI.glass(Color(0.05, 0.04, 0.05, 0.8), Color(1.0, 0.7, 0.4, 0.35), 18, 2, Color(0, 0, 0, 0.5), 10))
+	c.add_theme_stylebox_override("panel", IdleUI.ash_box("stone_panel", 26, 16))
 	var h := IdleUI.hbox(16)
 	c.add_child(h)
 	var portrait := Control.new()
 	portrait.custom_minimum_size = Vector2(88, 88)
-	portrait.add_child(IdleUI.icon_rect(load("res://assets/ui/frame_round.png"), 88))
-	var face := IdleUI.icon_rect(Sprites.icon("character"), 54)
-	face.position = Vector2(17, 13)
+	var fr := Panel.new()
+	fr.add_theme_stylebox_override("panel", IdleUI.ash_box("slot", 18))
+	fr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	portrait.add_child(fr)
+	var face := IdleUI.icon_rect(IdleUI.ash_tex("portrait"), 76)
+	face.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	face.position = Vector2(6, 6)
 	portrait.add_child(face)
 	h.add_child(portrait)
 	var v := IdleUI.vbox(2)
@@ -321,9 +320,9 @@ func _intro() -> void:
 func _process(delta: float) -> void:
 	_t += delta
 	# Pulsujący żar wokół przycisku.
-	if _play_box:
-		_play_box.shadow_size = int(16 + sin(_t * 2.6) * 7)
-		_play_box.shadow_color = Color(1.0, 0.42, 0.08, 0.5 + sin(_t * 2.6) * 0.15)
+	if _play:
+		var g := 1.0 + sin(_t * 2.6) * 0.08
+		_play.self_modulate = Color(g, g * 0.97, g * 0.94)
 	if _logo:
 		var b := 1.0 + sin(_t * 0.9) * 0.012
 		if _t > 2.2:

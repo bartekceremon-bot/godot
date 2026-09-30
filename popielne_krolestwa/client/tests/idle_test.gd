@@ -192,6 +192,25 @@ func _ready() -> void:
 	g.stats.recalc()
 	check(g.stats.dmg_mult > 1.2, "premia prestiżu do obrażeń")
 
+	print("== codzienna nagroda i osiągnięcia")
+	s.daily = {"day": 0, "last": ""}
+	gems0 = int(s.gems)
+	check(g.daily.available("2026-01-01") and g.daily.current_day("2026-01-01") == 0, "nagroda dnia 1 dostępna")
+	check(not g.daily.claim("2026-01-01").is_empty() and not g.daily.available("2026-01-01"), "odebrano dzień 1, drugi raz nie")
+	g.daily.claim("2026-01-02")
+	g.daily.claim("2026-01-03")
+	check(int(s.gems) >= gems0 + 20 and g.daily.current_day("2026-01-04") == 3, "seria: dzień 3 = żarokryształy, następny dzień 4")
+	check(g.daily.current_day("2026-01-06") == 0, "przerwa zeruje serię")
+	for d in ["2026-02-01", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-07"]:
+		g.daily.claim(d)
+	check(g.inventory.count("chest_4") >= 1 and g.daily.current_day("2026-02-08") == 0, "dzień 7: epicka skrzynia, potem seria od nowa")
+	check(g.achievements.value("best_stage") >= 60.0, "osiągnięcia pamiętają etap sprzed odrodzenia")
+	var ready := g.achievements.ready_count()
+	check(ready > 0, "osiągnięcia do odebrania: %d" % ready)
+	gems0 = int(s.gems)
+	check(g.achievements.claim("kills") and int(s.gems) > gems0, "odebrano osiągnięcie Łowca")
+	check(g.achievements.claimed("kills") == 1 and not g.achievements.claim("rebirths_x"), "stopień zapisany, zły klucz odrzucony")
+
 	g.save.delete_save()
 	print("== wynik: %s (%d błędów)" % ["OK" if fails == 0 else "BŁĘDY", fails])
 	get_tree().quit(1 if fails > 0 else 0)
