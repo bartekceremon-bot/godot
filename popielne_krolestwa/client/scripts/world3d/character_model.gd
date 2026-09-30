@@ -39,6 +39,8 @@ var float_mode := false
 var riding_height := 0.0
 ## Jeździec na wierzchowcu: nogi rozkraczone, bez kroków.
 var riding := false
+## Wysokość bioder nad stopami (osadzanie jeźdźca w siodle).
+var hip_y := 0.42
 
 
 func _init(mat: ShaderMaterial = null) -> void:
@@ -83,6 +85,10 @@ static func split_item(id: String) -> Array:
 ##       robe?, apron?, hat?, beard?, backpack?, skeleton?, held?}
 func build_humanoid(app: Dictionary) -> void:
 	type = "humanoid"
+	# Ludzie (gracze, NPC, bandyci) – realistyczne proporcje i gładkie kształty.
+	if _is_human(app):
+		build_human(app)
+		return
 	var skel: bool = app.get("skeleton", false)
 	var skin: Color = app.get("skin", SKINS[0])
 	var eq: Array = app.get("eq", ["", "", "", "", "", ""])
@@ -304,6 +310,283 @@ func build_humanoid(app: Dictionary) -> void:
 	if sid != "":
 		_build_shield(sid)
 	height = 1.12
+
+
+static func _is_human(app: Dictionary) -> bool:
+	for k in ["skeleton", "tusks", "horns", "head_shape", "float", "wings", "tail", "stripes"]:
+		if app.get(k, false):
+			return false
+	return true
+
+
+## Gładki pierścień pancerza/ubrania wokół bryły: kopia pierścieni powiększona o `grow`.
+static func _grow(rings: Array, grow: float) -> Array:
+	var out: Array = []
+	for r in rings:
+		out.append([r[0], Vector2(r[1].x + grow, r[1].y + grow)])
+	return out
+
+
+## Człowiek: nogi 0,55, tułów 0,46, głowa 0,19 (razem ~1,2 – mieści się w drzwiach domów).
+func build_human(app: Dictionary) -> void:
+	var skin: Color = app.get("skin", SKINS[0])
+	var eq: Array = app.get("eq", ["", "", "", "", "", ""])
+	var head_it := split_item(str(eq[0])) if str(eq[0]) != "" else ["", 0]
+	var body_it := split_item(str(eq[1])) if str(eq[1]) != "" else ["", 0]
+	var legs_it := split_item(str(eq[2])) if str(eq[2]) != "" else ["", 0]
+	var feet_it := split_item(str(eq[3])) if str(eq[3]) != "" else ["", 0]
+	var shirt: Color = app.get("shirt", SHIRTS[0])
+	var pants: Color = app.get("pants", Color(0.35, 0.27, 0.2))
+	var boots: Color = app.get("boots", Color(0.25, 0.17, 0.12))
+	var hair: Color = app.get("hair", HAIRS[0])
+	var style: int = app.get("hair_style", 0)
+	var body_base: String = body_it[0]
+	var bt: int = body_it[1]
+	var torso_col := shirt
+	var sleeve := shirt
+	var forearm := skin
+	var hand_col := skin
+	var metal_body := body_base.begins_with("plate")
+	if metal_body:
+		torso_col = TIER_METAL[bt]
+		sleeve = TIER_METAL[bt].darkened(0.08)
+		forearm = sleeve
+		hand_col = TIER_METAL[bt].darkened(0.2)
+	elif body_base.begins_with("leather"):
+		torso_col = TIER_LEATHER[bt]
+		sleeve = TIER_LEATHER[bt].darkened(0.08)
+		forearm = sleeve.darkened(0.1)
+		hand_col = Color(0.3, 0.2, 0.13)
+	elif body_base.begins_with("cloth"):
+		torso_col = TIER_CLOTH[bt]
+		sleeve = torso_col
+		forearm = torso_col
+	var legs_base: String = legs_it[0]
+	var metal_legs := legs_base.begins_with("plate")
+	if metal_legs:
+		pants = TIER_METAL[legs_it[1]]
+	elif legs_base.begins_with("leather"):
+		pants = TIER_LEATHER[legs_it[1]].darkened(0.1)
+	elif legs_base.begins_with("cloth"):
+		pants = TIER_CLOTH[legs_it[1]].darkened(0.1)
+	var feet_base: String = feet_it[0]
+	var metal_feet := feet_base.begins_with("plate")
+	var sandals := feet_base.begins_with("cloth")
+	if metal_feet:
+		boots = TIER_METAL[feet_it[1]].darkened(0.05)
+	elif feet_base.begins_with("leather"):
+		boots = TIER_LEATHER[feet_it[1]].darkened(0.2)
+	var trim: Color = TIER_TRIM[bt]
+
+	hip_y = 0.55
+	var root := _part("root", self, Vector3.ZERO)
+
+	# --- Nogi ---
+	var leg_rings := [[Vector3(0, -0.51, 0.005), Vector2(0.032, 0.036)], [Vector3(0, -0.45, 0.0), Vector2(0.038, 0.042)],
+		[Vector3(0, -0.34, -0.005), Vector2(0.05, 0.056)], [Vector3(0, -0.25, 0.005), Vector2(0.045, 0.05)],
+		[Vector3(0, -0.12, 0.0), Vector2(0.062, 0.066)], [Vector3(0, 0.02, 0.0), Vector2(0.068, 0.075)]]
+	for side in [-1, 1]:
+		var lk := MeshKit.new(11 + side)
+		lk.metal = 0.0
+		var boot_top := boots if not sandals else skin
+		lk.loft(leg_rings, pants, 10, true, [boot_top, boot_top, pants, pants, pants])
+		if metal_legs:
+			lk.metal = 0.85
+			lk.loft(_grow(leg_rings.slice(2, 6), 0.012), pants, 10, true)
+			lk.ellipsoid(Vector3(0, -0.25, 0.04), Vector3(0.05, 0.045, 0.035), pants.lightened(0.12), 5, 8)
+		lk.metal = 0.85 if metal_feet else 0.0
+		if metal_feet:
+			lk.loft(_grow(leg_rings.slice(0, 3), 0.01), boots, 10, true)
+		lk.ellipsoid(Vector3(0, -0.525, 0.035), Vector3(0.042, 0.032, 0.085), boots if not sandals else skin, 5, 10)
+		if sandals:
+			lk.box(Vector3(0, -0.555, 0.035), Vector3(0.09, 0.012, 0.18), Color(0.45, 0.3, 0.18))
+		lk.metal = 0.0
+		_part("leg_l" if side < 0 else "leg_r", root, Vector3(side * 0.075, hip_y, 0), lk)
+
+	# --- Tułów ---
+	var tk := MeshKit.new(21)
+	var torso_rings := [[Vector3(0, -0.02, 0), Vector2(0.125, 0.085)], [Vector3(0, 0.06, 0), Vector2(0.13, 0.086)],
+		[Vector3(0, 0.14, 0), Vector2(0.115, 0.078)], [Vector3(0, 0.24, 0.005), Vector2(0.135, 0.086)],
+		[Vector3(0, 0.31, 0.01), Vector2(0.15, 0.095)], [Vector3(0, 0.36, 0), Vector2(0.158, 0.085)],
+		[Vector3(0, 0.39, 0), Vector2(0.1, 0.065)], [Vector3(0, 0.415, 0), Vector2(0.042, 0.04)], [Vector3(0, 0.47, 0.005), Vector2(0.04, 0.04)]]
+	tk.loft(torso_rings, torso_col, 12, true, [pants, torso_col, torso_col, torso_col, torso_col, torso_col, skin, skin])
+	if metal_body:
+		tk.metal = 0.85
+		tk.loft(_grow(torso_rings.slice(1, 7), 0.016), torso_col, 12, true)
+		# Naramienniki (warstwowe) i napierśnik.
+		for side in [-1, 1]:
+			tk.ellipsoid(Vector3(side * 0.165, 0.365, 0), Vector3(0.075, 0.058, 0.082), torso_col.lightened(0.06), 5, 10)
+			tk.ellipsoid(Vector3(side * 0.18, 0.325, 0), Vector3(0.065, 0.045, 0.075), torso_col.darkened(0.05), 5, 10)
+		tk.ellipsoid(Vector3(0, 0.27, 0.07), Vector3(0.11, 0.09, 0.04), torso_col.lightened(0.1), 5, 10)
+		# Fartuch płytowy (tasiemki) na biodrach.
+		tk.loft([[Vector3(0, -0.13, 0), Vector2(0.15, 0.105)], [Vector3(0, 0.1, 0), Vector2(0.14, 0.095)]], torso_col.darkened(0.08), 12, false)
+		if bt >= 3:
+			tk.metal = 1.0
+			tk.loft([[Vector3(0, 0.345, 0), Vector2(0.176, 0.106)], [Vector3(0, 0.365, 0), Vector2(0.17, 0.1)]], trim, 12, false)
+			tk.loft([[Vector3(0, 0.085, 0), Vector2(0.148, 0.104)], [Vector3(0, 0.1, 0), Vector2(0.147, 0.103)]], trim, 12, false)
+		tk.metal = 0.0
+	elif body_base.begins_with("leather"):
+		tk.loft([[Vector3(0, 0.37, 0), Vector2(0.11, 0.075)], [Vector3(0, 0.41, 0), Vector2(0.075, 0.06)]], torso_col.lightened(0.1), 12, false)
+		tk.box(Vector3(0.05, 0.08, 0.085), Vector3(0.025, 0.28, 0.01), torso_col.darkened(0.25))
+		if bt >= 2:
+			tk.box(Vector3(-0.05, 0.08, 0.085), Vector3(0.025, 0.28, 0.01), trim)
+	if body_base.begins_with("cloth") or app.get("robe", false):
+		var rc := torso_col if body_base.begins_with("cloth") else shirt
+		tk.loft([[Vector3(0, -0.53, 0), Vector2(0.21, 0.17)], [Vector3(0, -0.2, 0), Vector2(0.16, 0.12)], [Vector3(0, 0.08, 0), Vector2(0.135, 0.09)]], rc, 12, true)
+		if bt >= 2 or app.get("robe_trim", null) != null:
+			var rt: Color = app.get("robe_trim", trim)
+			tk.loft([[Vector3(0, -0.53, 0), Vector2(0.214, 0.174)], [Vector3(0, -0.49, 0), Vector2(0.205, 0.166)]], rt, 12, false)
+			tk.box(Vector3(0, -0.2, 0.125), Vector3(0.04, 0.6, 0.01), rt)
+	# Pas ze sprzączką.
+	tk.loft([[Vector3(0, 0.075, 0), Vector2(0.138, 0.094)], [Vector3(0, 0.115, 0), Vector2(0.133, 0.09)]], Color(0.26, 0.17, 0.1), 12, false)
+	tk.metal = 1.0
+	tk.box(Vector3(0, 0.08, 0.092), Vector3(0.04, 0.035, 0.012), Color(0.85, 0.7, 0.3))
+	tk.metal = 0.0
+	if app.get("apron", null) != null:
+		var ac: Color = app.apron
+		tk.loft([[Vector3(0, -0.4, 0.05), Vector2(0.13, 0.07)], [Vector3(0, 0.2, 0.03), Vector2(0.12, 0.08)]], ac, 10, false)
+	if app.get("backpack", false):
+		tk.ellipsoid(Vector3(0, 0.22, -0.13), Vector3(0.12, 0.14, 0.07), Color(0.45, 0.32, 0.18), 5, 10)
+		tk.ellipsoid(Vector3(0, 0.33, -0.13), Vector3(0.12, 0.04, 0.08), Color(0.35, 0.25, 0.14), 4, 10)
+	# Peleryna: rycerze od T4 i postacie z płaszczem.
+	var cape_col = app.get("cape", null)
+	if cape_col == null and metal_body and bt >= 4:
+		cape_col = [Color(0.5, 0.08, 0.08), Color(0.12, 0.14, 0.32), Color(0.1, 0.1, 0.12), Color(0.35, 0.08, 0.3)][bt % 4]
+	if cape_col != null:
+		var cc: Color = cape_col
+		var top_l := Vector3(-0.15, 0.37, -0.075)
+		var top_r := Vector3(0.15, 0.37, -0.075)
+		var mid_l := Vector3(-0.19, -0.05, -0.14)
+		var mid_r := Vector3(0.19, -0.05, -0.14)
+		var bot_l := Vector3(-0.2, -0.42, -0.16)
+		var bot_r := Vector3(0.2, -0.42, -0.16)
+		for face in [1, -1]:
+			tk.quad(top_l, top_r, mid_r, mid_l, cc if face > 0 else cc.darkened(0.3), Vector3(0, 0, -face))
+			tk.quad(mid_l, mid_r, bot_r, bot_l, cc.darkened(0.08) if face > 0 else cc.darkened(0.35), Vector3(0, 0, -face))
+		if bt >= 3 and metal_body:
+			tk.metal = 1.0
+			for side in [-1, 1]:
+				tk.ellipsoid(Vector3(side * 0.12, 0.37, 0.05), Vector3(0.018, 0.018, 0.012), trim, 3, 6)
+			tk.metal = 0.0
+	var torso := _part("torso", root, Vector3(0, hip_y, 0), tk)
+
+	# --- Głowa ---
+	var hk := MeshKit.new(31)
+	var head_base: String = head_it[0]
+	var ht: int = head_it[1]
+	hk.ellipsoid(Vector3(0, 0.09, 0), Vector3(0.064, 0.08, 0.072), skin, 7, 12)
+	hk.ellipsoid(Vector3(0, 0.04, 0.018), Vector3(0.052, 0.045, 0.056), skin, 6, 10)
+	hk.ellipsoid(Vector3(0, 0.078, 0.07), Vector3(0.011, 0.02, 0.016), skin.darkened(0.06), 4, 6)
+	for side in [-1, 1]:
+		hk.ellipsoid(Vector3(side * 0.064, 0.082, 0.0), Vector3(0.01, 0.02, 0.014), skin.darkened(0.05), 4, 6)
+		hk.ellipsoid(Vector3(side * 0.024, 0.097, 0.061), Vector3(0.012, 0.008, 0.006), Color(0.95, 0.95, 0.92), 4, 6)
+		if app.has("eye_glow"):
+			hk.glow = 1.0
+			hk.ellipsoid(Vector3(side * 0.024, 0.097, 0.066), Vector3(0.009, 0.007, 0.003), app.eye_glow, 3, 6)
+			hk.glow = 0.0
+		else:
+			hk.ellipsoid(Vector3(side * 0.024, 0.097, 0.0655), Vector3(0.0065, 0.0065, 0.0025), Color(0.15, 0.12, 0.1), 3, 6)
+		hk.box(Vector3(side * 0.025, 0.108, 0.064), Vector3(0.024, 0.005, 0.006), hair.darkened(0.25))
+	hk.box(Vector3(0, 0.046, 0.071), Vector3(0.026, 0.004, 0.004), Color(0.5, 0.26, 0.24))
+	var hat: String = str(app.get("hat", ""))
+	if head_base == "" and hat != "hood":
+		match style:
+			2:
+				pass
+			_:
+				hk.ellipsoid(Vector3(0, 0.112, -0.01), Vector3(0.07, 0.068, 0.077), hair, 6, 12)
+				if style == 1:
+					hk.ellipsoid(Vector3(0, 0.03, -0.045), Vector3(0.068, 0.1, 0.045), hair, 5, 10)
+				elif style == 3:
+					hk.ellipsoid(Vector3(0, 0.05, -0.085), Vector3(0.024, 0.06, 0.024), hair, 4, 8)
+				elif style == 4:
+					hk.ellipsoid(Vector3(0, 0.19, -0.015), Vector3(0.03, 0.025, 0.03), hair, 4, 8)
+	if app.get("beard", false):
+		hk.ellipsoid(Vector3(0, 0.02, 0.042), Vector3(0.055, 0.045, 0.04), hair, 5, 10)
+		hk.ellipsoid(Vector3(0, 0.055, 0.068), Vector3(0.03, 0.008, 0.008), hair, 3, 8)
+	if head_base == "":
+		match hat:
+			"top":
+				hk.cyl(Vector3(0, 0.155, 0), 0.1, 0.1, 0.012, 10, Color(0.12, 0.1, 0.12))
+				hk.cyl(Vector3(0, 0.16, 0), 0.068, 0.068, 0.12, 10, Color(0.12, 0.1, 0.12))
+				hk.cyl(Vector3(0, 0.165, 0), 0.07, 0.07, 0.02, 10, Color(0.7, 0.15, 0.12), false)
+			"scarf":
+				var sc: Color = app.get("hat_col", Color(0.8, 0.3, 0.2))
+				hk.ellipsoid(Vector3(0, 0.12, -0.005), Vector3(0.074, 0.06, 0.08), sc, 5, 10)
+				hk.ellipsoid(Vector3(0, 0.03, -0.05), Vector3(0.07, 0.07, 0.04), sc, 5, 10)
+			"hood":
+				var hc: Color = app.get("hat_col", Color(0.9, 0.88, 0.8))
+				hk.ellipsoid(Vector3(0, 0.1, -0.018), Vector3(0.08, 0.095, 0.083), hc, 6, 12)
+				hk.cone(Vector3(0, 0.16, -0.06), 0.05, 0.09, 6, hc)
+			"cap":
+				var cc2: Color = app.get("hat_col", Color(0.4, 0.3, 0.2))
+				hk.ellipsoid(Vector3(0, 0.14, -0.005), Vector3(0.072, 0.045, 0.078), cc2, 5, 10)
+				hk.box(Vector3(0, 0.135, 0.07), Vector3(0.1, 0.01, 0.05), cc2.darkened(0.2))
+	if head_base.begins_with("plate"):
+		var mc: Color = TIER_METAL[ht]
+		hk.metal = 0.85
+		hk.ellipsoid(Vector3(0, 0.095, -0.003), Vector3(0.08, 0.094, 0.086), mc, 7, 12)
+		hk.metal = 0.0
+		hk.box(Vector3(0, 0.094, 0.079), Vector3(0.1, 0.012, 0.012), Color(0.05, 0.05, 0.06))
+		hk.metal = 0.85
+		hk.box(Vector3(0, 0.06, 0.083), Vector3(0.012, 0.06, 0.01), mc.lightened(0.1))
+		hk.loft([[Vector3(0, 0.02, 0), Vector2(0.078, 0.083)], [Vector3(0, 0.05, 0), Vector2(0.082, 0.087)]], mc.darkened(0.1), 12, false)
+		if ht >= 3:
+			hk.metal = 1.0
+			hk.box(Vector3(0, 0.185, -0.005), Vector3(0.016, 0.03, 0.15), trim)
+		if ht >= 5:
+			hk.metal = 0.0
+			hk.ellipsoid(Vector3(0, 0.215, -0.04), Vector3(0.018, 0.035, 0.09), Color(0.7, 0.1, 0.08), 4, 8)
+		hk.metal = 0.0
+	elif head_base.begins_with("leather"):
+		var lc: Color = TIER_LEATHER[ht]
+		hk.ellipsoid(Vector3(0, 0.1, -0.02), Vector3(0.08, 0.096, 0.083), lc, 6, 12)
+		hk.cone(Vector3(0, 0.15, -0.07), 0.045, 0.08, 6, lc)
+	elif head_base.begins_with("cloth"):
+		var ccl: Color = TIER_CLOTH[ht]
+		hk.cyl(Vector3(0, 0.14, 0), 0.12, 0.12, 0.012, 12, ccl.darkened(0.1))
+		hk.cyl(Vector3(0, 0.15, 0), 0.075, 0.0, 0.2, 10, ccl, false)
+	if app.has("crown"):
+		hk.glow = 0.7
+		hk.metal = 0.8
+		for i in 7:
+			var a := i * TAU / 7.0
+			hk.cone(Vector3(cos(a) * 0.065, 0.16, sin(a) * 0.065), 0.018, 0.08 + (i % 2) * 0.04, 4, app.crown)
+		hk.glow = 0.0
+		hk.metal = 0.0
+	if app.has("bandana"):
+		hk.loft([[Vector3(0, 0.1, -0.003), Vector2(0.071, 0.078)], [Vector3(0, 0.14, -0.006), Vector2(0.068, 0.075)]], app.bandana, 12, false)
+		hk.ellipsoid(Vector3(0, 0.035, 0.05), Vector3(0.058, 0.035, 0.035), app.bandana, 4, 10)
+	var head := _part("head", torso, Vector3(0, 0.455, 0), hk)
+	head.set_meta("human", true)
+
+	# --- Ręce ---
+	var arm_rings := [[Vector3(0, -0.425, 0.005), Vector2(0.026, 0.028)], [Vector3(0, -0.32, 0.005), Vector2(0.034, 0.036)],
+		[Vector3(0, -0.22, 0), Vector2(0.033, 0.035)], [Vector3(0, -0.1, 0), Vector2(0.042, 0.044)], [Vector3(0, 0.02, 0), Vector2(0.046, 0.049)]]
+	for side in [-1, 1]:
+		var ak := MeshKit.new(41 + side)
+		ak.metal = 0.85 if metal_body else 0.0
+		ak.loft(arm_rings, sleeve, 10, true, [forearm, forearm, sleeve, sleeve])
+		if metal_body:
+			ak.ellipsoid(Vector3(0, -0.22, -0.02), Vector3(0.04, 0.035, 0.035), sleeve.lightened(0.1), 4, 8)
+		ak.metal = 0.6 if metal_body else 0.0
+		ak.ellipsoid(Vector3(0, -0.46, 0.008), Vector3(0.03, 0.045, 0.034), hand_col, 5, 8)
+		ak.metal = 0.0
+		var arm := _part("arm_l" if side < 0 else "arm_r", torso, Vector3(side * 0.19, 0.35, 0), ak)
+		_part("hand_l" if side < 0 else "hand_r", arm, Vector3(0, -0.47, 0.02))
+
+	# --- Broń i tarcza ---
+	var wid := str(eq[4])
+	var held: String = app.get("held", "")
+	if wid != "":
+		_build_weapon(wid)
+	elif held != "":
+		_build_weapon(held)
+	var sid := str(eq[5])
+	if sid != "":
+		_build_shield(sid)
+		parts["shield"].position = Vector3(-0.07, -0.3, 0.03)
+	height = 1.2
 
 
 ## Otwór na twarz w kapturze (twarz rysowana ponownie z przodu kaptura).

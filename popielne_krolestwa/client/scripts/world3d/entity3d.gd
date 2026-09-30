@@ -320,7 +320,7 @@ func _refresh_model() -> void:
 			model.build_beast(mount)
 		human.riding = true
 		# Biodra jeźdźca (0,42 nad stopami) na siodle, nogi zgięte do przodu.
-		human.position = Vector3(0, model.riding_height - 0.46, -0.05)
+		human.position = Vector3(0, model.riding_height - human.hip_y - 0.04, -0.05)
 		model.add_child(human)
 		rider = human
 		label_height = (model.riding_height + 1.0) * sc

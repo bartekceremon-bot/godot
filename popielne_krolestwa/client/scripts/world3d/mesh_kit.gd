@@ -210,6 +210,93 @@ func blob(center: Vector3, radius: Vector3, col: Color, rings := 3, sides := 6, 
 				quad(a, b, c, d, cc, hint)
 
 
+## Trójkąt z gładkimi normalnymi (w przestrzeni lokalnej, przed `xf`).
+func tri_smooth(a: Vector3, b: Vector3, c: Vector3, na: Vector3, nb: Vector3, nc: Vector3, col: Color) -> void:
+	var wa := xf * a
+	var wb := xf * b
+	var wc := xf * c
+	var face := (wc - wa).cross(wb - wa)
+	var avg := xf.basis * (na + nb + nc)
+	if face.dot(avg) < 0.0:
+		var t := wb
+		wb = wc
+		wc = t
+		var tn := nb
+		nb = nc
+		nc = tn
+	var pts := [wa, wb, wc]
+	var ns := [na, nb, nc]
+	for i in 3:
+		verts.append(pts[i])
+		norms.append((xf.basis * ns[i]).normalized())
+		cols.append(col)
+		uvs.append(Vector2(metal if tex == 0 else float(tex), glow))
+
+
+## Gładka elipsoida (głowa, dłonie, naramienniki).
+func ellipsoid(center: Vector3, radii: Vector3, col: Color, rings := 6, sides := 10) -> void:
+	var pts: Array = []
+	for r in rings + 1:
+		var phi := PI * r / rings
+		var row: Array = []
+		for s in sides + 1:
+			var th := TAU * s / sides
+			var d := Vector3(sin(phi) * cos(th), cos(phi), sin(phi) * sin(th))
+			row.append([center + d * radii, Vector3(d.x / radii.x, d.y / radii.y, d.z / radii.z).normalized()])
+		pts.append(row)
+	for r in rings:
+		for s in sides:
+			var a: Array = pts[r][s]
+			var b: Array = pts[r][s + 1]
+			var c: Array = pts[r + 1][s + 1]
+			var d: Array = pts[r + 1][s]
+			if r > 0:
+				tri_smooth(a[0], b[0], c[0], a[1], b[1], c[1], col)
+			if r < rings - 1:
+				tri_smooth(a[0], c[0], d[0], a[1], c[1], d[1], col)
+
+
+## Gładka bryła z pierścieni (kończyny, tułów): rings = [[środek, Vector2(promień x, promień z)], ...]
+## od dołu do góry. cap – zamknięcie końców.
+func loft(rings: Array, col: Color, sides := 10, cap := true, cols_per_ring: Array = []) -> void:
+	var pts: Array = []
+	for i in rings.size():
+		var c: Vector3 = rings[i][0]
+		var r: Vector2 = rings[i][1]
+		var prev: Vector3 = rings[maxi(i - 1, 0)][0]
+		var next: Vector3 = rings[mini(i + 1, rings.size() - 1)][0]
+		var rp: Vector2 = rings[maxi(i - 1, 0)][1]
+		var rn: Vector2 = rings[mini(i + 1, rings.size() - 1)][1]
+		var dy := maxf((next - prev).length(), 0.001)
+		var slope := ((rp.x + rp.y) - (rn.x + rn.y)) * 0.5 / dy
+		var row: Array = []
+		for s in sides + 1:
+			var th := TAU * s / sides
+			var d := Vector3(cos(th) * r.x, 0, sin(th) * r.y)
+			var n := Vector3(cos(th) / maxf(r.x, 0.001), 0, sin(th) / maxf(r.y, 0.001)).normalized()
+			n = (n + Vector3(0, slope, 0)).normalized()
+			row.append([c + d, n])
+		pts.append(row)
+	for i in rings.size() - 1:
+		var ca: Color = cols_per_ring[i] if cols_per_ring.size() > i else col
+		for s in sides:
+			var a: Array = pts[i][s]
+			var b: Array = pts[i][s + 1]
+			var c: Array = pts[i + 1][s + 1]
+			var d: Array = pts[i + 1][s]
+			tri_smooth(a[0], b[0], c[0], a[1], b[1], c[1], ca)
+			tri_smooth(a[0], c[0], d[0], a[1], c[1], d[1], ca)
+	if cap:
+		for end in [0, rings.size() - 1]:
+			var c: Vector3 = rings[end][0]
+			var up := Vector3.DOWN if end == 0 else Vector3.UP
+			var ce: Color = cols_per_ring[mini(end, cols_per_ring.size() - 1)] if not cols_per_ring.is_empty() else col
+			for s in sides:
+				var a: Array = pts[end][s]
+				var b: Array = pts[end][s + 1]
+				tri_smooth(c, a[0], b[0], up, up, up, ce)
+
+
 ## Płaski dwustronny trójkąt (liście, trawa, płomienie).
 func blade(a: Vector3, b: Vector3, c: Vector3, col: Color) -> void:
 	var n := (c - a).cross(b - a)
