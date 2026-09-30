@@ -13,7 +13,8 @@ const QUALITY_COLORS := [Color.TRANSPARENT, Color(0, 0, 0, 0), Color("7ac060"), 
 ## Ikony HUD dostępne jako pliki ui/icon_*.png.
 const UI_ICONS := ["bag", "character", "specs", "people", "menu", "chat", "attack", "heal", "skull_white", "skull_red", "book",
 	"spell_fire", "spell_meteor", "spell_ice", "spell_shield", "spell_lightning", "spell_storm", "spell_haste",
-	"spell_death", "spell_curse", "spell_holy", "spell_purify"]
+	"spell_death", "spell_curse", "spell_holy", "spell_purify",
+	"craft", "quest", "map", "shop", "gem", "ash", "mount", "market", "prestige", "chest"]
 
 var index: Dictionary = {}
 var items_tex: Texture2D

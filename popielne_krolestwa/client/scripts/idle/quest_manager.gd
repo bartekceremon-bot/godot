@@ -104,7 +104,8 @@ func refresh() -> void:
 
 
 func _new_task() -> Dictionary:
-	var defs: Array = gm.db.tasks.filter(func(t): return _task_allowed(str(t.type)))
+	var used: Array = _q().tasks.map(func(t): return str(t.type))
+	var defs: Array = gm.db.tasks.filter(func(t): return _task_allowed(str(t.type)) and not used.has(str(t.type)))
 	var t: Dictionary = defs[_rng.randi() % defs.size()]
 	var n := int(_q().tasks_done)
 	var scale := 1.0 + n * 0.08

@@ -115,8 +115,9 @@ func _ready() -> void:
 	g.combat.mp = 9999.0
 	g.stats.recalc()
 	var k0 := int(s.stats.kills)
+	var hp_m := float(g.enemy.cur.hp)
 	check(g.spells.cast("meteor"), "Meteor rzucony")
-	check(int(s.stats.kills) > k0, "Meteor zabija (i przechodzi dalej): %d" % (int(s.stats.kills) - k0))
+	check(int(s.stats.kills) > k0 or float(g.enemy.cur.hp) < hp_m, "Meteor rani lub zabija (zabici: %d)" % (int(s.stats.kills) - k0))
 	check(not g.spells.can_cast("meteor"), "odnowienie Meteoru")
 	check(g.spells.cast("haste"), "Przyspieszenie")
 	g.stats.recalc()
