@@ -1,0 +1,3349 @@
+{
+ "stations": {
+  "refinery": "Rafineria",
+  "forge": "Kuźnia",
+  "workshop": "Pracownia"
+ },
+ "list": [
+  {
+   "id": "refine_wood_t1",
+   "station": "refinery",
+   "output": "planks_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "wood_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 1
+  },
+  {
+   "id": "refine_wood_t2",
+   "station": "refinery",
+   "output": "planks_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "wood_t2",
+     "count": 2
+    },
+    {
+     "item": "planks_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 2
+  },
+  {
+   "id": "refine_wood_t3",
+   "station": "refinery",
+   "output": "planks_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "wood_t3",
+     "count": 2
+    },
+    {
+     "item": "planks_t2",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 3
+  },
+  {
+   "id": "refine_wood_t4",
+   "station": "refinery",
+   "output": "planks_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "wood_t4",
+     "count": 2
+    },
+    {
+     "item": "planks_t3",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 4
+  },
+  {
+   "id": "refine_wood_t5",
+   "station": "refinery",
+   "output": "planks_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "wood_t5",
+     "count": 2
+    },
+    {
+     "item": "planks_t4",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 5
+  },
+  {
+   "id": "refine_wood_t6",
+   "station": "refinery",
+   "output": "planks_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "wood_t6",
+     "count": 2
+    },
+    {
+     "item": "planks_t5",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 6
+  },
+  {
+   "id": "refine_wood_t7",
+   "station": "refinery",
+   "output": "planks_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "wood_t7",
+     "count": 2
+    },
+    {
+     "item": "planks_t6",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 7
+  },
+  {
+   "id": "refine_wood_t8",
+   "station": "refinery",
+   "output": "planks_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "wood_t8",
+     "count": 2
+    },
+    {
+     "item": "planks_t7",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 8
+  },
+  {
+   "id": "refine_stone_t1",
+   "station": "refinery",
+   "output": "blocks_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "stone_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 1
+  },
+  {
+   "id": "refine_stone_t2",
+   "station": "refinery",
+   "output": "blocks_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "stone_t2",
+     "count": 2
+    },
+    {
+     "item": "blocks_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 2
+  },
+  {
+   "id": "refine_stone_t3",
+   "station": "refinery",
+   "output": "blocks_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "stone_t3",
+     "count": 2
+    },
+    {
+     "item": "blocks_t2",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 3
+  },
+  {
+   "id": "refine_stone_t4",
+   "station": "refinery",
+   "output": "blocks_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "stone_t4",
+     "count": 2
+    },
+    {
+     "item": "blocks_t3",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 4
+  },
+  {
+   "id": "refine_stone_t5",
+   "station": "refinery",
+   "output": "blocks_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "stone_t5",
+     "count": 2
+    },
+    {
+     "item": "blocks_t4",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 5
+  },
+  {
+   "id": "refine_stone_t6",
+   "station": "refinery",
+   "output": "blocks_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "stone_t6",
+     "count": 2
+    },
+    {
+     "item": "blocks_t5",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 6
+  },
+  {
+   "id": "refine_stone_t7",
+   "station": "refinery",
+   "output": "blocks_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "stone_t7",
+     "count": 2
+    },
+    {
+     "item": "blocks_t6",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 7
+  },
+  {
+   "id": "refine_stone_t8",
+   "station": "refinery",
+   "output": "blocks_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "stone_t8",
+     "count": 2
+    },
+    {
+     "item": "blocks_t7",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 8
+  },
+  {
+   "id": "refine_ore_t1",
+   "station": "refinery",
+   "output": "bars_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "ore_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 1
+  },
+  {
+   "id": "refine_ore_t2",
+   "station": "refinery",
+   "output": "bars_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "ore_t2",
+     "count": 2
+    },
+    {
+     "item": "bars_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 2
+  },
+  {
+   "id": "refine_ore_t3",
+   "station": "refinery",
+   "output": "bars_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "ore_t3",
+     "count": 2
+    },
+    {
+     "item": "bars_t2",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 3
+  },
+  {
+   "id": "refine_ore_t4",
+   "station": "refinery",
+   "output": "bars_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "ore_t4",
+     "count": 2
+    },
+    {
+     "item": "bars_t3",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 4
+  },
+  {
+   "id": "refine_ore_t5",
+   "station": "refinery",
+   "output": "bars_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "ore_t5",
+     "count": 2
+    },
+    {
+     "item": "bars_t4",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 5
+  },
+  {
+   "id": "refine_ore_t6",
+   "station": "refinery",
+   "output": "bars_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "ore_t6",
+     "count": 2
+    },
+    {
+     "item": "bars_t5",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 6
+  },
+  {
+   "id": "refine_ore_t7",
+   "station": "refinery",
+   "output": "bars_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "ore_t7",
+     "count": 2
+    },
+    {
+     "item": "bars_t6",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 7
+  },
+  {
+   "id": "refine_ore_t8",
+   "station": "refinery",
+   "output": "bars_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "ore_t8",
+     "count": 2
+    },
+    {
+     "item": "bars_t7",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 8
+  },
+  {
+   "id": "refine_fiber_t1",
+   "station": "refinery",
+   "output": "cloth_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "fiber_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 1
+  },
+  {
+   "id": "refine_fiber_t2",
+   "station": "refinery",
+   "output": "cloth_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "fiber_t2",
+     "count": 2
+    },
+    {
+     "item": "cloth_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 2
+  },
+  {
+   "id": "refine_fiber_t3",
+   "station": "refinery",
+   "output": "cloth_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "fiber_t3",
+     "count": 2
+    },
+    {
+     "item": "cloth_t2",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 3
+  },
+  {
+   "id": "refine_fiber_t4",
+   "station": "refinery",
+   "output": "cloth_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "fiber_t4",
+     "count": 2
+    },
+    {
+     "item": "cloth_t3",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 4
+  },
+  {
+   "id": "refine_fiber_t5",
+   "station": "refinery",
+   "output": "cloth_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "fiber_t5",
+     "count": 2
+    },
+    {
+     "item": "cloth_t4",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 5
+  },
+  {
+   "id": "refine_fiber_t6",
+   "station": "refinery",
+   "output": "cloth_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "fiber_t6",
+     "count": 2
+    },
+    {
+     "item": "cloth_t5",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 6
+  },
+  {
+   "id": "refine_fiber_t7",
+   "station": "refinery",
+   "output": "cloth_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "fiber_t7",
+     "count": 2
+    },
+    {
+     "item": "cloth_t6",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 7
+  },
+  {
+   "id": "refine_fiber_t8",
+   "station": "refinery",
+   "output": "cloth_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "fiber_t8",
+     "count": 2
+    },
+    {
+     "item": "cloth_t7",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 8
+  },
+  {
+   "id": "refine_hide_t1",
+   "station": "refinery",
+   "output": "leather_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "hide_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 1
+  },
+  {
+   "id": "refine_hide_t2",
+   "station": "refinery",
+   "output": "leather_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "hide_t2",
+     "count": 2
+    },
+    {
+     "item": "leather_t1",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 2
+  },
+  {
+   "id": "refine_hide_t3",
+   "station": "refinery",
+   "output": "leather_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "hide_t3",
+     "count": 2
+    },
+    {
+     "item": "leather_t2",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 3
+  },
+  {
+   "id": "refine_hide_t4",
+   "station": "refinery",
+   "output": "leather_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "hide_t4",
+     "count": 2
+    },
+    {
+     "item": "leather_t3",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 4
+  },
+  {
+   "id": "refine_hide_t5",
+   "station": "refinery",
+   "output": "leather_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "hide_t5",
+     "count": 2
+    },
+    {
+     "item": "leather_t4",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 5
+  },
+  {
+   "id": "refine_hide_t6",
+   "station": "refinery",
+   "output": "leather_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "hide_t6",
+     "count": 2
+    },
+    {
+     "item": "leather_t5",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 6
+  },
+  {
+   "id": "refine_hide_t7",
+   "station": "refinery",
+   "output": "leather_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "hide_t7",
+     "count": 2
+    },
+    {
+     "item": "leather_t6",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 7
+  },
+  {
+   "id": "refine_hide_t8",
+   "station": "refinery",
+   "output": "leather_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "hide_t8",
+     "count": 2
+    },
+    {
+     "item": "leather_t7",
+     "count": 1
+    }
+   ],
+   "spec": "refining",
+   "tier": 8
+  },
+  {
+   "id": "craft_sword_t1",
+   "station": "forge",
+   "output": "sword_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 6
+    },
+    {
+     "item": "leather_t1",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_sword_t2",
+   "station": "forge",
+   "output": "sword_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 6
+    },
+    {
+     "item": "leather_t2",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_sword_t3",
+   "station": "forge",
+   "output": "sword_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 6
+    },
+    {
+     "item": "leather_t3",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_sword_t4",
+   "station": "forge",
+   "output": "sword_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 6
+    },
+    {
+     "item": "leather_t4",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_sword_t5",
+   "station": "forge",
+   "output": "sword_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 6
+    },
+    {
+     "item": "leather_t5",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_sword_t6",
+   "station": "forge",
+   "output": "sword_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 6
+    },
+    {
+     "item": "leather_t6",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_sword_t7",
+   "station": "forge",
+   "output": "sword_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 6
+    },
+    {
+     "item": "leather_t7",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_sword_t8",
+   "station": "forge",
+   "output": "sword_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 6
+    },
+    {
+     "item": "leather_t8",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_axe_t1",
+   "station": "forge",
+   "output": "axe_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 6
+    },
+    {
+     "item": "planks_t1",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_axe_t2",
+   "station": "forge",
+   "output": "axe_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 6
+    },
+    {
+     "item": "planks_t2",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_axe_t3",
+   "station": "forge",
+   "output": "axe_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 6
+    },
+    {
+     "item": "planks_t3",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_axe_t4",
+   "station": "forge",
+   "output": "axe_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 6
+    },
+    {
+     "item": "planks_t4",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_axe_t5",
+   "station": "forge",
+   "output": "axe_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 6
+    },
+    {
+     "item": "planks_t5",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_axe_t6",
+   "station": "forge",
+   "output": "axe_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 6
+    },
+    {
+     "item": "planks_t6",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_axe_t7",
+   "station": "forge",
+   "output": "axe_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 6
+    },
+    {
+     "item": "planks_t7",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_axe_t8",
+   "station": "forge",
+   "output": "axe_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 6
+    },
+    {
+     "item": "planks_t8",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_mace_t1",
+   "station": "forge",
+   "output": "mace_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 6
+    },
+    {
+     "item": "blocks_t1",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_mace_t2",
+   "station": "forge",
+   "output": "mace_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 6
+    },
+    {
+     "item": "blocks_t2",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_mace_t3",
+   "station": "forge",
+   "output": "mace_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 6
+    },
+    {
+     "item": "blocks_t3",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_mace_t4",
+   "station": "forge",
+   "output": "mace_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 6
+    },
+    {
+     "item": "blocks_t4",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_mace_t5",
+   "station": "forge",
+   "output": "mace_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 6
+    },
+    {
+     "item": "blocks_t5",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_mace_t6",
+   "station": "forge",
+   "output": "mace_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 6
+    },
+    {
+     "item": "blocks_t6",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_mace_t7",
+   "station": "forge",
+   "output": "mace_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 6
+    },
+    {
+     "item": "blocks_t7",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_mace_t8",
+   "station": "forge",
+   "output": "mace_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 6
+    },
+    {
+     "item": "blocks_t8",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_staff_t1",
+   "station": "workshop",
+   "output": "staff_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t1",
+     "count": 5
+    },
+    {
+     "item": "cloth_t1",
+     "count": 3
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_staff_t2",
+   "station": "workshop",
+   "output": "staff_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t2",
+     "count": 5
+    },
+    {
+     "item": "cloth_t2",
+     "count": 3
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_staff_t3",
+   "station": "workshop",
+   "output": "staff_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t3",
+     "count": 5
+    },
+    {
+     "item": "cloth_t3",
+     "count": 3
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_staff_t4",
+   "station": "workshop",
+   "output": "staff_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t4",
+     "count": 5
+    },
+    {
+     "item": "cloth_t4",
+     "count": 3
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_staff_t5",
+   "station": "workshop",
+   "output": "staff_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t5",
+     "count": 5
+    },
+    {
+     "item": "cloth_t5",
+     "count": 3
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_staff_t6",
+   "station": "workshop",
+   "output": "staff_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t6",
+     "count": 5
+    },
+    {
+     "item": "cloth_t6",
+     "count": 3
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_staff_t7",
+   "station": "workshop",
+   "output": "staff_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t7",
+     "count": 5
+    },
+    {
+     "item": "cloth_t7",
+     "count": 3
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_staff_t8",
+   "station": "workshop",
+   "output": "staff_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t8",
+     "count": 5
+    },
+    {
+     "item": "cloth_t8",
+     "count": 3
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_bow_t1",
+   "station": "workshop",
+   "output": "bow_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t1",
+     "count": 6
+    },
+    {
+     "item": "cloth_t1",
+     "count": 2
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_bow_t2",
+   "station": "workshop",
+   "output": "bow_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t2",
+     "count": 6
+    },
+    {
+     "item": "cloth_t2",
+     "count": 2
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_bow_t3",
+   "station": "workshop",
+   "output": "bow_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t3",
+     "count": 6
+    },
+    {
+     "item": "cloth_t3",
+     "count": 2
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_bow_t4",
+   "station": "workshop",
+   "output": "bow_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t4",
+     "count": 6
+    },
+    {
+     "item": "cloth_t4",
+     "count": 2
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_bow_t5",
+   "station": "workshop",
+   "output": "bow_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t5",
+     "count": 6
+    },
+    {
+     "item": "cloth_t5",
+     "count": 2
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_bow_t6",
+   "station": "workshop",
+   "output": "bow_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t6",
+     "count": 6
+    },
+    {
+     "item": "cloth_t6",
+     "count": 2
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_bow_t7",
+   "station": "workshop",
+   "output": "bow_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t7",
+     "count": 6
+    },
+    {
+     "item": "cloth_t7",
+     "count": 2
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_bow_t8",
+   "station": "workshop",
+   "output": "bow_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t8",
+     "count": 6
+    },
+    {
+     "item": "cloth_t8",
+     "count": 2
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_shield_t1",
+   "station": "forge",
+   "output": "shield_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t1",
+     "count": 4
+    },
+    {
+     "item": "bars_t1",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_shield_t2",
+   "station": "forge",
+   "output": "shield_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t2",
+     "count": 4
+    },
+    {
+     "item": "bars_t2",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_shield_t3",
+   "station": "forge",
+   "output": "shield_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t3",
+     "count": 4
+    },
+    {
+     "item": "bars_t3",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_shield_t4",
+   "station": "forge",
+   "output": "shield_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t4",
+     "count": 4
+    },
+    {
+     "item": "bars_t4",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_shield_t5",
+   "station": "forge",
+   "output": "shield_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t5",
+     "count": 4
+    },
+    {
+     "item": "bars_t5",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_shield_t6",
+   "station": "forge",
+   "output": "shield_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t6",
+     "count": 4
+    },
+    {
+     "item": "bars_t6",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_shield_t7",
+   "station": "forge",
+   "output": "shield_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t7",
+     "count": 4
+    },
+    {
+     "item": "bars_t7",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_shield_t8",
+   "station": "forge",
+   "output": "shield_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "planks_t8",
+     "count": 4
+    },
+    {
+     "item": "bars_t8",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_plate_head_t1",
+   "station": "forge",
+   "output": "plate_head_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_plate_head_t2",
+   "station": "forge",
+   "output": "plate_head_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_plate_head_t3",
+   "station": "forge",
+   "output": "plate_head_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_plate_head_t4",
+   "station": "forge",
+   "output": "plate_head_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_plate_head_t5",
+   "station": "forge",
+   "output": "plate_head_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_plate_head_t6",
+   "station": "forge",
+   "output": "plate_head_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_plate_head_t7",
+   "station": "forge",
+   "output": "plate_head_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_plate_head_t8",
+   "station": "forge",
+   "output": "plate_head_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_plate_body_t1",
+   "station": "forge",
+   "output": "plate_body_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 8
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_plate_body_t2",
+   "station": "forge",
+   "output": "plate_body_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 8
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_plate_body_t3",
+   "station": "forge",
+   "output": "plate_body_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 8
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_plate_body_t4",
+   "station": "forge",
+   "output": "plate_body_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 8
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_plate_body_t5",
+   "station": "forge",
+   "output": "plate_body_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 8
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_plate_body_t6",
+   "station": "forge",
+   "output": "plate_body_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 8
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_plate_body_t7",
+   "station": "forge",
+   "output": "plate_body_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 8
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_plate_body_t8",
+   "station": "forge",
+   "output": "plate_body_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 8
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_plate_legs_t1",
+   "station": "forge",
+   "output": "plate_legs_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 6
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_plate_legs_t2",
+   "station": "forge",
+   "output": "plate_legs_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 6
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_plate_legs_t3",
+   "station": "forge",
+   "output": "plate_legs_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 6
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_plate_legs_t4",
+   "station": "forge",
+   "output": "plate_legs_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 6
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_plate_legs_t5",
+   "station": "forge",
+   "output": "plate_legs_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 6
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_plate_legs_t6",
+   "station": "forge",
+   "output": "plate_legs_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 6
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_plate_legs_t7",
+   "station": "forge",
+   "output": "plate_legs_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 6
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_plate_legs_t8",
+   "station": "forge",
+   "output": "plate_legs_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 6
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_plate_feet_t1",
+   "station": "forge",
+   "output": "plate_feet_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_plate_feet_t2",
+   "station": "forge",
+   "output": "plate_feet_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_plate_feet_t3",
+   "station": "forge",
+   "output": "plate_feet_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_plate_feet_t4",
+   "station": "forge",
+   "output": "plate_feet_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_plate_feet_t5",
+   "station": "forge",
+   "output": "plate_feet_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_plate_feet_t6",
+   "station": "forge",
+   "output": "plate_feet_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_plate_feet_t7",
+   "station": "forge",
+   "output": "plate_feet_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_plate_feet_t8",
+   "station": "forge",
+   "output": "plate_feet_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 4
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_leather_head_t1",
+   "station": "workshop",
+   "output": "leather_head_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t1",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_leather_head_t2",
+   "station": "workshop",
+   "output": "leather_head_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t2",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_leather_head_t3",
+   "station": "workshop",
+   "output": "leather_head_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t3",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_leather_head_t4",
+   "station": "workshop",
+   "output": "leather_head_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t4",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_leather_head_t5",
+   "station": "workshop",
+   "output": "leather_head_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t5",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_leather_head_t6",
+   "station": "workshop",
+   "output": "leather_head_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t6",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_leather_head_t7",
+   "station": "workshop",
+   "output": "leather_head_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t7",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_leather_head_t8",
+   "station": "workshop",
+   "output": "leather_head_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t8",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_leather_body_t1",
+   "station": "workshop",
+   "output": "leather_body_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t1",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_leather_body_t2",
+   "station": "workshop",
+   "output": "leather_body_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t2",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_leather_body_t3",
+   "station": "workshop",
+   "output": "leather_body_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t3",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_leather_body_t4",
+   "station": "workshop",
+   "output": "leather_body_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t4",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_leather_body_t5",
+   "station": "workshop",
+   "output": "leather_body_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t5",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_leather_body_t6",
+   "station": "workshop",
+   "output": "leather_body_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t6",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_leather_body_t7",
+   "station": "workshop",
+   "output": "leather_body_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t7",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_leather_body_t8",
+   "station": "workshop",
+   "output": "leather_body_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t8",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_leather_legs_t1",
+   "station": "workshop",
+   "output": "leather_legs_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t1",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_leather_legs_t2",
+   "station": "workshop",
+   "output": "leather_legs_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t2",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_leather_legs_t3",
+   "station": "workshop",
+   "output": "leather_legs_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t3",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_leather_legs_t4",
+   "station": "workshop",
+   "output": "leather_legs_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t4",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_leather_legs_t5",
+   "station": "workshop",
+   "output": "leather_legs_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t5",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_leather_legs_t6",
+   "station": "workshop",
+   "output": "leather_legs_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t6",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_leather_legs_t7",
+   "station": "workshop",
+   "output": "leather_legs_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t7",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_leather_legs_t8",
+   "station": "workshop",
+   "output": "leather_legs_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t8",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_leather_feet_t1",
+   "station": "workshop",
+   "output": "leather_feet_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t1",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_leather_feet_t2",
+   "station": "workshop",
+   "output": "leather_feet_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t2",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_leather_feet_t3",
+   "station": "workshop",
+   "output": "leather_feet_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t3",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_leather_feet_t4",
+   "station": "workshop",
+   "output": "leather_feet_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t4",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_leather_feet_t5",
+   "station": "workshop",
+   "output": "leather_feet_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t5",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_leather_feet_t6",
+   "station": "workshop",
+   "output": "leather_feet_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t6",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_leather_feet_t7",
+   "station": "workshop",
+   "output": "leather_feet_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t7",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_leather_feet_t8",
+   "station": "workshop",
+   "output": "leather_feet_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "leather_t8",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_cloth_head_t1",
+   "station": "workshop",
+   "output": "cloth_head_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t1",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_cloth_head_t2",
+   "station": "workshop",
+   "output": "cloth_head_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t2",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_cloth_head_t3",
+   "station": "workshop",
+   "output": "cloth_head_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t3",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_cloth_head_t4",
+   "station": "workshop",
+   "output": "cloth_head_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t4",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_cloth_head_t5",
+   "station": "workshop",
+   "output": "cloth_head_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t5",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_cloth_head_t6",
+   "station": "workshop",
+   "output": "cloth_head_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t6",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_cloth_head_t7",
+   "station": "workshop",
+   "output": "cloth_head_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t7",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_cloth_head_t8",
+   "station": "workshop",
+   "output": "cloth_head_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t8",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_cloth_body_t1",
+   "station": "workshop",
+   "output": "cloth_body_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t1",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_cloth_body_t2",
+   "station": "workshop",
+   "output": "cloth_body_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t2",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_cloth_body_t3",
+   "station": "workshop",
+   "output": "cloth_body_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t3",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_cloth_body_t4",
+   "station": "workshop",
+   "output": "cloth_body_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t4",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_cloth_body_t5",
+   "station": "workshop",
+   "output": "cloth_body_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t5",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_cloth_body_t6",
+   "station": "workshop",
+   "output": "cloth_body_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t6",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_cloth_body_t7",
+   "station": "workshop",
+   "output": "cloth_body_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t7",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_cloth_body_t8",
+   "station": "workshop",
+   "output": "cloth_body_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t8",
+     "count": 8
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_cloth_legs_t1",
+   "station": "workshop",
+   "output": "cloth_legs_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t1",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_cloth_legs_t2",
+   "station": "workshop",
+   "output": "cloth_legs_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t2",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_cloth_legs_t3",
+   "station": "workshop",
+   "output": "cloth_legs_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t3",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_cloth_legs_t4",
+   "station": "workshop",
+   "output": "cloth_legs_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t4",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_cloth_legs_t5",
+   "station": "workshop",
+   "output": "cloth_legs_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t5",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_cloth_legs_t6",
+   "station": "workshop",
+   "output": "cloth_legs_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t6",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_cloth_legs_t7",
+   "station": "workshop",
+   "output": "cloth_legs_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t7",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_cloth_legs_t8",
+   "station": "workshop",
+   "output": "cloth_legs_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t8",
+     "count": 6
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_cloth_feet_t1",
+   "station": "workshop",
+   "output": "cloth_feet_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t1",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 1
+  },
+  {
+   "id": "craft_cloth_feet_t2",
+   "station": "workshop",
+   "output": "cloth_feet_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t2",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 2
+  },
+  {
+   "id": "craft_cloth_feet_t3",
+   "station": "workshop",
+   "output": "cloth_feet_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t3",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 3
+  },
+  {
+   "id": "craft_cloth_feet_t4",
+   "station": "workshop",
+   "output": "cloth_feet_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t4",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 4
+  },
+  {
+   "id": "craft_cloth_feet_t5",
+   "station": "workshop",
+   "output": "cloth_feet_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t5",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 5
+  },
+  {
+   "id": "craft_cloth_feet_t6",
+   "station": "workshop",
+   "output": "cloth_feet_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t6",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 6
+  },
+  {
+   "id": "craft_cloth_feet_t7",
+   "station": "workshop",
+   "output": "cloth_feet_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t7",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 7
+  },
+  {
+   "id": "craft_cloth_feet_t8",
+   "station": "workshop",
+   "output": "cloth_feet_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "cloth_t8",
+     "count": 4
+    }
+   ],
+   "spec": "craftsmanship",
+   "tier": 8
+  },
+  {
+   "id": "craft_woodaxe_t1",
+   "station": "forge",
+   "output": "woodaxe_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 2
+    },
+    {
+     "item": "planks_t1",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_woodaxe_t2",
+   "station": "forge",
+   "output": "woodaxe_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 2
+    },
+    {
+     "item": "planks_t2",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_woodaxe_t3",
+   "station": "forge",
+   "output": "woodaxe_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 2
+    },
+    {
+     "item": "planks_t3",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_woodaxe_t4",
+   "station": "forge",
+   "output": "woodaxe_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 2
+    },
+    {
+     "item": "planks_t4",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_woodaxe_t5",
+   "station": "forge",
+   "output": "woodaxe_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 2
+    },
+    {
+     "item": "planks_t5",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_woodaxe_t6",
+   "station": "forge",
+   "output": "woodaxe_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 2
+    },
+    {
+     "item": "planks_t6",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_woodaxe_t7",
+   "station": "forge",
+   "output": "woodaxe_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 2
+    },
+    {
+     "item": "planks_t7",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_woodaxe_t8",
+   "station": "forge",
+   "output": "woodaxe_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 2
+    },
+    {
+     "item": "planks_t8",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_pickaxe_t1",
+   "station": "forge",
+   "output": "pickaxe_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 2
+    },
+    {
+     "item": "planks_t1",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_pickaxe_t2",
+   "station": "forge",
+   "output": "pickaxe_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 2
+    },
+    {
+     "item": "planks_t2",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_pickaxe_t3",
+   "station": "forge",
+   "output": "pickaxe_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 2
+    },
+    {
+     "item": "planks_t3",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_pickaxe_t4",
+   "station": "forge",
+   "output": "pickaxe_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 2
+    },
+    {
+     "item": "planks_t4",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_pickaxe_t5",
+   "station": "forge",
+   "output": "pickaxe_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 2
+    },
+    {
+     "item": "planks_t5",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_pickaxe_t6",
+   "station": "forge",
+   "output": "pickaxe_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 2
+    },
+    {
+     "item": "planks_t6",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_pickaxe_t7",
+   "station": "forge",
+   "output": "pickaxe_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 2
+    },
+    {
+     "item": "planks_t7",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_pickaxe_t8",
+   "station": "forge",
+   "output": "pickaxe_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 2
+    },
+    {
+     "item": "planks_t8",
+     "count": 2
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  },
+  {
+   "id": "craft_sickle_t1",
+   "station": "forge",
+   "output": "sickle_t1",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t1",
+     "count": 2
+    },
+    {
+     "item": "planks_t1",
+     "count": 1
+    }
+   ],
+   "spec": "smithing",
+   "tier": 1
+  },
+  {
+   "id": "craft_sickle_t2",
+   "station": "forge",
+   "output": "sickle_t2",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t2",
+     "count": 2
+    },
+    {
+     "item": "planks_t2",
+     "count": 1
+    }
+   ],
+   "spec": "smithing",
+   "tier": 2
+  },
+  {
+   "id": "craft_sickle_t3",
+   "station": "forge",
+   "output": "sickle_t3",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t3",
+     "count": 2
+    },
+    {
+     "item": "planks_t3",
+     "count": 1
+    }
+   ],
+   "spec": "smithing",
+   "tier": 3
+  },
+  {
+   "id": "craft_sickle_t4",
+   "station": "forge",
+   "output": "sickle_t4",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t4",
+     "count": 2
+    },
+    {
+     "item": "planks_t4",
+     "count": 1
+    }
+   ],
+   "spec": "smithing",
+   "tier": 4
+  },
+  {
+   "id": "craft_sickle_t5",
+   "station": "forge",
+   "output": "sickle_t5",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t5",
+     "count": 2
+    },
+    {
+     "item": "planks_t5",
+     "count": 1
+    }
+   ],
+   "spec": "smithing",
+   "tier": 5
+  },
+  {
+   "id": "craft_sickle_t6",
+   "station": "forge",
+   "output": "sickle_t6",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t6",
+     "count": 2
+    },
+    {
+     "item": "planks_t6",
+     "count": 1
+    }
+   ],
+   "spec": "smithing",
+   "tier": 6
+  },
+  {
+   "id": "craft_sickle_t7",
+   "station": "forge",
+   "output": "sickle_t7",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t7",
+     "count": 2
+    },
+    {
+     "item": "planks_t7",
+     "count": 1
+    }
+   ],
+   "spec": "smithing",
+   "tier": 7
+  },
+  {
+   "id": "craft_sickle_t8",
+   "station": "forge",
+   "output": "sickle_t8",
+   "count": 1,
+   "inputs": [
+    {
+     "item": "bars_t8",
+     "count": 2
+    },
+    {
+     "item": "planks_t8",
+     "count": 1
+    }
+   ],
+   "spec": "smithing",
+   "tier": 8
+  }
+ ]
+}

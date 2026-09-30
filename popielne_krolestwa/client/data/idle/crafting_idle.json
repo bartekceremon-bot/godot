@@ -1,0 +1,16 @@
+{
+ "_opis": "Receptury idle dodane do receptur MMO (rafinacja i ekwipunek z content/recipes.json). Mikstury i tymczasowe wzmocnienia. unlock_stage – od którego etapu (maks.) receptura jest dostępna.",
+ "list": [
+  {"id": "brew_hp", "name": "Mikstura życia", "output": "hp_potion", "count": 2, "inputs": [["meat", 2], ["fiber_t1", 1]], "unlock_stage": 3},
+  {"id": "brew_mp", "name": "Mikstura many", "output": "mp_potion", "count": 2, "inputs": [["bone", 2], ["fiber_t1", 1]], "unlock_stage": 12},
+  {"id": "brew_great_hp", "name": "Wielka mikstura życia", "output": "great_hp_potion", "count": 2, "inputs": [["meat", 4], ["fiber_t5", 1]], "unlock_stage": 40},
+  {"id": "brew_great_mp", "name": "Wielka mikstura many", "output": "great_mp_potion", "count": 2, "inputs": [["bone", 4], ["fiber_t5", 1]], "unlock_stage": 40},
+  {"id": "boost_roast", "name": "Pieczeń myśliwego", "boost": "gold", "power": 0.5, "minutes": 10, "inputs": [["meat", 5]], "unlock_stage": 6, "text": "+50% złota przez 10 min"},
+  {"id": "boost_bone", "name": "Wywar z popielnych kości", "boost": "xp", "power": 0.5, "minutes": 10, "inputs": [["bone", 5]], "unlock_stage": 14, "text": "+50% doświadczenia przez 10 min"},
+  {"id": "boost_oil", "name": "Olej do ostrzy", "boost": "click", "power": 1.0, "minutes": 10, "inputs": [["bars_t1", 3]], "unlock_stage": 10, "text": "+100% obrażeń kliknięcia przez 10 min"},
+  {"id": "boost_dragon", "name": "Eliksir Żarogniewa", "boost": "damage", "power": 1.0, "minutes": 30, "inputs": [["dragon_scale", 1]], "unlock_stage": 80, "text": "+100% wszystkich obrażeń przez 30 min"},
+  {"id": "boost_crown", "name": "Mróz Korony", "boost": "damage", "power": 0.6, "minutes": 30, "inputs": [["frost_crown", 1]], "unlock_stage": 60, "text": "+60% obrażeń przez 30 min"},
+  {"id": "boost_fang", "name": "Proszek z kła Czerwia", "boost": "gold", "power": 1.0, "minutes": 30, "inputs": [["worm_fang", 1]], "unlock_stage": 40, "text": "+100% złota przez 30 min"},
+  {"id": "boost_heart", "name": "Wywar z serca Moczarów", "boost": "xp", "power": 1.0, "minutes": 30, "inputs": [["bog_heart", 1]], "unlock_stage": 30, "text": "+100% doświadczenia przez 30 min"}
+ ]
+}

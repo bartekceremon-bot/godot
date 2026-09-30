@@ -21,6 +21,7 @@ Net="*res://scripts/autoload/net.gd"
 GameData="*res://scripts/autoload/game_data.gd"
 Sprites="*res://scripts/autoload/sprites.gd"
 Sfx="*res://scripts/autoload/sfx.gd"
+Idle="*res://scripts/idle/game_manager.gd"
 
 [display]
 

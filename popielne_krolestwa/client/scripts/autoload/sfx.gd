@@ -2,7 +2,7 @@ extends Node
 ## Proste efekty dźwiękowe syntezowane w kodzie (bez plików – własne, CC0).
 
 const RATE := 22050
-const POOL_SIZE := 6
+const POOL_SIZE := 10
 
 var _streams: Dictionary = {}
 var _players: Array[AudioStreamPlayer] = []
@@ -28,6 +28,13 @@ func _ready() -> void:
 	_streams["craft"] = _arpeggio([392.0, 523.0, 659.0], 0.07)
 	_streams["gather"] = _noise_burst(0.06, 1500.0, 0.4)
 	_streams["thunder"] = _rumble(2.2)
+	# Clicker (Popielne Królestwa Idle).
+	_streams["crit"] = _crit()
+	_streams["coin"] = _arpeggio([1318.0, 1760.0], 0.045)
+	_streams["rare"] = _arpeggio([659.0, 880.0, 1109.0, 1319.0, 1760.0], 0.08)
+	_streams["boss"] = _tone_sweep(110.0, 55.0, 0.6, "square", 0.35)
+	_streams["fail"] = _tone_sweep(392.0, 98.0, 0.7, "square", 0.3)
+	_streams["spell"] = _tone_sweep(300.0, 1200.0, 0.25, "sine", 0.4)
 
 
 ## Grzmot: niskie, „brązowe” dudnienie z trzaskiem na początku i długim wygasaniem.
@@ -48,12 +55,30 @@ func _rumble(dur: float) -> AudioStreamWAV:
 
 
 func play(name: String) -> void:
+	play_ex(name, 1.0)
+
+
+## Odtworzenie ze zmianą wysokości tonu (clicker – różnicowanie szybkich trafień).
+func play_ex(name: String, pitch: float) -> void:
 	if not Config.sound_enabled or not _streams.has(name):
 		return
 	var p := _players[_next]
 	_next = (_next + 1) % _players.size()
 	p.stream = _streams[name]
+	p.pitch_scale = pitch
 	p.play()
+
+
+## Trafienie krytyczne: trzask szumu z metalicznym „brzękiem”.
+func _crit() -> AudioStreamWAV:
+	var n := int(0.16 * RATE)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		var env := pow(1.0 - float(i) / n, 2.0)
+		out[i] = (randf_range(-1.0, 1.0) * 0.5 * maxf(0.0, 1.0 - t * 25.0) + sin(TAU * 1480.0 * t) * 0.35 + sin(TAU * 2210.0 * t) * 0.2) * env
+	return _make(out)
 
 
 func _make(samples: PackedFloat32Array) -> AudioStreamWAV:

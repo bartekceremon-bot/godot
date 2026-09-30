@@ -1,0 +1,14 @@
+{
+ "_opis": "Odrodzenie (Rebirth): od etapu min_stage. Popiół Dusz = floor(3 × ((max_etap - 30) / 10)^2). Ulepszenia Ołtarza Popiołu: koszt = base × growth^poziom.",
+ "min_stage": 40,
+ "upgrades": [
+  {"id": "damage", "name": "Gniew Popiołu", "stat": "damage", "per": 0.25, "base": 1, "growth": 1.35, "max": 0, "text": "+25% obrażeń"},
+  {"id": "gold", "name": "Chciwość Żaru", "stat": "gold", "per": 0.2, "base": 1, "growth": 1.35, "max": 0, "text": "+20% złota"},
+  {"id": "xp", "name": "Pamięć Przodków", "stat": "xp", "per": 0.2, "base": 1, "growth": 1.35, "max": 0, "text": "+20% doświadczenia"},
+  {"id": "offline", "name": "Sen Popielnika", "stat": "offline", "per": 0.1, "base": 2, "growth": 1.5, "max": 10, "text": "+10% postępu offline i +1 h limitu"},
+  {"id": "crit", "name": "Oko Kruka", "stat": "crit", "per": 0.01, "base": 2, "growth": 1.4, "max": 25, "text": "+1% szansy krytyka"},
+  {"id": "loot", "name": "Dar Kupców", "stat": "loot", "per": 0.05, "base": 2, "growth": 1.4, "max": 20, "text": "+5% szansy na łup"},
+  {"id": "speed", "name": "Skrzydła Burzy", "stat": "speed", "per": 0.05, "base": 2, "growth": 1.45, "max": 20, "text": "+5% szybkości ataku"},
+  {"id": "start", "name": "Ścieżka Pielgrzyma", "stat": "start", "per": 5, "base": 5, "growth": 2.0, "max": 6, "text": "Start od etapu +5 po odrodzeniu"}
+ ]
+}
