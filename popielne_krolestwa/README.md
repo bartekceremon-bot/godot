@@ -614,6 +614,8 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
     poziom 100, skille walki 90, magię 40, specjalizacje 40, 5 błogosławieństw i komplet arcydzieł T8 (miecz, tarcza,
     zbroja płytowa), zapasowy topór/buławę/łuk T8, narzędzia T8, po 100 wielkich mikstur, Popielnego drake'a
     i 100 000 zł (10 000 w plecaku, reszta w depozycie). Dotychczasowy ekwipunek trafia do plecaka lub depozytu.
+    Bohaterom **nic nie wypada po śmierci** (w żadnej strefie, także z czerwoną czaszką). Wersja 3 daru przyznaje
+    przedmioty ponownie postaciom, które dostały już wcześniejszy dar.
     Działa na serwerze (zmienna w `docker-compose.yml`) i w trybie offline w przeglądarce.
 
 ## Plan etapów

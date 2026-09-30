@@ -16,6 +16,7 @@ import { ItemStack } from '../inventory';
 import { EQUIP_SLOTS, SKILL_NAMES } from '../data/items';
 import { triesForNextSkill } from '../progression';
 import type { Zone } from '../map';
+import { keepsItemsOnDeath } from '../hero';
 
 export const PZ_LOCK_MS = 60_000;
 export const AGGRESSION_MS = 60_000;
@@ -109,7 +110,8 @@ export class PvpSystem {
 
     const dropped: ItemStack[] = [];
     const inv = victim.inventory;
-    const dropAll = redSkull || zone === 'red' || zone === 'black';
+    const keep = keepsItemsOnDeath(victim);
+    const dropAll = !keep && (redSkull || zone === 'red' || zone === 'black');
     if (dropAll) {
       for (let i = 0; i < inv.bag.length; i++) {
         const s = inv.takeFromBag(i);
@@ -123,7 +125,7 @@ export class PvpSystem {
         }
       }
       inv.dirty = true;
-    } else if (zone === 'yellow' && bless < MAX_BLESSINGS) {
+    } else if (!keep && zone === 'yellow' && bless < MAX_BLESSINGS) {
       for (let i = 0; i < inv.bag.length; i++) {
         if (inv.bag[i] && Math.random() < 0.3) {
           const s = inv.takeFromBag(i);

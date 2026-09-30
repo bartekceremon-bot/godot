@@ -3,6 +3,7 @@
  * Przy pierwszym logowaniu po włączeniu postać dostaje wysoki poziom, skille, specjalizacje,
  * błogosławieństwa i komplet najlepszego ekwipunku (T8, jakość „arcydzieło”).
  * Dotychczasowy ekwipunek trafia do plecaka, a to, co się nie mieści – do depozytu w mieście domowym.
+ * Bohaterom przedmioty nie wypadają po śmierci (keepsItemsOnDeath).
  */
 import { config } from '../config';
 import { EQUIP_SLOTS, EquipSlot, gearId } from './data/items';
@@ -12,7 +13,7 @@ import { SPEC_DEFS } from './specs';
 import { SPELL_LIST } from './data/spells';
 
 /** Podnieś, gdy dar ma zostać przyznany ponownie (np. po rozszerzeniu). */
-export const HERO_VERSION = 2;
+export const HERO_VERSION = 3;
 export const HERO_LEVEL = 100;
 const HERO_SKILL = 90;
 const HERO_MAGIC = 40;
@@ -57,8 +58,9 @@ export function grantHeroGift(p: Player, stash: (item: string, count: number, q:
   if (!isHeroName(p.name) || (p.pvp.hero ?? 0) >= HERO_VERSION) return false;
   const inv = p.inventory;
   if ((p.pvp.hero ?? 0) >= 1) {
-    // Wersja 2 daru: wszystkie czary i kostur T8 (ekwipunek z wersji 1 już jest).
-    grantSpells(p, stash);
+    // Wersja 3 daru: ponownie komplet przedmiotów (ekwipunek T8, plecak, kostur) i wszystkie czary.
+    grantItems(p, stash);
+    grantSpells(p);
     p.pvp.hero = HERO_VERSION;
     return true;
   }
@@ -83,32 +85,39 @@ export function grantHeroGift(p: Player, stash: (item: string, count: number, q:
   }
   p.pvp.blessings = 5;
 
-  // Stary ekwipunek do plecaka (albo depozytu), na jego miejsce komplet T8.
-  for (const slot of EQUIP_SLOTS) {
-    const old = inv.equipment[slot];
-    if (old) {
-      const left = inv.add(old.item, old.count, old.q ?? 1);
-      if (left > 0) stash(old.item, left, old.q ?? 1);
-    }
-    inv.equipment[slot] = { item: HERO_EQUIPMENT[slot], count: 1, q: MASTERPIECE };
-  }
-  for (const [item, count, q] of HERO_BAG) {
-    const left = inv.add(item, count, q);
-    if (left > 0) stash(item, left, q);
-  }
-  stash('gold', HERO_DEPOT_GOLD, 1);
-  inv.dirty = true;
-
-  grantSpells(p, stash);
+  grantItems(p, stash);
+  grantSpells(p);
   p.hp = p.maxHp();
   p.mp = p.maxMp();
   p.pvp.hero = HERO_VERSION;
   return true;
 }
 
-function grantSpells(p: Player, stash: (item: string, count: number, q: number) => void) {
+/** Komplet T8 na postać (stary ekwipunek do plecaka/depozytu), plecak bohatera, kostur i złoto. */
+function grantItems(p: Player, stash: (item: string, count: number, q: number) => void) {
+  const inv = p.inventory;
+  for (const slot of EQUIP_SLOTS) {
+    const old = inv.equipment[slot];
+    if (old && old.item === HERO_EQUIPMENT[slot] && (old.q ?? 1) >= MASTERPIECE) continue;
+    if (old) {
+      const left = inv.add(old.item, old.count, old.q ?? 1);
+      if (left > 0) stash(old.item, left, old.q ?? 1);
+    }
+    inv.equipment[slot] = { item: HERO_EQUIPMENT[slot], count: 1, q: MASTERPIECE };
+  }
+  for (const [item, count, q] of [...HERO_BAG, [gearId('staff', 8), 1, MASTERPIECE] as [string, number, number]]) {
+    const left = inv.add(item, count, q);
+    if (left > 0) stash(item, left, q);
+  }
+  stash('gold', HERO_DEPOT_GOLD, 1);
+  inv.dirty = true;
+}
+
+function grantSpells(p: Player) {
   p.pvp.spells = SPELL_LIST.filter((s) => s.id !== 'heal').map((s) => s.id);
-  const left = p.inventory.add(gearId('staff', 8), 1, MASTERPIECE);
-  if (left > 0) stash(gearId('staff', 8), 1, MASTERPIECE);
-  p.inventory.dirty = true;
+}
+
+/** Bohaterowie (HERO_NAMES) nie tracą przedmiotów po śmierci – w żadnej strefie. */
+export function keepsItemsOnDeath(p: Player): boolean {
+  return isHeroName(p.name);
 }

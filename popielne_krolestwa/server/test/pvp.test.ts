@@ -178,3 +178,17 @@ test('umiejętności broni: koszt many, cooldown, ogłuszenie i wir', () => {
   w.handle(p, { t: 'ability', slot: 2 });
   assert.ok(rat2.hp < hp2 || rat.hp < hp1);
 });
+
+test('bohater (sazuqe): po śmierci w czerwonej strefie nic nie wypada', () => {
+  const w = new World(new Database(':memory:'));
+  const { p: k } = mk(w, 'Lowca', RED.x, RED.y);
+  const { p: v } = mk(w, 'sazuqe', RED.x + 1, RED.y);
+  assert.equal(v.inventory.equipment.body?.item, 'plate_body_t8');
+  const bag = v.inventory.bag.filter(Boolean).length;
+  assert.ok(bag > 0);
+  v.pvp.skull = 'red';
+  killBy(w, k, v);
+  assert.equal(v.inventory.equipment.body?.item, 'plate_body_t8');
+  assert.equal(v.inventory.equipment.weapon?.item, 'sword_t8');
+  assert.equal(v.inventory.bag.filter(Boolean).length, bag);
+});
