@@ -359,6 +359,7 @@ func _find_open(near: Vector2i, w: int, h: int) -> Vector2i:
 ## Najbliższy chodliwy kafelek w danej strefie (poza strefą ochronną), osiągalny ścieżką.
 func _zone_tile(game: Node, z: String) -> Vector2i:
 	var p: Vector2i = game.my_pos
+	var tries := 0
 	for r in range(1, 90):
 		for dy in range(-r, r + 1):
 			for dx in range(-r, r + 1):
@@ -366,7 +367,9 @@ func _zone_tile(game: Node, z: String) -> Vector2i:
 					continue
 				var t := p + Vector2i(dx, dy)
 				if GameData.zone_at(t.x, t.y) == z and GameData.is_walkable(t.x, t.y) and not GameData.is_protection_zone(t.x, t.y):
-					if not game._find_path(t, false).is_empty():
+					# A* po dużej mapie jest drogi – sprawdzamy ścieżkę tylko dla kilku kandydatów.
+					tries += 1
+					if tries > 4 or not game._find_path(t, false).is_empty():
 						return t
 	return p
 

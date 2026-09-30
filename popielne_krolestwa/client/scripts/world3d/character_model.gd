@@ -1233,24 +1233,26 @@ func build_node(look: String) -> void:
 						k.cyl(Vector3(0, 0.9 + i * 0.5, 0), 0.95 - i * 0.22, 0.6 - i * 0.18, 0.28, 8, Color(0.1, 0.3, 0.3).lightened(i * 0.05), true, null, i * 0.4)
 			height = 2.2
 		"stone":
-			var col: Color = [Color.WHITE, Color(0.82, 0.8, 0.72), Color(0.82, 0.62, 0.4), Color(0.86, 0.8, 0.66), Color(0.42, 0.4, 0.44)][tier]
+			var col: Color = [Color.WHITE, Color(0.82, 0.8, 0.72), Color(0.82, 0.62, 0.4), Color(0.86, 0.8, 0.66), Color(0.42, 0.4, 0.44),
+				Color(0.2, 0.18, 0.22), Color(0.78, 0.86, 0.94), Color(0.94, 0.8, 0.52), Color(0.28, 0.2, 0.18)][clampi(tier, 0, 8)]
 			k.blob(Vector3(0, 0.3, 0), Vector3(0.5, 0.36, 0.45), col, 3, 7, 0.2, col.lightened(0.08))
 			k.blob(Vector3(0.35, 0.16, 0.25), Vector3(0.26, 0.2, 0.24), col.darkened(0.08), 2, 6, 0.2)
 			k.blob(Vector3(-0.32, 0.12, 0.2), Vector3(0.2, 0.15, 0.2), col.darkened(0.04), 2, 6, 0.2)
 			if tier == 3:
 				k.box(Vector3(0, 0.3, 0.0), Vector3(0.9, 0.05, 0.8), col.darkened(0.2), Vector2(0.95, 0.95))
-			if tier == 4:
+			if tier >= 4:
 				k.jitter = 0.0
 				for i in 5:
 					k.blob(Vector3(randf_range(-0.3, 0.3), randf_range(0.2, 0.55), randf_range(-0.3, 0.3)), Vector3(0.04, 0.04, 0.04), Color(0.85, 0.82, 0.8), 2, 4, 0.0)
 			height = 0.8
 		"ore":
 			var rock := Color(0.3, 0.28, 0.3)
-			var ore: Color = [Color.WHITE, Color(0.9, 0.5, 0.22), Color(0.8, 0.84, 0.86), Color(0.62, 0.32, 0.26), Color(0.45, 0.75, 1.0)][tier]
+			var ore: Color = [Color.WHITE, Color(0.9, 0.5, 0.22), Color(0.8, 0.84, 0.86), Color(0.62, 0.32, 0.26), Color(0.45, 0.75, 1.0),
+				Color(0.55, 0.95, 0.75), Color(0.7, 0.9, 1.0), Color(1.0, 0.82, 0.3), Color(1.0, 0.35, 0.12)][clampi(tier, 0, 8)]
 			k.blob(Vector3(0, 0.32, 0), Vector3(0.52, 0.4, 0.46), rock, 3, 7, 0.22, rock.lightened(0.08))
 			k.jitter = 0.0
 			k.metal = 1.0
-			k.glow = 0.35 if tier == 4 else 0.12
+			k.glow = 0.35 if tier >= 4 else 0.12
 			for i in 6:
 				var a := i * TAU / 6.0 + 0.3
 				var p := Vector3(cos(a) * 0.38, 0.25 + (i % 3) * 0.12, sin(a) * 0.34)
@@ -1262,8 +1264,9 @@ func build_node(look: String) -> void:
 			k.sway_base = 0.0
 			k.sway_height = 0.9
 			var stem := Color(0.35, 0.55, 0.22)
-			var flower: Color = [Color.WHITE, Color(0.45, 0.55, 0.95), Color(0.4, 0.65, 0.25), Color(0.97, 0.97, 0.95), Color(1.0, 0.35, 0.1)][tier]
-			if tier == 4:
+			var flower: Color = [Color.WHITE, Color(0.45, 0.55, 0.95), Color(0.4, 0.65, 0.25), Color(0.97, 0.97, 0.95), Color(1.0, 0.35, 0.1),
+				Color(0.7, 0.3, 0.9), Color(0.6, 0.9, 1.0), Color(1.0, 0.85, 0.2), Color(0.95, 0.15, 0.2)][clampi(tier, 0, 8)]
+			if tier >= 4:
 				stem = Color(0.5, 0.25, 0.15)
 			for i in 9:
 				var a := i * TAU / 9.0 + randf() * 0.3
@@ -1272,7 +1275,7 @@ func build_node(look: String) -> void:
 				var tip := p * 1.4 + Vector3(0, 0.55 + (i % 4) * 0.1, 0)
 				var side := Vector3(-sin(a), 0, cos(a)) * 0.05
 				k.blade(p - side, p + side, tip, stem.lightened((i % 3) * 0.05))
-				k.glow = 0.8 if tier == 4 else 0.0
+				k.glow = 0.8 if tier >= 4 else 0.0
 				k.blob(tip, Vector3(0.05, 0.05, 0.05) * (1.4 if tier == 3 else 1.0), flower, 2, 5, 0.0)
 				k.glow = 0.0
 			height = 0.9
