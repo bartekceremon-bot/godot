@@ -538,7 +538,10 @@ def main():
         means.append(np.clip(c, 0, 1).reshape(-1, 3).mean(0))
         print('warstwa', name)
     strip = np.concatenate(albedo, axis=1)
-    Image.fromarray((strip * 255).astype(np.uint8), 'RGBA').save(os.path.join(OUT, 'terrain_albedo.png'), optimize=True)
+    # 384 px na warstwę – mniejszy APK (limit wysyłki), różnica z bliska ledwo widoczna.
+    aimg = Image.fromarray((strip * 255).astype(np.uint8), 'RGBA')
+    aimg = aimg.resize((aimg.width * 3 // 4, aimg.height * 3 // 4), Image.LANCZOS)
+    aimg.save(os.path.join(OUT, 'terrain_albedo.png'), optimize=True)
     nstrip = np.concatenate(normals, axis=1)
     nimg = Image.fromarray((nstrip * 255).astype(np.uint8), 'RGB')
     nimg = nimg.resize((nimg.width // 2, nimg.height // 2), Image.LANCZOS)
