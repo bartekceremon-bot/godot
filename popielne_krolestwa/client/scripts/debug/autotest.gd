@@ -281,7 +281,8 @@ func _scenario_bestiary(game: Node) -> Array:
 		["01_zwierzeta", ["snow_fox", "scarab", "toad", "scorpion", "snow_wolf", "spider", "bear", "basilisk", "hound", "wolf"]],
 		["02_humanoidy", ["bandit", "bandit_archer", "orc", "orc_shaman", "mummy", "zombie", "lizard", "troll", "skeleton", "ash_knight"]],
 		["03_potegi", ["yeti", "treant", "golem", "ice_wraith", "fire_elemental", "demon"]],
-		["04_bossowie", ["frost_king", "sand_worm", "bog_mother", "ash_dragon"]],
+		["04_bossowie", ["frost_king", "sand_worm"]],
+		["07_bossowie", ["bog_mother", "ash_dragon"]],
 		["05_wierzchowce", ["mount_horse", "mount_elk", "mount_camel", "mount_warwolf", "mount_drake", "obelisk"]],
 		["06_zbrojownia", ["eq:2:sword:leather:shield", "eq:3:axe:plate:", "eq:4:mace:plate:shield", "eq:5:sword:plate:shield", "eq:6:bow:leather:",
 			"eq:7:axe:plate:", "eq:8:sword:plate:shield", "eq:5:bow:cloth:"]],
@@ -301,8 +302,8 @@ func _scenario_bestiary(game: Node) -> Array:
 					game.entities[id].queue_free()
 					game.entities.erase(id)
 			var looks: Array = g[1]
-			var big: bool = g[0] == "04_bossowie"
-			var spacing := 5 if big else 3
+			var big: bool = str(g[0]).ends_with("_bossowie")
+			var spacing := 6 if big else 3
 			var per_row := 4 if big else 5
 			for i in looks.size():
 				var x: int = base.x + (i % per_row) * spacing - (mini(looks.size(), per_row) - 1) * spacing / 2

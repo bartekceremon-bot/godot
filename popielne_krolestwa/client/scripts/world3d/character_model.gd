@@ -90,238 +90,65 @@ static func split_item(id: String) -> Array:
 ##       robe?, apron?, hat?, beard?, backpack?, skeleton?, held?}
 func build_humanoid(app: Dictionary) -> void:
 	type = "humanoid"
-	# Ludzie (gracze, NPC, bandyci) – realistyczne proporcje i gładkie kształty.
-	if _is_human(app):
+	if app.get("skeleton", false):
+		build_skeleton(app)
+	else:
 		build_human(app)
-		return
-	var skel: bool = app.get("skeleton", false)
-	var skin: Color = app.get("skin", SKINS[0])
-	var eq: Array = app.get("eq", ["", "", "", "", "", ""])
-	var head_it := split_item(str(eq[0])) if str(eq[0]) != "" else ["", 0]
-	var body_it := split_item(str(eq[1])) if str(eq[1]) != "" else ["", 0]
-	var legs_it := split_item(str(eq[2])) if str(eq[2]) != "" else ["", 0]
-	var feet_it := split_item(str(eq[3])) if str(eq[3]) != "" else ["", 0]
-	var shirt: Color = app.get("shirt", SHIRTS[0])
-	var pants: Color = app.get("pants", Color(0.35, 0.27, 0.2))
-	var boots: Color = app.get("boots", Color(0.25, 0.17, 0.12))
-	var sleeve := shirt
-	var metal_body := false
-	var metal_arms := false
-	var torso_col := shirt
-	var body_base: String = body_it[0]
-	var bt: int = body_it[1]
-	if body_base.begins_with("plate"):
-		torso_col = TIER_METAL[bt]
-		sleeve = TIER_METAL[bt].darkened(0.1)
-		metal_body = true
-		metal_arms = true
-	elif body_base.begins_with("leather"):
-		torso_col = TIER_LEATHER[bt]
-		sleeve = TIER_LEATHER[bt].darkened(0.08)
-	elif body_base.begins_with("cloth"):
-		torso_col = TIER_CLOTH[bt]
-		sleeve = TIER_CLOTH[bt]
-	var legs_base: String = legs_it[0]
-	var metal_legs := false
-	if legs_base.begins_with("plate"):
-		pants = TIER_METAL[legs_it[1]]
-		metal_legs = true
-	elif legs_base.begins_with("leather"):
-		pants = TIER_LEATHER[legs_it[1]].darkened(0.1)
-	elif legs_base.begins_with("cloth"):
-		pants = TIER_CLOTH[legs_it[1]].darkened(0.1)
-	var feet_base: String = feet_it[0]
-	var metal_feet := false
-	var sandals := false
-	if feet_base.begins_with("plate"):
-		boots = TIER_METAL[feet_it[1]].darkened(0.05)
-		metal_feet = true
-	elif feet_base.begins_with("leather"):
-		boots = TIER_LEATHER[feet_it[1]].darkened(0.2)
-	elif feet_base.begins_with("cloth"):
-		sandals = true
-	if skel:
-		torso_col = skin
-		sleeve = skin
-		pants = skin
-		boots = skin
 
+
+## Szkielet: gładkie kości, żebra, czaszka z żarzącymi się oczodołami.
+func build_skeleton(app: Dictionary) -> void:
+	var bone: Color = app.get("skin", Color(0.88, 0.85, 0.76))
+	var dark := bone.darkened(0.35)
+	hip_y = 0.55
 	var root := _part("root", self, Vector3.ZERO)
-	var hip_y := 0.42
-	var limb_w := 0.07 if skel else 0.13
-
-	# --- Nogi ---
 	for side in [-1, 1]:
 		var lk := MeshKit.new(11 + side)
-		lk.jitter = 0.02
-		lk.metal = 0.8 if metal_legs else 0.0
-		lk.box(Vector3(0, -0.34, 0), Vector3(limb_w, 0.34, limb_w + 0.01), pants)
-		if metal_legs:
-			lk.box(Vector3(0, -0.2, 0.05), Vector3(0.1, 0.08, 0.05), pants.lightened(0.15))
-		lk.metal = 0.8 if metal_feet else 0.0
-		if sandals:
-			lk.box(Vector3(0, -0.42, 0.02), Vector3(0.12, 0.08, 0.18), skin)
-			lk.box(Vector3(0, -0.425, 0.02), Vector3(0.13, 0.025, 0.19), Color(0.5, 0.35, 0.2))
-			lk.box(Vector3(0, -0.39, 0.06), Vector3(0.13, 0.02, 0.03), Color(0.5, 0.35, 0.2))
-		else:
-			lk.box(Vector3(0, -0.42, 0.025), Vector3(0.14 if not skel else 0.09, 0.12, 0.2), boots, Vector2(1.0, 0.9))
-		_part("leg_l" if side < 0 else "leg_r", root, Vector3(side * 0.085, hip_y, 0), lk)
-
-	# --- Tułów ---
+		CreatureModels._chain(lk, [Vector3(0, 0.0, 0), Vector3(0, -0.26, 0.012), Vector3(0, -0.5, 0.0)], [0.022, 0.018, 0.016], bone, 7, bone.darkened(0.05))
+		lk.ellipsoid(Vector3(0, -0.52, 0.03), Vector3(0.03, 0.018, 0.07), bone.darkened(0.08), 4, 8)
+		_part("leg_l" if side < 0 else "leg_r", root, Vector3(side * 0.075, hip_y, 0), lk)
 	var tk := MeshKit.new(21)
-	tk.jitter = 0.02
-	if skel:
-		tk.box(Vector3(0, 0, 0), Vector3(0.06, 0.36, 0.06), skin)
-		for i in 3:
-			tk.box(Vector3(0, 0.12 + i * 0.075, 0.02), Vector3(0.28 - i * 0.02, 0.035, 0.16), skin)
-		tk.box(Vector3(0, -0.02, 0), Vector3(0.24, 0.07, 0.12), skin)
-	else:
-		tk.metal = 0.85 if metal_body else 0.0
-		tk.box(Vector3(0, 0, 0), Vector3(0.32, 0.37, 0.19), torso_col, Vector2(1.12, 1.05))
-		if metal_body:
-			tk.box(Vector3(0, 0.12, 0.08), Vector3(0.06, 0.2, 0.05), torso_col.lightened(0.15))
-			for side in [-1, 1]:
-				tk.blob(Vector3(side * 0.2, 0.34, 0), Vector3(0.1, 0.07, 0.12), torso_col.lightened(0.08), 2, 6, 0.0)
-			if bt >= 3:
-				tk.metal = 1.0
-				tk.box(Vector3(0, 0.33, 0.0), Vector3(0.3, 0.04, 0.21), TIER_TRIM[bt])
-		elif body_base.begins_with("leather"):
-			tk.box(Vector3(0, 0.3, 0), Vector3(0.3, 0.07, 0.21), torso_col.lightened(0.12))
-			if bt >= 2:
-				tk.box(Vector3(0.08, 0.05, 0.1), Vector3(0.03, 0.3, 0.02), TIER_TRIM[bt])
-		elif body_base.begins_with("cloth") or app.get("robe", false):
-			var rc := torso_col if body_base.begins_with("cloth") else shirt
-			tk.box(Vector3(0, -0.34, 0), Vector3(0.38, 0.36, 0.26), rc, Vector2(0.86, 0.75))
-			if bt >= 2 or app.get("robe_trim", null) != null:
-				var trim: Color = app.get("robe_trim", TIER_TRIM[bt])
-				tk.box(Vector3(0, -0.345, 0), Vector3(0.39, 0.05, 0.27), trim)
-				tk.box(Vector3(0, 0.0, 0.1), Vector3(0.05, 0.36, 0.01), trim)
-		# Pas.
-		tk.metal = 0.0
-		tk.box(Vector3(0, 0.0, 0), Vector3(0.34, 0.06, 0.205), Color(0.28, 0.18, 0.1))
-		tk.metal = 1.0
-		tk.box(Vector3(0, 0.005, 0.1), Vector3(0.06, 0.05, 0.02), Color(0.85, 0.7, 0.3))
-		tk.metal = 0.0
-		if app.get("apron", null) != null:
-			var ac: Color = app.apron
-			tk.box(Vector3(0, -0.22, 0.1), Vector3(0.28, 0.5, 0.02), ac)
-		if app.get("backpack", false):
-			tk.box(Vector3(0, 0.08, -0.17), Vector3(0.28, 0.3, 0.14), Color(0.45, 0.32, 0.18))
-			tk.box(Vector3(0, 0.38, -0.17), Vector3(0.3, 0.06, 0.16), Color(0.35, 0.25, 0.14))
+	tk.ellipsoid(Vector3(0, 0.0, 0), Vector3(0.11, 0.045, 0.06), bone.darkened(0.05), 5, 10)
+	CreatureModels._seg(tk, Vector3(0, 0.0, -0.02), Vector3(0, 0.46, -0.01), 0.022, 0.018, bone, 7)
+	for i in 5:
+		var y := 0.06 + i * 0.022
+		tk.ellipsoid(Vector3(0, y, -0.02), Vector3(0.028, 0.009, 0.024), bone.darkened(0.1), 3, 6)
+	# Żebra: cienkie obręcze.
+	for i in 4:
+		var y := 0.17 + i * 0.05
+		var rx := 0.115 - absf(i - 1.6) * 0.012
+		tk.loft([[Vector3(0, y, 0.0), Vector2(rx, 0.072)], [Vector3(0, y + 0.018, 0.0), Vector2(rx - 0.004, 0.07)]], bone, 12, false)
+	tk.ellipsoid(Vector3(0, 0.25, 0.07), Vector3(0.015, 0.09, 0.008), bone.darkened(0.05), 3, 6)
+	CreatureModels._seg(tk, Vector3(-0.18, 0.37, 0), Vector3(0.18, 0.37, 0), 0.016, 0.016, bone, 6)
 	var torso := _part("torso", root, Vector3(0, hip_y, 0), tk)
-
-	# --- Głowa ---
 	var hk := MeshKit.new(31)
-	hk.jitter = 0.015
-	var hair: Color = app.get("hair", HAIRS[0])
-	var style: int = app.get("hair_style", 0)
-	var head_base: String = head_it[0]
-	var ht: int = head_it[1]
-	if skel:
-		hk.box(Vector3(0, 0, 0), Vector3(0.26, 0.26, 0.26), skin, Vector2(1.05, 1.05))
-		hk.box(Vector3(0, -0.05, 0.03), Vector3(0.18, 0.08, 0.2), skin.darkened(0.1))
+	hk.ellipsoid(Vector3(0, 0.105, -0.005), Vector3(0.068, 0.075, 0.078), bone, 7, 12)
+	hk.ellipsoid(Vector3(0, 0.035, 0.03), Vector3(0.048, 0.028, 0.048), bone.darkened(0.06), 5, 10)
+	for side in [-1, 1]:
+		hk.ellipsoid(Vector3(side * 0.026, 0.1, 0.06), Vector3(0.02, 0.02, 0.014), Color(0.05, 0.04, 0.04), 4, 8)
 		hk.glow = 1.0
-		for side in [-1, 1]:
-			hk.box(Vector3(side * 0.06, 0.1, 0.125), Vector3(0.06, 0.06, 0.02), Color(1.0, 0.25, 0.1))
+		hk.ellipsoid(Vector3(side * 0.026, 0.1, 0.069), Vector3(0.008, 0.008, 0.004), app.get("eye_glow", Color(1.0, 0.25, 0.1)), 3, 6)
 		hk.glow = 0.0
-	else:
-		hk.box(Vector3(0, 0, 0), Vector3(0.29, 0.29, 0.27), skin, Vector2(1.0, 0.96))
-		# Oczy, brwi, nos.
-		for side in [-1, 1]:
-			hk.box(Vector3(side * 0.065, 0.12, 0.135), Vector3(0.05, 0.055, 0.012), Color(0.98, 0.98, 0.95))
-			hk.box(Vector3(side * 0.06, 0.125, 0.14), Vector3(0.028, 0.04, 0.012), Color(0.12, 0.1, 0.12))
-			hk.box(Vector3(side * 0.065, 0.185, 0.135), Vector3(0.06, 0.018, 0.015), hair.darkened(0.2))
-		hk.box(Vector3(0, 0.07, 0.135), Vector3(0.045, 0.06, 0.035), skin.darkened(0.08))
-		hk.box(Vector3(0, 0.035, 0.137), Vector3(0.07, 0.012, 0.01), Color(0.55, 0.3, 0.28))
-		if head_base == "":
-			if app.get("hat", "") == "top":
-				hk.cyl(Vector3(0, 0.27, 0), 0.2, 0.2, 0.03, 8, Color(0.12, 0.1, 0.12))
-				hk.cyl(Vector3(0, 0.29, 0), 0.13, 0.13, 0.2, 8, Color(0.12, 0.1, 0.12))
-				hk.cyl(Vector3(0, 0.3, 0), 0.135, 0.135, 0.04, 8, Color(0.7, 0.15, 0.12), false)
-			elif app.get("hat", "") == "scarf":
-				hk.box(Vector3(0, 0.2, -0.01), Vector3(0.32, 0.12, 0.31), app.get("hat_col", Color(0.8, 0.3, 0.2)))
-				hk.box(Vector3(0, 0.0, -0.14), Vector3(0.3, 0.22, 0.04), app.get("hat_col", Color(0.8, 0.3, 0.2)))
-			elif app.get("hat", "") == "hood":
-				var hc: Color = app.get("hat_col", Color(0.9, 0.88, 0.8))
-				hk.box(Vector3(0, 0.02, -0.02), Vector3(0.34, 0.32, 0.31), hc, Vector2(0.9, 0.9))
-				hk.cone(Vector3(0, 0.3, -0.05), 0.12, 0.12, 5, hc)
-				_cut_face(hk, skin, hair)
-			elif app.get("hat", "") == "cap":
-				hk.box(Vector3(0, 0.24, 0), Vector3(0.31, 0.08, 0.29), app.get("hat_col", Color(0.4, 0.3, 0.2)))
-				hk.box(Vector3(0, 0.24, 0.16), Vector3(0.26, 0.02, 0.1), app.get("hat_col", Color(0.4, 0.3, 0.2)).darkened(0.2))
-			if style != 2 and app.get("hat", "") != "hood":
-				hk.box(Vector3(0, 0.25, -0.01), Vector3(0.31, 0.08, 0.29), hair)
-				hk.box(Vector3(0, 0.05, -0.12), Vector3(0.31, 0.22, 0.06), hair)
-				for side in [-1, 1]:
-					hk.box(Vector3(side * 0.145, 0.12, -0.03), Vector3(0.03, 0.15, 0.2), hair)
-				if style == 1:
-					hk.box(Vector3(0, -0.15, -0.12), Vector3(0.3, 0.2, 0.06), hair)
-				elif style == 3:
-					hk.box(Vector3(0, -0.12, -0.17), Vector3(0.08, 0.2, 0.06), hair)
-				elif style == 4:
-					hk.box(Vector3(0, 0.22, 0.02), Vector3(0.12, 0.1, 0.12), hair)
-		if app.get("beard", false):
-			hk.box(Vector3(0, -0.07, 0.1), Vector3(0.26, 0.12, 0.08), hair, Vector2(0.8, 1.0))
-			hk.box(Vector3(0, 0.035, 0.14), Vector3(0.12, 0.025, 0.02), hair)
-		# Hełmy / kaptury.
-		if head_base.begins_with("plate"):
-			hk.metal = 0.85
-			var mc: Color = TIER_METAL[ht]
-			hk.box(Vector3(0, 0.02, 0), Vector3(0.33, 0.3, 0.31), mc, Vector2(0.92, 0.92))
-			hk.box(Vector3(0, 0.1, 0.152), Vector3(0.22, 0.03, 0.01), Color(0.08, 0.08, 0.1))
-			hk.box(Vector3(0, -0.02, 0.152), Vector3(0.03, 0.1, 0.012), Color(0.08, 0.08, 0.1))
-			hk.box(Vector3(0, 0.31, 0), Vector3(0.05, 0.05, 0.3), mc.lightened(0.1))
-			hk.metal = 0.0
-			if ht >= 3:
-				hk.box(Vector3(0, 0.34, -0.05), Vector3(0.04, 0.12, 0.2), TIER_TRIM[ht])
-		elif head_base.begins_with("leather"):
-			var lc: Color = TIER_LEATHER[ht]
-			hk.box(Vector3(0, 0.02, -0.02), Vector3(0.33, 0.33, 0.3), lc, Vector2(0.9, 0.9))
-			_cut_face(hk, skin, hair)
-		elif head_base.begins_with("cloth"):
-			var cc: Color = TIER_CLOTH[ht]
-			hk.box(Vector3(0, 0.02, -0.02), Vector3(0.33, 0.33, 0.3), cc, Vector2(0.88, 0.88))
-			hk.cone(Vector3(0, 0.32, -0.06), 0.13, 0.2, 5, cc)
-			_cut_face(hk, skin, hair)
-	var head := _part("head", torso, Vector3(0, 0.37, 0), hk)
-	_head_extras(head, app, skin)
-	_body_extras(torso, root, app)
-	if app.get("float", false):
-		# Lewitujące zjawy: bez nóg, długa szata.
-		parts["leg_l"].visible = false
-		parts["leg_r"].visible = false
-
-	# --- Ręce ---
+	hk.ellipsoid(Vector3(0, 0.068, 0.072), Vector3(0.008, 0.012, 0.006), dark, 3, 6)
+	for t in 6:
+		hk.box(Vector3((t - 2.5) * 0.012, 0.042, 0.071), Vector3(0.009, 0.012, 0.006), Color(0.95, 0.93, 0.85))
+	_part("head", torso, Vector3(0, 0.455, 0), hk)
 	for side in [-1, 1]:
 		var ak := MeshKit.new(41 + side)
-		ak.jitter = 0.02
-		ak.metal = 0.85 if metal_arms else 0.0
-		ak.box(Vector3(0, -0.29, 0), Vector3(0.1 if not skel else 0.06, 0.31, 0.11 if not skel else 0.06), sleeve)
-		if metal_arms:
-			ak.box(Vector3(0, -0.05, 0), Vector3(0.14, 0.09, 0.14), sleeve.lightened(0.1))
-		ak.metal = 0.85 if metal_arms else 0.0
-		ak.box(Vector3(0, -0.37, 0), Vector3(0.09, 0.09, 0.1), sleeve if metal_arms else skin)
-		var arm := _part("arm_l" if side < 0 else "arm_r", torso, Vector3(side * 0.215, 0.33, 0), ak)
-		_part("hand_l" if side < 0 else "hand_r", arm, Vector3(0, -0.33, 0.02))
-
-	# --- Broń i tarcza ---
-	var wid := str(eq[4])
+		CreatureModels._chain(ak, [Vector3.ZERO, Vector3(0, -0.23, 0.01), Vector3(0, -0.43, 0.02)], [0.018, 0.015, 0.013], bone, 7, bone.darkened(0.05))
+		ak.ellipsoid(Vector3(0, -0.46, 0.02), Vector3(0.022, 0.035, 0.026), bone.darkened(0.08), 4, 8)
+		var arm := _part("arm_l" if side < 0 else "arm_r", torso, Vector3(side * 0.19, 0.35, 0), ak)
+		_part("hand_l" if side < 0 else "hand_r", arm, Vector3(0, -0.47, 0.02))
+	var eq: Array = app.get("eq", ["", "", "", "", "", ""])
 	var held: String = app.get("held", "")
-	if wid != "":
-		_build_weapon(wid)
+	if str(eq[4]) != "":
+		_build_weapon(str(eq[4]))
 	elif held != "":
 		_build_weapon(held)
-	var sid := str(eq[5])
-	if sid != "":
-		_build_shield(sid)
-	height = 1.12
-
-
-static func _is_human(app: Dictionary) -> bool:
-	for k in ["skeleton", "tusks", "horns", "head_shape", "float", "wings", "tail", "stripes"]:
-		if app.get(k, false):
-			return false
-	return true
+	if str(eq[5]) != "":
+		_build_shield(str(eq[5]))
+		parts["shield"].position = Vector3(-0.07, -0.3, 0.03)
+	height = 1.2
 
 
 ## Gładki pierścień pancerza/ubrania wokół bryły: kopia pierścieni powiększona o `grow`.
@@ -566,6 +393,7 @@ func build_human(app: Dictionary) -> void:
 		hk.ellipsoid(Vector3(0, 0.035, 0.05), Vector3(0.058, 0.035, 0.035), app.bandana, 4, 10)
 	var head := _part("head", torso, Vector3(0, 0.455, 0), hk)
 	head.set_meta("human", true)
+	_monster_head(head, app, skin)
 
 	# --- Ręce ---
 	var arm_rings := [[Vector3(0, -0.425, 0.005), Vector2(0.026, 0.028)], [Vector3(0, -0.32, 0.005), Vector2(0.034, 0.036)],
@@ -581,6 +409,7 @@ func build_human(app: Dictionary) -> void:
 		ak.metal = 0.0
 		var arm := _part("arm_l" if side < 0 else "arm_r", torso, Vector3(side * 0.19, 0.35, 0), ak)
 		_part("hand_l" if side < 0 else "hand_r", arm, Vector3(0, -0.47, 0.02))
+	_monster_body(torso, root, app)
 
 	# --- Broń i tarcza ---
 	var wid := str(eq[4])
@@ -594,16 +423,6 @@ func build_human(app: Dictionary) -> void:
 		_build_shield(sid)
 		parts["shield"].position = Vector3(-0.07, -0.3, 0.03)
 	height = 1.2
-
-
-## Otwór na twarz w kapturze (twarz rysowana ponownie z przodu kaptura).
-func _cut_face(hk: MeshKit, skin: Color, hair: Color) -> void:
-	hk.box(Vector3(0, -0.02, 0.143), Vector3(0.22, 0.22, 0.01), skin)
-	for side in [-1, 1]:
-		hk.box(Vector3(side * 0.06, 0.1, 0.15), Vector3(0.028, 0.04, 0.012), Color(0.12, 0.1, 0.12))
-	hk.box(Vector3(0, 0.05, 0.155), Vector3(0.04, 0.05, 0.02), skin.darkened(0.08))
-	if hair:
-		pass
 
 
 func _build_weapon(id: String) -> void:
@@ -662,20 +481,35 @@ func _build_weapon(id: String) -> void:
 			k.ellipsoid(Vector3(0, 0.64, 0), Vector3(0.045, 0.05, 0.045), TIER_GLOW[t] if t > 1 else Color(0.5, 1.0, 0.4), 5, 8)
 			k.glow = 0.0
 		"club_big":
-			k.box(Vector3(0, -0.05, 0), Vector3(0.06, 0.3, 0.06), grip)
-			k.jitter = 0.05
-			k.cyl(Vector3(0, 0.22, 0), 0.07, 0.13, 0.45, 6, Color(0.42, 0.3, 0.2))
-			k.jitter = 0.0
-			for i in 4:
-				k.cone(Vector3(0.1 * cos(i * 1.6), 0.45 + i * 0.05, 0.1 * sin(i * 1.6)), 0.03, 0.08, 4, Color(0.8, 0.8, 0.75))
+			# Maczuga z sękatego pnia nabita żelaznymi ćwiekami.
+			var wood := Color(0.4, 0.28, 0.18)
+			k.loft([[Vector3(0, -0.2, 0), Vector2(0.035, 0.035)], [Vector3(0, 0.05, 0), Vector2(0.04, 0.04)], [Vector3(0, 0.3, 0), Vector2(0.09, 0.085)],
+				[Vector3(0.01, 0.55, 0), Vector2(0.13, 0.12)], [Vector3(0.0, 0.68, 0), Vector2(0.09, 0.085)], [Vector3(0, 0.72, 0), Vector2(0.02, 0.02)]], wood, 10)
+			for i in 3:
+				k.loft([[Vector3(0, -0.17 + i * 0.05, 0), Vector2(0.04, 0.04)], [Vector3(0, -0.15 + i * 0.05, 0), Vector2(0.04, 0.04)]], Color(0.3, 0.2, 0.12), 8, false)
+			k.ellipsoid(Vector3(0.08, 0.45, 0.04), Vector3(0.05, 0.06, 0.05), wood.darkened(0.15), 4, 8)
+			k.metal = 0.9
+			for i in 9:
+				var a := i * 2.4
+				var y := 0.38 + (i % 3) * 0.1
+				var r := 0.1 + (0.03 if i % 3 == 1 else 0.0)
+				var sp := Vector3(cos(a) * r, y, sin(a) * r)
+				CreatureModels._seg(k, sp, sp + Vector3(cos(a), 0.15, sin(a)) * 0.08, 0.018, 0.0, Color(0.55, 0.55, 0.58), 5)
+			k.metal = 0.0
 		"greatsword":
-			k.box(Vector3(0, -0.08, 0), Vector3(0.04, 0.2, 0.04), grip)
+			# Dwuręczny miecz: długa rękojeść, szeroka czarna głownia z żarzącą się bruzdą.
+			var dark := Color(0.2, 0.17, 0.19)
+			k.loft([[Vector3(0, -0.28, 0), Vector2(0.02, 0.02)], [Vector3(0, 0.08, 0), Vector2(0.022, 0.022)]], grip, 8)
 			k.metal = 1.0
-			k.box(Vector3(0, 0.1, 0), Vector3(0.28, 0.05, 0.06), Color(0.2, 0.15, 0.15))
-			k.box(Vector3(0, 0.14, 0), Vector3(0.09, 0.8, 0.025), Color(0.3, 0.26, 0.28), Vector2(0.5, 1.0))
-			k.glow = 0.8
-			k.box(Vector3(0, 0.2, 0.014), Vector3(0.02, 0.65, 0.005), Color(1.0, 0.35, 0.1))
+			k.ellipsoid(Vector3(0, -0.3, 0), Vector3(0.035, 0.04, 0.035), dark.lightened(0.2), 5, 8)
+			k.box(Vector3(0, 0.08, 0), Vector3(0.3, 0.04, 0.05), dark.lightened(0.1), Vector2(1.0, 0.8))
+			for sd in [-1, 1]:
+				CreatureModels._seg(k, Vector3(sd * 0.14, 0.1, 0), Vector3(sd * 0.19, 0.17, 0), 0.02, 0.0, dark.lightened(0.1), 5)
+			k.loft([[Vector3(0, 0.12, 0), Vector2(0.05, 0.012)], [Vector3(0, 0.7, 0), Vector2(0.046, 0.011)], [Vector3(0, 0.88, 0), Vector2(0.03, 0.008)], [Vector3(0, 0.98, 0), Vector2(0.001, 0.001)]], Color(0.3, 0.26, 0.28), 8, false)
+			k.glow = 0.9
+			k.box(Vector3(0, 0.16, 0), Vector3(0.014, 0.66, 0.026), Color(1.0, 0.35, 0.1))
 			k.glow = 0.0
+			k.metal = 0.0
 		_:
 			return
 	var holder := Node3D.new()
@@ -1428,81 +1262,123 @@ func _animate_beast(_delta: float) -> void:
 # Dodatki humanoidów (potwory, NPC)
 # ============================================================================
 
-## Kły, rogi, świecące oczy, pysk jaszczura, twarz yeti, korona.
-func _head_extras(head: Node3D, app: Dictionary, skin: Color) -> void:
+## Kły, rogi, pysk jaszczura, futrzana głowa yeti (do gładkiej głowy build_human).
+func _monster_head(head: Node3D, app: Dictionary, skin: Color) -> void:
 	var k := MeshKit.new(33)
 	if app.get("tusks", false):
+		k.metal = 0.4
 		for side in [-1, 1]:
-			k.cone(Vector3(side * 0.07, -0.02, 0.14), 0.025, 0.09, 4, Color(0.95, 0.92, 0.8))
+			CreatureModels._chain(k, [Vector3(side * 0.03, 0.028, 0.058), Vector3(side * 0.04, 0.06, 0.082), Vector3(side * 0.05, 0.09, 0.078)], [0.011, 0.008, 0.0], Color(0.95, 0.92, 0.8), 6)
+		k.metal = 0.0
 	if app.has("horns"):
 		var hc: Color = app.horns
+		k.metal = 0.3
 		for side in [-1, 1]:
-			k.xf = Transform3D(Basis(Vector3(0, 0, 1), -side * 0.6), Vector3(side * 0.12, 0.26, 0))
-			k.cone(Vector3.ZERO, 0.05, 0.22, 5, hc)
-		k.xf = Transform3D.IDENTITY
+			CreatureModels._chain(k, [Vector3(side * 0.04, 0.15, 0.02), Vector3(side * 0.1, 0.21, -0.01), Vector3(side * 0.11, 0.3, -0.07), Vector3(side * 0.08, 0.34, -0.12)], [0.022, 0.017, 0.01, 0.0], hc, 7)
+		k.metal = 0.0
 	match str(app.get("head_shape", "")):
 		"lizard":
-			k.box(Vector3(0, -0.02, 0.2), Vector3(0.2, 0.14, 0.18), skin.darkened(0.05), Vector2(0.8, 0.85))
-			k.box(Vector3(0, 0.12, 0.05), Vector3(0.05, 0.1, 0.3), skin.darkened(0.25))
-			for i in 3:
-				k.cone(Vector3(0, 0.26 - i * 0.04, -0.02 - i * 0.08), 0.04, 0.1, 4, skin.darkened(0.3))
+			CreatureModels._body(k, [[0.0, Vector2(0.055, 0.05), 0.065], [0.08, Vector2(0.045, 0.036), 0.055], [0.15, Vector2(0.03, 0.022), 0.05], [0.18, Vector2(0.012, 0.01), 0.05]], skin.darkened(0.04), 10)
+			k.ellipsoid(Vector3(0, 0.035, 0.08), Vector3(0.04, 0.012, 0.07), skin.lightened(0.15), 3, 8)
+			for i in 4:
+				CreatureModels._seg(k, Vector3(0, 0.165 - i * 0.012, 0.02 - i * 0.045), Vector3(0, 0.21 - i * 0.014, -0.02 - i * 0.045), 0.014, 0.0, skin.darkened(0.3), 5)
+			if app.has("eye_glow"):
+				k.glow = 1.0
+				for side in [-1, 1]:
+					k.ellipsoid(Vector3(side * 0.045, 0.1, 0.06), Vector3(0.014, 0.01, 0.01), app.eye_glow, 3, 6)
+				k.glow = 0.0
 		"yeti":
-			k.box(Vector3(0, 0.0, 0.14), Vector3(0.2, 0.2, 0.02), Color(0.45, 0.62, 0.8))
-			k.box(Vector3(0, 0.2, 0.0), Vector3(0.34, 0.1, 0.32), skin.lightened(0.05))
-		"skull":
-			pass
-	if app.has("eye_glow"):
-		k.glow = 1.0
-		for side in [-1, 1]:
-			k.box(Vector3(side * 0.065, 0.12, 0.146), Vector3(0.05, 0.04, 0.012), app.eye_glow)
-		k.glow = 0.0
-	if app.has("crown"):
-		k.glow = 0.7
-		k.metal = 0.8
-		for i in 7:
-			var a := i * TAU / 7.0
-			k.cone(Vector3(cos(a) * 0.14, 0.28, sin(a) * 0.14), 0.035, 0.2 + (i % 2) * 0.1, 4, app.crown)
-		k.glow = 0.0
-		k.metal = 0.0
-	if app.has("bandana"):
-		k.box(Vector3(0, 0.2, 0), Vector3(0.32, 0.08, 0.3), app.bandana)
-		k.box(Vector3(0, -0.02, 0.13), Vector3(0.3, 0.1, 0.04), app.bandana)
+			var fur := skin
+			k.ellipsoid(Vector3(0, 0.1, -0.012), Vector3(0.088, 0.098, 0.088), fur, 7, 12)
+			for i in 7:
+				var a := i * TAU / 7.0
+				k.ellipsoid(Vector3(cos(a) * 0.07, 0.17 + (i % 2) * 0.02, sin(a) * 0.06 - 0.02), Vector3(0.035, 0.03, 0.035), fur.darkened(0.04), 3, 6)
+			k.ellipsoid(Vector3(0, 0.075, 0.058), Vector3(0.056, 0.052, 0.034), Color(0.45, 0.62, 0.8), 5, 10)
+			k.ellipsoid(Vector3(0, 0.035, 0.078), Vector3(0.03, 0.01, 0.01), Color(0.12, 0.08, 0.1), 3, 8)
+			for side in [-1, 1]:
+				CreatureModels._seg(k, Vector3(side * 0.018, 0.03, 0.082), Vector3(side * 0.02, 0.05, 0.088), 0.007, 0.0, Color(0.95, 0.95, 0.9), 4)
+			k.glow = 1.0
+			for side in [-1, 1]:
+				k.ellipsoid(Vector3(side * 0.024, 0.098, 0.086), Vector3(0.012, 0.008, 0.005), app.get("eye_glow", Color(0.4, 0.8, 1.0)), 3, 6)
+			k.glow = 0.0
 	if not k.is_empty():
 		_attach_mesh(head, k)
 
 
-## Skrzydła, ogon, szata zjawy, bandaże mumii, płaszcz.
-func _body_extras(torso: Node3D, root: Node3D, app: Dictionary) -> void:
+## Skrzydła, ogon, szata zjawy, bandaże mumii, futro yeti (do gładkiego ciała build_human).
+func _monster_body(torso: Node3D, root: Node3D, app: Dictionary) -> void:
 	if app.has("wings"):
 		var wc: Color = app.wings
 		for side in [-1, 1]:
 			var wk := MeshKit.new(34 + side)
-			var o := Vector3.ZERO
-			wk.blade(o, Vector3(side * 0.9, 0.35, -0.1), Vector3(side * 0.7, -0.35, -0.05), wc)
-			wk.blade(o, Vector3(side * 0.7, -0.35, -0.05), Vector3(side * 0.3, -0.45, 0), wc.darkened(0.15))
-			wk.box(Vector3(side * 0.45, 0.14, -0.05), Vector3(0.9, 0.04, 0.04), wc.darkened(0.4))
-			_part("wing_l" if side < 0 else "wing_r", torso, Vector3(side * 0.1, 0.28, -0.12), wk)
+			var sh := Vector3.ZERO
+			var el := Vector3(side * 0.3, 0.2, -0.08)
+			var wr := Vector3(side * 0.62, 0.3, -0.12)
+			var tips := [Vector3(side * 0.8, -0.1, -0.14), Vector3(side * 0.56, -0.32, -0.12), Vector3(side * 0.28, -0.36, -0.08)]
+			CreatureModels._chain(wk, [sh, el, wr], [0.03, 0.022, 0.016], wc.darkened(0.45), 6)
+			CreatureModels._seg(wk, wr, wr + Vector3(side * 0.06, 0.08, 0.0), 0.014, 0.0, Color(0.2, 0.15, 0.12), 5)
+			for t in tips:
+				CreatureModels._seg(wk, wr, t, 0.012, 0.004, wc.darkened(0.45), 5)
+			wk.blade(sh, wr, tips[0], wc)
+			wk.blade(sh, tips[0], tips[1], wc.darkened(0.1))
+			wk.blade(sh, tips[1], tips[2], wc.darkened(0.18))
+			_part("wing_l" if side < 0 else "wing_r", torso, Vector3(side * 0.07, 0.3, -0.09), wk)
 	if app.has("tail"):
 		var tk := MeshKit.new(36)
 		var tc: Color = app.tail
-		for i in 4:
-			tk.box(Vector3(0, -0.02 * i, -0.08 - i * 0.14), Vector3(0.12 - i * 0.022, 0.1 - i * 0.018, 0.16), tc)
-		var tail := _part("tail", root, Vector3(0, 0.38, -0.08), tk)
-		tail.rotation.x = 0.35
+		CreatureModels._body(tk, [[0.02, Vector2(0.05, 0.05), 0.0], [-0.2, Vector2(0.04, 0.04), -0.07], [-0.4, Vector2(0.026, 0.026), -0.15], [-0.56, Vector2(0.01, 0.01), -0.19]], tc, 9)
+		if app.has("horns"):
+			# Diabelski grot na końcu ogona.
+			tk.blade(Vector3(0, -0.19, -0.54), Vector3(0.06, -0.2, -0.6), Vector3(0, -0.21, -0.7), tc.darkened(0.2))
+			tk.blade(Vector3(0, -0.19, -0.54), Vector3(-0.06, -0.2, -0.6), Vector3(0, -0.21, -0.7), tc.darkened(0.2))
+		else:
+			for i in 3:
+				CreatureModels._seg(tk, Vector3(0, 0.035 - i * 0.05, -0.05 - i * 0.16), Vector3(0, 0.07 - i * 0.05, -0.09 - i * 0.16), 0.014, 0.0, tc.darkened(0.3), 5)
+		_part("tail", root, Vector3(0, hip_y - 0.04, -0.07), tk)
 	if app.get("float", false):
 		float_mode = true
+		parts["leg_l"].visible = false
+		parts["leg_r"].visible = false
 		var rk := MeshKit.new(37)
 		var rc: Color = app.get("shirt", Color(0.7, 0.85, 0.95))
 		rk.glow = float(app.get("robe_glow", 0.0))
-		rk.box(Vector3(0, -0.45, 0), Vector3(0.36, 0.48, 0.26), rc, Vector2(0.9, 0.85))
-		rk.cone(Vector3(0, -0.6, 0), 0.22, 0.2, 6, rc.darkened(0.1))
+		rk.loft([[Vector3(0, -0.78, -0.08), Vector2(0.015, 0.015)], [Vector3(0, -0.62, -0.04), Vector2(0.12, 0.1)], [Vector3(0, -0.42, 0), Vector2(0.19, 0.15)],
+			[Vector3(0, -0.15, 0), Vector2(0.16, 0.12)], [Vector3(0, 0.12, 0), Vector2(0.14, 0.095)]], rc, 12, false)
+		for i in 5:
+			var a := i * TAU / 5.0
+			rk.blade(Vector3(cos(a) * 0.17, -0.45, sin(a) * 0.13), Vector3(cos(a + 0.4) * 0.16, -0.45, sin(a + 0.4) * 0.12), Vector3(cos(a + 0.2) * 0.12, -0.72, sin(a + 0.2) * 0.1 - 0.04), rc.darkened(0.12))
 		_attach_mesh(torso, rk)
 	if app.has("stripes"):
+		var sc: Color = app.stripes
 		var sk := MeshKit.new(38)
-		for i in 4:
-			sk.box(Vector3(0, 0.05 + i * 0.08, 0), Vector3(0.335, 0.015, 0.21), app.stripes)
+		for i in 6:
+			var y := 0.02 + i * 0.06
+			var r := Vector2(0.14 + (0.012 if i >= 4 else 0.0), 0.093)
+			sk.loft([[Vector3(0, y, 0), r], [Vector3(0, y + 0.014, 0.004), r + Vector2(0.002, 0.002)]], sc, 12, false)
 		_attach_mesh(torso, sk)
-	if app.has("cape"):
-		var ck := MeshKit.new(39)
-		ck.box(Vector3(0, -0.28, -0.12), Vector3(0.34, 0.62, 0.02), app.cape, Vector2(1.2, 1.0))
-		_attach_mesh(torso, ck)
+		for limb in ["arm_l", "arm_r", "leg_l", "leg_r"]:
+			var lk := MeshKit.new(39)
+			var is_leg: bool = limb.begins_with("leg")
+			for i in 4:
+				var y := -0.08 - i * (0.11 if is_leg else 0.09)
+				var rr := (0.07 if is_leg else 0.05) - i * 0.006
+				lk.loft([[Vector3(0, y, 0), Vector2(rr, rr)], [Vector3(0, y + 0.014, 0.003), Vector2(rr, rr)]], sc, 10, false)
+			_attach_mesh(parts[limb], lk)
+		var hk := MeshKit.new(40)
+		hk.loft([[Vector3(0, 0.06, 0), Vector2(0.068, 0.076)], [Vector3(0, 0.075, 0.004), Vector2(0.068, 0.076)]], sc, 12, false)
+		hk.loft([[Vector3(0, 0.125, -0.004), Vector2(0.069, 0.078)], [Vector3(0, 0.14, 0.0), Vector2(0.066, 0.075)]], sc, 12, false)
+		_attach_mesh(parts["head"], hk)
+	if str(app.get("head_shape", "")) == "yeti":
+		# Kudłate futro na barkach, piersi i rękach.
+		var fk := MeshKit.new(41)
+		var fur: Color = app.get("skin", Color.WHITE)
+		for i in 9:
+			var a := i * TAU / 9.0
+			fk.ellipsoid(Vector3(cos(a) * 0.14, 0.32 + (i % 2) * 0.03, sin(a) * 0.09), Vector3(0.06, 0.05, 0.05), fur.darkened(0.03 * (i % 3)), 3, 7)
+		fk.ellipsoid(Vector3(0, 0.2, 0.07), Vector3(0.12, 0.13, 0.05), fur.lightened(0.03), 4, 9)
+		_attach_mesh(torso, fk)
+		for arm in ["arm_l", "arm_r"]:
+			var ak := MeshKit.new(42)
+			for i in 3:
+				ak.ellipsoid(Vector3(0, -0.06 - i * 0.12, 0), Vector3(0.06 - i * 0.005, 0.07, 0.06 - i * 0.005), fur.darkened(0.02 * i), 4, 8)
+			_attach_mesh(parts[arm], ak)

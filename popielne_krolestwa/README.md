@@ -7,7 +7,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.9.0 – magia: 18 czarów w 5 szkołach, zadania z panelem „Aktualne zadania”, kostury) (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.9.1 – magia: 18 czarów w 5 szkołach, zadania z panelem „Aktualne zadania”, kostury) (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
@@ -196,6 +196,14 @@ z wybuchem, lodowe kolce, obłoki, aury (lodowa bańka, złote smugi), błyski o
 **Zadania.** Mistrz gildii daje zlecenia łowieckie, rzemieślnik – zbieranie surowców, kapłan – wyprawy
 (odwiedź inne miasto, Świątynię Ognia, obelisk; pokonaj bossa). 22 zadania w trzech miastach, część w łańcuchach,
 część powtarzalna. Postęp widać w panelu **„Aktualne zadania”** pod portretem.
+
+**Gładkie potwory (0.9.1).** Wszystkie stwory zbudowane z gładkich brył zamiast klocków: pająk z odwłokiem
+i ośmioma oczami, skorpion z łukowatym ogonem i kolcem jadowym, metaliczny skarabeusz, ropucha z brodawkami
+i wyłupiastymi oczami, Matka Moczarów z grzybami i świecącymi wrzodami, Pustynny Czerw z paszczą pełną zębów,
+smok Żarogniew (łuski, rogi, kolce, żarzące się szczeliny, błoniaste skrzydła), żywiołak ognia z płytami lawy,
+drzewiec z korzeniami, golem z runami. Orkowie, trolle, jaszczuroludzie, mumie (bandaże), yeti (futro),
+demon (skrzydła, ogon z grotem), zjawy (powiewająca szata), szkielety (żebra, czaszka) i Król Szronu mają
+realistyczne proporcje jak postacie graczy. Naprawiono błąd klienta przy złożach T5–T8.
 
 ### Wersja 0.8.0 – interfejs, przedmioty, zamki, pogoda
 
