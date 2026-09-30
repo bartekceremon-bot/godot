@@ -8,6 +8,7 @@ var dir := ""
 var _steps: Array = []
 var _wait := 1.0
 var _busy := false
+var fails := 0
 
 
 func _ready() -> void:
@@ -20,7 +21,11 @@ func _ready() -> void:
 	g.save.delete_save()
 	_steps = [
 		func(): await _shot("00_menu"); ui._start_game(); return 1.0,
-		func(): await _shot("01_start"); _close_modals(); return 0.5,
+		func(): await _shot("01_start"); _press("Do boju!"); return 0.5,
+		func(): await _expect_no_modal("Do boju!"); return 0.3,
+		func(): ui._open_menu(); return 0.5,
+		func(): _press("Ustawienia"); return 0.5,
+		func(): await _expect_no_modal("menu"); ui.show_tab("fight"); return 0.3,
 		func():
 			for i in 30:
 				g.combat.tap()
@@ -46,7 +51,8 @@ func _ready() -> void:
 			return 0.35,
 		func(): await _shot("13_boss_czar"); g.spells.cast("meteor"); return 0.9,
 		func(): await _shot("14_meteor"); g.s.last_time = Time.get_unix_time_from_system() - 7200.0; ui._show_offline(g.offline.compute_and_apply()); return 2.2,
-		func(): await _shot("15_offline"); _close_modals(); ui.show_tab("gear"); ui._panels["gear"]._tab = "chests"; g.inventory.add("chest_5", 1); ui._panels["gear"].refresh(); return 0.6,
+		func(): await _shot("15_offline"); _press("Odbierz"); return 0.4,
+		func(): await _expect_no_modal("Odbierz"); ui.show_tab("gear"); ui._panels["gear"]._tab = "chests"; g.inventory.add("chest_5", 1); ui._panels["gear"].refresh(); return 0.6,
 		func(): ui._panels["gear"]._open(5, 1); return 1.2,
 		func(): await _shot("16_skrzynia"); _close_modals(); g.s.stage = 51; g.s.max_stage = 60; g.enemy.spawn(); ui.show_tab("fight"); return 2.5,
 		func(): await _shot("17_region_popielisko"); g.s.stage = 76; g.s.max_stage = 80; g.enemy.spawn(); return 2.5,
@@ -90,6 +96,36 @@ func _open_first_item() -> void:
 		p._item_popup(it)
 
 
+## Naciska przycisk o podanym tekście w otwartym oknie (jak palec gracza).
+func _press(text: String) -> void:
+	var b := _find_button(ui, text)
+	if b == null:
+		push_error("idle-autotest: brak przycisku „%s”" % text)
+		fails += 1
+		return
+	b.pressed.emit()
+
+
+func _find_button(n: Node, text: String) -> Button:
+	for c in n.get_children():
+		if c is Button and str(c.text).begins_with(text) and c.is_visible_in_tree():
+			return c
+		var r := _find_button(c, text)
+		if r:
+			return r
+	return null
+
+
+func _expect_no_modal(what: String) -> void:
+	await get_tree().process_frame
+	for c in ui._modals:
+		if is_instance_valid(c) and not c.is_queued_for_deletion():
+			push_error("idle-autotest: okno nie zamknęło się po „%s”" % what)
+			fails += 1
+			return
+	print("idle-autotest: okno zamknięte po „%s”" % what)
+
+
 func _close_modals() -> void:
 	for c in ui.get_children():
 		if c is ColorRect and c.mouse_filter == Control.MOUSE_FILTER_STOP:
@@ -103,9 +139,9 @@ func _process(delta: float) -> void:
 	if _wait > 0.0:
 		return
 	if _steps.is_empty():
-		print("idle-autotest: OK")
+		print("idle-autotest: %s" % ("OK" if fails == 0 else "BŁĘDY: %d" % fails))
 		Idle.save.delete_save()
-		get_tree().quit(0)
+		get_tree().quit(0 if fails == 0 else 1)
 		return
 	_busy = true
 	var step: Callable = _steps.pop_front()

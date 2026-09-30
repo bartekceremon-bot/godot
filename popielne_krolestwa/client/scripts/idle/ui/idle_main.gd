@@ -30,6 +30,8 @@ var _ash_l: Label
 var _menu_screen: Control
 var _ui_t := 0.0
 var _started := false
+## Otwarte okna modalne (od najstarszego).
+var _modals: Array = []
 
 
 func _ready() -> void:
@@ -510,6 +512,7 @@ func modal(title_text: String, content: Control, closable := true) -> Control:
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(dim)
+	_modals.append(dim)
 	var card := IdleUI.card(Color(0.06, 0.06, 0.08, 0.98), UiTheme.BORDER)
 	card.add_theme_stylebox_override("panel", UiTheme.tex_box("panel", 32, 26))
 	var w := minf(column.size.x - 30.0, 700.0)
@@ -554,9 +557,16 @@ func modal(title_text: String, content: Control, closable := true) -> Control:
 	return dim
 
 
+## Zamyka okno. Obsługa przycisków w oknach tworzona jest przed samym oknem (lambdy GDScript
+## przechwytują wartość zmiennej), więc pusty argument = zamknij okno na wierzchu.
 func close_modal(m: Control) -> void:
-	if is_instance_valid(m):
-		m.queue_free()
+	_modals = _modals.filter(func(x): return is_instance_valid(x) and not x.is_queued_for_deletion())
+	if m == null or not is_instance_valid(m):
+		if _modals.is_empty():
+			return
+		m = _modals.back()
+	_modals.erase(m)
+	m.queue_free()
 
 
 ## Okno z tekstem i przyciskami [[tekst, Callable], ...].
