@@ -1,13 +1,54 @@
 # POPIELNE KRÓLESTWA
 
-Mobilne MMORPG na Androida: klimat i mechaniki **Tibii** (widok z góry, kafelki 32×32, pixel art,
-skille rosnące od używania, runy/czary z formułami) połączone z gospodarką i PvP w stylu
-**Albion Online** (gospodarka graczy, „jesteś tym, co nosisz”, strefy ryzyka z full lootem).
+**Wersja 1.0.0: Popielne Królestwa Idle** – mobilna gra RPG idle/clicker (Android, pionowo) zbudowana na świecie,
+contencie i grafice MMO Popielnych Królestw. Klikasz potwory krain, zbierasz łup, ulepszasz bohatera i drużynę
+najemników, odblokowujesz kolejne regiony, a po Odrodzeniu z Popiołu zaczynasz silniejszy. Gra działa bez
+logowania i internetu, a drużyna walczy dalej, gdy nie grasz.
+
+Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest w projekcie – z menu gry
+(„Klasyczne MMO”) albo z testów automatycznych; opis poniżej od sekcji „Co działa w ETAPIE 1”.
 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.9.1 – magia: 18 czarów w 5 szkołach, zadania z panelem „Aktualne zadania”, kostury) (patrz [Plan etapów](#plan-etapów)).
+## Popielne Królestwa Idle (wersja 1.0.0)
+
+**Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
+
+| System | Jak działa |
+|---|---|
+| Walka | Dotknij przeciwnika (albo przytrzymaj palec – 8 ciosów/s). Krytyki, liczby obrażeń, cząsteczki, wstrząs ekranu, dźwięki. Modele 3D bohatera (w założonym ekwipunku), drużyny i potworów z gry MMO na dioramie regionu z pogodą. |
+| Najemnicy (zakładka WALKA) | 15 najemników ze świata MMO (Strażnik Popielgrodu, Kapłanka Wiesława, Kowal Gerwazy, Mistrz gildii Zawisza, Mag Szronogrodu…) daje DPS; koszt ×1,07 na poziom, kamienie milowe ×2. Trening ciosu zwiększa obrażenia kliknięcia. Zakup ×1 / ×10 / ×100 / MAKS. |
+| Regiony (MAPA) | 8 krain po 10 etapów: Łąki Popielgrodu, Puszcza, Moczary, Złote Piaski, Góry Pogorzelne, Szronowe Pustkowia, Popielisko, Świątynia Ognia; potem Kręgi Popiołu. 10 wrogów na etap, na 5. etapie elita, na 10. boss regionu (Herszt Rozbójników, Pradawny Drzewiec, Matka Moczarów, Pustynny Czerw, Władca Gór, Król Szronu, Czempion Popiołu, Żarogniew). |
+| Bossowie | Ogromne zdrowie, 30 s na walkę, biją bohatera co 2 s (liczy się zdrowie i obrona z pancerza, mikstury, leczenie). Porażka → farmienie etapu wcześniej, ponowna próba przyciskiem albo sama po 45 s (AUTO). Nagroda: skrzynia, surowce, fragmenty wierzchowców, żarokryształy. |
+| Ekwipunek | 6 slotów (głowa, tułów, nogi, stopy, broń, tarcza). Każda rodzina z MMO daje inne premie: miecz – krytyk, topór – obrażenia krytyczne, buława – DPS najemników, łuk – szybkość ataku, kostur – siła czarów i mana, tarcza i płyty – zdrowie i obrona, skóra – złoto, materiał – XP i mana. Rzadkość Zwykły…Legendarny (jakość MMO 1–5). |
+| Ulepszanie | Złoto + surowce rodziny (np. miecz: ruda i skóra), koszt rośnie wykładniczo – główny „pochłaniacz” surowców. |
+| CRAFT | Rafineria (surowiec → materiał), Kuźnia i Pracownia (ekwipunek T1–T8 z receptur MMO, jakość rośnie z poziomem rzemiosła), Alchemia (mikstury, wzmocnienia z mięsa, kości i trofeów bossów). Receptury odblokowują się z regionami. |
+| CZARY | 18 czarów MMO jako umiejętności: Kula ognia (500% + podpalenie), Meteor (5000%, nadmiar przechodzi na kolejnych wrogów), Mroźna nova (zamraża bossa i czas), Przyspieszenie (+100% szybkości), Lodowa zbroja (tarcza), Łańcuch piorunów, Nawałnica, Trujący obłok (% zdrowia bossa), Wyssanie życia… Mana, odnowienie, poziomy ulepszeń, pasek 4 czarów, od etapu 10 rzucanie AUTO. |
+| QUESTY | Kronika (22 zadania MMO z trzech miast – aktywują się same, gdy odkryjesz krainę) i 3 odnawiane Zlecenia (pokonaj N wrogów, zdobądź złoto, użyj czarów, ulepsz ekwipunek…). Krótkie cele widać na ekranie walki. |
+| Łup i skrzynie | Surowce regionu, łup z tabel bestiariusza MMO, ekwipunek, skrzynie 5 rzadkości, żarokryształy, fragmenty wierzchowców. |
+| Wierzchowce (menu → Stajnia) | Koń +10% złota, Łoś +10% XP, Wielbłąd +20% offline, Wilk bojowy +15% obrażeń, Drake +30% obrażeń; ulepszane fragmentami. |
+| Sklep i targ (menu) | Mikstury, surowce, ekwipunek, wzmocnienia i skrzynie za żarokryształy; skup; Targ z 6 ofertami kupców trzech miast (odnawiane co 30 min). |
+| Offline | Po powrocie: czas × DPS × skuteczność (50% + wielbłąd + Ołtarz), do 12 h (+Ołtarz). Okno „Witaj ponownie!” z animowanymi licznikami. |
+| Odrodzenie (menu → Ołtarz Popiołu) | Od etapu 40. Reset etapów, złota, poziomu, najemników, ekwipunku i surowców → Popiół Dusz na stałe ulepszenia (obrażenia, złoto, XP, offline, krytyk, łup, szybkość, start od dalszego etapu). |
+| Zapis | Lokalny JSON (user://), zapis co 15 s, przy minimalizacji i wyjściu, suma kontrolna i kopia zapasowa. |
+
+**Balans** (symulacja `tests/balance_sim.tscn`, aktywny gracz): etap ~10 po minucie, ~30 po 10 minutach,
+~40 po pół godzinie (pierwsze bariery na bossach regionów), ~50 po godzinie, ~60 po kilku godzinach –
+dalej potrzebne są ekwipunek, czary, wierzchowce i odrodzenie.
+
+Analiza projektu 0.9.1 i plan migracji (co zachowano, co zaadaptowano, co zastąpiono): [docs/IDLE_MIGRACJA.md](docs/IDLE_MIGRACJA.md).
+
+Testy wersji idle:
+```bash
+cd client
+godot --headless --path . res://tests/idle_test.tscn            # pętla gry, zapis, offline, prestiż…
+godot --headless --path . res://tests/balance_sim.tscn -- --hours=6   # symulacja balansu
+godot --path . -- --idle-shots=/tmp/zrzuty                       # zrzuty wszystkich ekranów
+node ../tools/export_idle_data.js                                # (po zmianie danych serwera) eksport contentu
+```
+
+**Stan MMO: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.9.1 – magia: 18 czarów w 5 szkołach, zadania z panelem „Aktualne zadania”, kostury) (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
