@@ -330,12 +330,14 @@ static func well(k: MeshKit, c: Vector3) -> void:
 
 
 ## Fontanna miejska (na bloku 2×2): basen, kolumna, woda.
-static func fountain(k: MeshKit, c: Vector3, style: String) -> void:
+static func fountain(k: MeshKit, c: Vector3, style: String, with_column := true) -> void:
 	var st := STONE.lightened(0.15) if style != "desert" else Color(0.86, 0.74, 0.55)
 	k.cyl(c, 0.95, 0.95, 0.35, 12, st, true, st.darkened(0.1))
 	k.glow = 0.25
 	k.cyl(c + Vector3(0, 0.32, 0), 0.82, 0.82, 0.02, 12, Color(0.35, 0.65, 0.8), true, Color(0.4, 0.72, 0.88))
 	k.glow = 0.0
+	if not with_column:
+		return
 	k.cyl(c, 0.14, 0.12, 1.0, 8, st)
 	k.cyl(c + Vector3(0, 0.95, 0), 0.4, 0.3, 0.1, 10, st.darkened(0.05), true, Color(0.4, 0.72, 0.88))
 	k.metal = 1.0
@@ -471,3 +473,208 @@ static func log_fallen(k: MeshKit, c: Vector3, r: float) -> void:
 	k.xf = Transform3D(Basis(Vector3.UP, r * TAU) * Basis(Vector3(0, 0, 1), PI / 2.0), c + Vector3(0.35, 0.12, 0))
 	k.cyl(Vector3.ZERO, 0.12, 0.11, 0.75, 6, WOOD, true, Color(0.7, 0.55, 0.35))
 	k.xf = Transform3D.IDENTITY
+
+
+# ============================================================================
+# Budowle miast: cytadela, katedra, pomnik
+# ============================================================================
+
+## Kolory budowli miasta: [kamień, dach, sztandar].
+static func city_palette(style: String) -> Array:
+	match style:
+		"snow":
+			return [Color(0.6, 0.62, 0.66), Color(0.26, 0.3, 0.42), Color(0.18, 0.28, 0.6)]
+		"desert":
+			return [Color(0.86, 0.72, 0.5), Color(0.25, 0.58, 0.62), Color(0.1, 0.45, 0.55)]
+	return [Color(0.62, 0.59, 0.54), Color(0.62, 0.22, 0.14), Color(0.62, 0.1, 0.08)]
+
+
+## Okrągła wieża z blankami i dachem (stożek; na pustyni kopuła; w śniegach czapa śniegu).
+static func round_tower(k: MeshKit, base: Vector3, r: float, h: float, style: String, flag: bool) -> void:
+	var pal := city_palette(style)
+	var stone: Color = pal[0]
+	k.tex = 2
+	k.cyl(base, r * 1.08, r, h, 12, stone, true, stone.darkened(0.15))
+	k.cyl(base + Vector3(0, h, 0), r * 1.12, r * 1.12, 0.12, 12, stone.darkened(0.05))
+	for i in 8:
+		var a := TAU * i / 8.0
+		k.box(base + Vector3(cos(a) * r * 1.02, h + 0.12, sin(a) * r * 1.02), Vector3(0.16, 0.22, 0.16), stone)
+	k.tex = 0
+	# Okna-strzelnice (świecą nocą).
+	k.glow = 0.5
+	for lvl: float in [0.45, 0.7]:
+		for i in 4:
+			var a := TAU * i / 4.0 + 0.4 + lvl
+			var p := base + Vector3(cos(a) * r * 1.01, h * lvl, sin(a) * r * 1.01)
+			var t := Vector3(-sin(a), 0, cos(a)) * 0.04
+			k.quad(p - t, p + t, p + t + Vector3(0, 0.22, 0), p - t + Vector3(0, 0.22, 0), Color(1.0, 0.78, 0.42), Vector3(cos(a), 0, sin(a)))
+	k.glow = 0.0
+	var top := base + Vector3(0, h + 0.1, 0)
+	if style == "desert":
+		k.metal = 0.35
+		k.blob(top + Vector3(0, 0.05, 0), Vector3(r * 0.95, r * 1.1, r * 0.95), pal[1], 4, 12, 0.0)
+		k.metal = 1.0
+		k.cone(top + Vector3(0, r * 1.05, 0), 0.05, 0.35, 5, GOLD)
+		k.metal = 0.0
+	else:
+		k.tex = 3
+		k.cone(top, r * 1.15, h * 0.55 + 0.6, 12, pal[1], 0.1)
+		k.tex = 0
+		if style == "snow":
+			k.tex = 7
+			k.cone(top + Vector3(0, (h * 0.55 + 0.6) * 0.55, 0), r * 0.52, (h * 0.55 + 0.6) * 0.45, 12, SNOW, 0.1)
+			k.tex = 0
+		k.metal = 1.0
+		k.cone(top + Vector3(0, h * 0.55 + 0.55, 0), 0.04, 0.3, 4, GOLD)
+		k.metal = 0.0
+	if flag:
+		var ft := top + Vector3(0, (h * 0.55 + 0.9) if style != "desert" else r * 1.4, 0)
+		k.cyl(ft, 0.02, 0.02, 0.9, 4, WOOD_DARK)
+		for f: int in [1, -1]:
+			k.quad(ft + Vector3(0, 0.85, 0), ft + Vector3(0.7, 0.8, 0.05 * f), ft + Vector3(0.7, 0.5, 0.05 * f), ft + Vector3(0, 0.5, 0), pal[2], Vector3(0, 0, f))
+
+
+## Cytadela: donżon z blankami, cztery narożne wieże, brama, sztandary na murach.
+static func citadel(k: MeshKit, x0: int, y0: int, x1: int, y1: int, style: String) -> void:
+	var pal := city_palette(style)
+	var stone: Color = pal[0]
+	var ax := x0 + 0.15
+	var az := y0 + 0.15
+	var bx := x1 + 0.85
+	var bz := y1 + 0.85
+	var cx := (ax + bx) / 2.0
+	var cz := (az + bz) / 2.0
+	k.reset()
+	k.tex = 2
+	# Mur obronny wokół dziedzińca.
+	k.box(Vector3(cx, 0, cz), Vector3(bx - ax, 2.0, bz - az), stone.darkened(0.05), Vector2.ONE, stone.darkened(0.25))
+	for i in int((bx - ax) / 0.4):
+		for z: float in [az + 0.1, bz - 0.1]:
+			k.box(Vector3(ax + 0.2 + i * 0.4, 2.0, z), Vector3(0.2, 0.25, 0.2), stone)
+	# Donżon.
+	var kw := (bx - ax) * 0.46
+	var kd := (bz - az) * 0.56
+	k.box(Vector3(cx, 0, cz - 0.1), Vector3(kw, 4.2, kd), stone, Vector2.ONE, stone.darkened(0.2))
+	for i in int(kw / 0.35):
+		for z: float in [cz - 0.1 - kd / 2 + 0.08, cz - 0.1 + kd / 2 - 0.08]:
+			k.box(Vector3(cx - kw / 2 + 0.17 + i * 0.35, 4.2, z), Vector3(0.18, 0.28, 0.16), stone)
+	k.tex = 0
+	# Okna donżonu.
+	k.glow = 0.5
+	for lvl: float in [1.4, 2.4, 3.3]:
+		for i in 3:
+			var p := Vector3(cx - kw * 0.3 + i * kw * 0.3, lvl, cz - 0.1 + kd / 2 + 0.01)
+			k.quad(p + Vector3(-0.07, 0, 0), p + Vector3(0.07, 0, 0), p + Vector3(0.07, 0.3, 0), p + Vector3(-0.07, 0.3, 0), Color(1.0, 0.78, 0.42), Vector3(0, 0, 1))
+	k.glow = 0.0
+	# Brama (od południa).
+	k.tex = 4
+	k.quad(Vector3(cx - 0.35, 0, bz + 0.01), Vector3(cx + 0.35, 0, bz + 0.01), Vector3(cx + 0.35, 1.1, bz + 0.01), Vector3(cx - 0.35, 1.1, bz + 0.01), WOOD_DARK, Vector3(0, 0, 1))
+	k.tex = 0
+	k.metal = 1.0
+	for i in 4:
+		k.box(Vector3(cx - 0.3 + i * 0.2, 0.0, bz + 0.02), Vector3(0.03, 1.08, 0.02), IRON)
+	k.metal = 0.0
+	# Sztandary na murze.
+	for sx: float in [ax + 0.5, bx - 0.5]:
+		k.quad(Vector3(sx - 0.18, 1.85, bz + 0.02), Vector3(sx + 0.18, 1.85, bz + 0.02), Vector3(sx + 0.18, 0.95, bz + 0.02), Vector3(sx - 0.18, 0.95, bz + 0.02), pal[2], Vector3(0, 0, 1))
+		k.tri(Vector3(sx - 0.18, 0.95, bz + 0.02), Vector3(sx + 0.18, 0.95, bz + 0.02), Vector3(sx, 0.75, bz + 0.02), pal[2], Vector3(0, 0, 1))
+		k.metal = 1.0
+		k.box(Vector3(sx, 1.35, bz + 0.03), Vector3(0.1, 0.1, 0.01), GOLD)
+		k.metal = 0.0
+	# Wieże narożne i wieża donżonu.
+	for c: Vector3 in [Vector3(ax, 0, az), Vector3(bx, 0, az), Vector3(ax, 0, bz), Vector3(bx, 0, bz)]:
+		round_tower(k, c, 0.5, 3.0, style, c.z > cz)
+	round_tower(k, Vector3(cx + kw * 0.3, 4.1, cz - 0.1 - kd * 0.2), 0.45, 1.6, style, true)
+
+
+## Katedra: nawa z dachem, przypory, dzwonnica z iglicą, świecąca rozeta.
+static func cathedral(k: MeshKit, x0: int, y0: int, x1: int, y1: int, style: String) -> void:
+	var pal := city_palette(style)
+	var stone: Color = pal[0].lightened(0.08)
+	var ax := x0 + 0.2
+	var az := y0 + 0.2
+	var bx := x1 + 0.8
+	var bz := y1 + 0.8
+	var cx := (ax + bx) / 2.0
+	var cz := (az + bz) / 2.0
+	var hgt := 2.6
+	k.reset()
+	k.tex = 2
+	k.box(Vector3(cx, 0, cz), Vector3(bx - ax, hgt, bz - az), stone)
+	# Przypory.
+	for i in 4:
+		var x := ax + 0.4 + i * ((bx - ax) - 0.8) / 3.0
+		for z: float in [az - 0.12, bz + 0.12]:
+			k.box(Vector3(x, 0, z), Vector3(0.25, hgt * 0.8, 0.25), stone.darkened(0.08), Vector2(0.7, 0.7))
+	k.tex = 0
+	# Dach nawy (wzdłuż osi X).
+	var o := 0.15
+	var rh := (bz - az) * 0.55
+	var roof: Color = pal[1]
+	k.tex = 3 if style != "snow" else 7
+	var rc := roof if style != "snow" else SNOW
+	k.quad(Vector3(ax - o, hgt, az - o), Vector3(bx + o, hgt, az - o), Vector3(bx + o, hgt + rh, cz), Vector3(ax - o, hgt + rh, cz), rc, Vector3(0, 1, -1))
+	k.quad(Vector3(ax - o, hgt, bz + o), Vector3(ax - o, hgt + rh, cz), Vector3(bx + o, hgt + rh, cz), Vector3(bx + o, hgt, bz + o), rc.darkened(0.08), Vector3(0, 1, 1))
+	k.tex = 2
+	k.tri(Vector3(ax, hgt, az), Vector3(ax, hgt + rh - 0.05, cz), Vector3(ax, hgt, bz), stone, Vector3(-1, 0, 0))
+	k.tri(Vector3(bx, hgt, az), Vector3(bx, hgt + rh - 0.05, cz), Vector3(bx, hgt, bz), stone, Vector3(1, 0, 0))
+	# Dzwonnica od frontu (południe) z iglicą.
+	var tw := 1.1
+	var tx := cx
+	var tz := bz - tw / 2.0
+	k.box(Vector3(tx, 0, tz), Vector3(tw, hgt + 2.4, tw), stone)
+	k.tex = 0
+	k.glow = 0.3
+	for f: Vector3 in [Vector3(0, 0, 1), Vector3(1, 0, 0), Vector3(-1, 0, 0)]:
+		var p := Vector3(tx, hgt + 1.5, tz) + f * (tw / 2 + 0.01)
+		var s := Vector3(f.z, 0, f.x) * 0.15
+		k.quad(p - s, p + s, p + s + Vector3(0, 0.55, 0), p - s + Vector3(0, 0.55, 0), Color(0.15, 0.12, 0.1), f)
+	k.glow = 0.0
+	if style == "desert":
+		k.metal = 0.35
+		k.blob(Vector3(tx, hgt + 2.4, tz), Vector3(0.6, 0.7, 0.6), roof, 4, 12, 0.0)
+		k.metal = 0.0
+	else:
+		k.tex = 3 if style != "snow" else 7
+		k.cone(Vector3(tx, hgt + 2.4, tz), tw * 0.75, 2.2, 8, rc)
+		k.tex = 0
+	k.metal = 1.0
+	k.cone(Vector3(tx, hgt + (4.6 if style != "desert" else 3.1), tz), 0.03, 0.45, 4, GOLD)
+	k.box(Vector3(tx, hgt + (4.85 if style != "desert" else 3.35), tz), Vector3(0.28, 0.05, 0.05), GOLD)
+	k.metal = 0.0
+	# Rozeta nad wejściem.
+	k.glow = 0.3
+	var rp := Vector3(tx, hgt + 0.7, bz + 0.015)
+	for i in 12:
+		var a0 := TAU * i / 12.0
+		var a1 := TAU * (i + 1) / 12.0
+		var col: Color = [Color(0.9, 0.3, 0.25), Color(0.3, 0.5, 0.95), Color(0.95, 0.8, 0.3)][i % 3]
+		k.tri(rp, rp + Vector3(cos(a0), sin(a0), 0) * 0.32, rp + Vector3(cos(a1), sin(a1), 0) * 0.32, col, Vector3(0, 0, 1))
+	k.glow = 0.0
+	k.tex = 4
+	k.quad(Vector3(tx - 0.25, 0, bz + 0.012), Vector3(tx + 0.25, 0, bz + 0.012), Vector3(tx + 0.25, 1.0, bz + 0.012), Vector3(tx - 0.25, 1.0, bz + 0.012), WOOD_DARK, Vector3(0, 0, 1))
+	k.tex = 0
+
+
+## Pomnik bohatera z mieczem na postumencie (środek fontanny).
+static func statue(k: MeshKit, c: Vector3) -> void:
+	var st := Color(0.68, 0.68, 0.66)
+	k.reset()
+	k.tex = 2
+	k.box(c, Vector3(0.5, 0.7, 0.5), st.darkened(0.1), Vector2(0.9, 0.9))
+	k.tex = 0
+	var b := c + Vector3(0, 0.7, 0)
+	k.metal = 0.3
+	for side: int in [-1, 1]:
+		k.loft([[b + Vector3(side * 0.07, 0, 0), Vector2(0.045, 0.05)], [b + Vector3(side * 0.07, 0.45, 0), Vector2(0.065, 0.07)]], st, 8)
+	k.loft([[b + Vector3(0, 0.42, 0), Vector2(0.14, 0.09)], [b + Vector3(0, 0.7, 0), Vector2(0.16, 0.1)], [b + Vector3(0, 0.82, 0), Vector2(0.18, 0.09)], [b + Vector3(0, 0.88, 0), Vector2(0.05, 0.05)]], st, 10)
+	k.ellipsoid(b + Vector3(0, 0.97, 0.01), Vector3(0.07, 0.09, 0.08), st, 5, 8)
+	# Peleryna.
+	k.quad(b + Vector3(-0.16, 0.85, -0.08), b + Vector3(0.16, 0.85, -0.08), b + Vector3(0.22, 0.1, -0.2), b + Vector3(-0.22, 0.1, -0.2), st.darkened(0.1), Vector3(0, 0, -1))
+	# Ręka z mieczem wzniesionym do góry.
+	k.loft([[b + Vector3(0.2, 0.8, 0), Vector2(0.04, 0.04)], [b + Vector3(0.24, 1.2, 0.02), Vector2(0.035, 0.035)]], st, 6)
+	k.loft([[b + Vector3(-0.2, 0.45, 0.02), Vector2(0.035, 0.035)], [b + Vector3(-0.19, 0.8, 0), Vector2(0.04, 0.04)]], st, 6)
+	k.metal = 0.6
+	k.box(b + Vector3(0.24, 1.2, 0.02), Vector3(0.16, 0.03, 0.04), st.lightened(0.1))
+	k.box(b + Vector3(0.24, 1.22, 0.02), Vector3(0.04, 0.7, 0.012), st.lightened(0.15), Vector2(0.4, 1.0))
+	k.metal = 0.0

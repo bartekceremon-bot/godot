@@ -18,6 +18,7 @@ uniform sampler2D tex_plaster : source_color, filter_linear_mipmap, repeat_enabl
 uniform sampler2D terrain_albedo : source_color, filter_linear_mipmap, repeat_enable;
 uniform sampler2DArray terrain_array : source_color, filter_linear_mipmap, repeat_enable;
 uniform bool textured = false;
+uniform float wet = 0.0;
 
 varying vec2 ch;
 varying vec3 wpos;
@@ -97,6 +98,8 @@ void fragment() {
 			rough = 0.6;
 		}
 		c *= clamp(detail, vec3(0.0), vec3(2.0));
+		c *= mix(1.0, 0.75, wet * step(0.5, n.y + 0.3));
+		rough = mix(rough, 0.3, wet * 0.7);
 		// Nierówności z mapy normalnych (bez stycznych – zaburzenie normalnej w przestrzeni świata).
 		vec2 sl = nrm.xy * 2.0 - 1.0;
 		vec3 pn = normalize(n + (vec3(0.0, sl.y, sl.x) * bw.x + vec3(sl.x, 0.0, sl.y) * bw.y + vec3(sl.x, sl.y, 0.0) * bw.z) * 0.9);

@@ -1,0 +1,2 @@
+DejaVuSerif-Bold.ttf – czcionka DejaVu (https://dejavu-fonts.github.io/), licencja
+Bitstream Vera / DejaVu (wolna, pozwala na użycie i rozpowszechnianie, także komercyjnie).

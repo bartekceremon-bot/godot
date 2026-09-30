@@ -51,7 +51,7 @@ func _make(g: Dictionary) -> Node3D:
 	spr.texture = Sprites.item_icon_for(def)
 	spr.pixel_size = 0.016
 	spr.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	spr.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	spr.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	spr.shaded = false
 	spr.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
 	spr.position.y = 0.3

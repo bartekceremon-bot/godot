@@ -178,7 +178,7 @@ func _scenario_etap3(game: Node) -> Array:
 func _scenario_views(game: Node) -> Array:
 	var spots := [["01_szronogrod", Vector2i(44, 58)], ["02_zlotopiask", Vector2i(180, 58)], ["03_swiatynia_ognia", Vector2i(112, 104)],
 		["04_moczary", Vector2i(185, 150)], ["05_puszcza", Vector2i(35, 140)], ["06_gory", Vector2i(112, 40)], ["07_obelisk", Vector2i(130, 124)],
-		["08_popielgrod_brama", Vector2i(112, 214)], ["09_wioska", Vector2i(-1, -1)]]
+		["08_popielgrod_brama", Vector2i(112, 214)], ["09_wioska", Vector2i(-1, -1)], ["10_cytadela", Vector2i(101, 197)], ["11_katedra", Vector2i(123, 197)]]
 	var steps: Array = []
 	# --only=04,05 – tylko wybrane ujęcia (szybsze testy).
 	var only := ""
@@ -236,7 +236,15 @@ func _scenario_bestiary(game: Node) -> Array:
 		["03_potegi", ["yeti", "treant", "golem", "ice_wraith", "fire_elemental", "demon"]],
 		["04_bossowie", ["frost_king", "sand_worm", "bog_mother", "ash_dragon"]],
 		["05_wierzchowce", ["mount_horse", "mount_elk", "mount_camel", "mount_warwolf", "mount_drake", "obelisk"]],
+		["06_zbrojownia", ["eq:2:sword:leather:shield", "eq:3:axe:plate:", "eq:4:mace:plate:shield", "eq:5:sword:plate:shield", "eq:6:bow:leather:",
+			"eq:7:axe:plate:", "eq:8:sword:plate:shield", "eq:5:bow:cloth:"]],
 	]
+	var only := ""
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--only="):
+			only = a.substr(7)
+	if only != "":
+		groups = groups.filter(func(g): return only.split(",").has(str(g[0]).substr(0, 2)))
 	var steps: Array = []
 	var base := _find_open(Vector2i(112, 160), 16, 10)
 	for g in groups:
@@ -255,7 +263,15 @@ func _scenario_bestiary(game: Node) -> Array:
 				var y: int = base.y - 2 + (i / per_row) * spacing - (rows - 1) * spacing / 2
 				var look: String = looks[i]
 				var e := {"i": -(i + 1), "k": "m", "n": look, "x": x, "y": y, "d": 2, "h": 100, "l": look, "s": 0, "b": 1 if big else 0}
-				if look.begins_with("mount_"):
+				if look.begins_with("eq:"):
+					var q: PackedStringArray = look.split(":")
+					var ar := q[3]
+					e.k = "p"
+					e.l = str(i)
+					e.n = "T%s" % q[1]
+					e["eq"] = ["%s_head_t%s" % [ar, q[1]], "%s_body_t%s" % [ar, q[1]], "%s_legs_t%s" % [ar, q[1]], "%s_feet_t%s" % [ar, q[1]],
+						"%s_t%s" % [q[2], q[1]], ("shield_t%s" % q[1]) if q[4] != "" else ""]
+				elif look.begins_with("mount_"):
 					e.k = "p"
 					e.l = str(i)
 					e["mt"] = look
@@ -265,7 +281,7 @@ func _scenario_bestiary(game: Node) -> Array:
 					e["o"] = "OGN"
 				var v = game._create_entity(-(i + 1))
 				v.apply(e, false)
-			var mounts: bool = g[0] == "05_wierzchowce"
+			var mounts: bool = g[0] == "05_wierzchowce" or g[0] == "06_zbrojownia"
 			game.me.snap_to(base + Vector2i(1, 1 if big else 0))
 			game._zoom = 1.45 if big else (1.0 if mounts else 1.2)
 			game.camera.position = Vector3.ZERO

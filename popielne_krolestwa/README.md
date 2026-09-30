@@ -7,7 +7,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.7.0 – Grafika 2.0: realistyczny teren, drzewa i postacie, panorama z horyzontem) (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.8.0 – interfejs dark fantasy, malowane ikony, zamki i katedry, deszcz i burze, nowe modele broni i zwierząt) (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
@@ -174,6 +174,18 @@ W menu gry: **„Efekty graficzne: wysokie/niskie”** – wyłącza cienie, po�
 | Drzewa i trawa | `tree_models.gd`: pnie z teksturą kory, korony z kart liści (dęby, brzozy, wierzby), świerki z gałęzi igieł (też ośnieżone), palmy, kaktusy, martwe drzewa – rysowane jako MultiMesh; kępy trawy kołysane wiatrem |
 | Budynki | Mury z kamiennych bloków, dachówka, szachulec z tynkiem i belkami, chaty z bali, skały z teksturą (rzut trójpłaszczyznowy w `lowpoly_object.gdshader`) |
 | Postacie | Ludzie (gracze, NPC, bandyci) mają realistyczne proporcje i gładkie kształty: zbroja płytowa z naramiennikami, peleryna od T4, hełmy z przyłbicą i pióropuszem, fryzury, brody |
+
+### Wersja 0.8.0 – interfejs, przedmioty, zamki, pogoda
+
+| Element | Jak zrobiony |
+|---------|--------------|
+| Interfejs dark fantasy | `tools/textures/gen_ui.py`: grafitowe panele ze złoconą ramką i ornamentami w rogach, stalowe przyciski, wklęsłe sloty, błyszczące paski życia/many/doświadczenia, okrągła złota obręcz z nitami (portret i minimapa), malowane ikony HUD. Tytuły czcionką szeryfową (DejaVu Serif). HUD: portret z odznaką poziomu, baner krainy („Popielgród – strefa zielona”), zegar świata i pogoda, okrągła minimapa z kierunkiem północy |
+| Ikony przedmiotów | `tools/textures/gen_icons.py`: 41 rodzajów × 9 tierów, 96×96, wygładzane; materiały tierów (żelazo, brąz, stal, fiolet, złoto, szkarłat, mithril, obsydian), klejnoty od T4, poświata tła i świecące runy od T6, znaczek tieru cyframi rzymskimi |
+| Broń i zbroja 3D | Miecz o przekroju soczewki ze zbroczem, jelcem, głowicą i klejnotem; topór z półksiężycowym ostrzem (od T4 dwusieczny); buława z piórami; łuk refleksyjny; tarcza herbowa. Od T6 runy, T8 – obsydian z ognistą krawędzią i żarzącymi się zdobieniami zbroi. Kolory tierów wspólne z ikonami |
+| Podgląd postaci | Okno ekwipunku pokazuje obracający się model 3D postaci w aktualnym ekwipunku |
+| Miasta | Cytadela (donżon, cztery okrągłe wieże, blanki, brama, sztandary) i katedra (nawa, przypory, dzwonnica z iglicą, witrażowa rozeta) w każdym mieście, w stylu krainy; pomnik rycerza na fontannie; budowle widać z daleka na horyzoncie |
+| Pogoda | Wspólny dla wszystkich cykl co 7 minut: bezchmurnie, deszcz, burza (poza pustynią i Popieliskiem). Deszcz z kroplami, ciemne chmury, mgła, mokra i błyszcząca ziemia z kałużami, pioruny z błyskiem i grzmotem |
+| Zwierzęta i wierzchowce | Gładkie bryły zamiast klocków: tułów szerszy w klatce piersiowej, głowa z pyskiem i nosem, kły, stożkowe nogi z kopytami lub łapami, puszyste ogony, szyje koni, siodło z czaprakiem i strzemionami |
 
 Tekstury są generowane algorytmicznie, bo z tego środowiska nie ma dostępu do bibliotek darmowych zasobów
 (Poly Haven, Kenney itp.). Każdy plik w `client/assets/textures/` można podmienić lepszym (ten sam rozmiar i układ).

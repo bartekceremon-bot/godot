@@ -47,6 +47,13 @@ var _embers: CPUParticles3D
 var _snow: CPUParticles3D
 var _dust: CPUParticles3D
 var _fireflies: CPUParticles3D
+var _rain: CPUParticles3D
+## Pogoda (wspólna dla wszystkich: cykl co 7 minut): 0..1 deszcz, 0..1 burza, błysk pioruna.
+var _rain_amt := 0.0
+var _storm := 0.0
+var _flash := 0.0
+var _next_flash := 0.0
+var weather := "clear"
 var _biome := ""
 var _shake := 0.0
 var _zoom := 0.55
@@ -179,6 +186,7 @@ func _setup_scene() -> void:
 	_fireflies.initial_velocity_max = 0.25
 	_fireflies.spread = 180
 	_fireflies.emission_box_extents = Vector3(10, 1.0, 8)
+	_rain = _make_rain()
 
 
 ## Opadający popiół i unoszący się żar wokół kamery.
@@ -211,6 +219,81 @@ func _make_weather(col: Color, amount: int, vy: float, size: float) -> CPUPartic
 	p.local_coords = false
 	add_child(p)
 	return p
+
+
+## Deszcz: smugi kropli spadające wokół kamery.
+func _make_rain() -> CPUParticles3D:
+	var p := CPUParticles3D.new()
+	p.amount = 900
+	p.lifetime = 0.9
+	p.preprocess = 1.0
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	p.emission_box_extents = Vector3(16, 0.5, 16)
+	p.direction = Vector3(0.15, -1, 0.05)
+	p.spread = 3
+	p.gravity = Vector3.ZERO
+	p.initial_velocity_min = 16.0
+	p.initial_velocity_max = 20.0
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.012, 0.55, 0.012)
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.albedo_color = Color(0.72, 0.78, 0.9, 0.42)
+	bm.material = m
+	p.mesh = bm
+	p.local_coords = false
+	p.emitting = false
+	p.visible = false
+	add_child(p)
+	return p
+
+
+## Stan pogody ze wspólnego zegara: bezchmurnie / deszcz / burza (argumenty testowe: --rain, --storm, --clear).
+func _weather_state() -> String:
+	var args := OS.get_cmdline_user_args()
+	for w in ["rain", "storm", "clear"]:
+		if "--" + w in args:
+			return w
+	var slot := int(Time.get_unix_time_from_system() / 420.0)
+	var r := RandomNumberGenerator.new()
+	r.seed = slot * 7919 + 17
+	var v := r.randf()
+	return "clear" if v < 0.55 else ("rain" if v < 0.82 else "storm")
+
+
+func _update_rain(delta: float) -> void:
+	weather = _weather_state()
+	var dry := _biome in ["d", "a"]
+	var want_rain := 0.0 if weather == "clear" or dry else (1.0 if weather == "storm" else 0.7)
+	var want_storm := 1.0 if weather == "storm" and not dry else 0.0
+	var forced := "--rain" in OS.get_cmdline_user_args() or "--storm" in OS.get_cmdline_user_args()
+	_rain_amt = want_rain if forced else move_toward(_rain_amt, want_rain, delta * 0.08)
+	_storm = want_storm if forced else move_toward(_storm, want_storm, delta * 0.08)
+	var snowy := _biome == "s"
+	var show_rain := Config.effects and _rain_amt > 0.05 and not snowy
+	_rain.emitting = show_rain
+	_rain.visible = show_rain
+	if show_rain:
+		var want := int(roundf(clampf(_rain_amt, 0.2, 1.0) * 5.0)) * 180
+		if _rain.amount != want:
+			_rain.amount = want
+		_rain.position = camera.position + (me.position - camera.position) * 0.6 + Vector3(0, 9, 0)
+	var wet := clampf(_rain_amt * 1.3, 0.0, 1.0) * (0.0 if snowy else 1.0)
+	world.mat_ground.set_shader_parameter("wet", wet)
+	world.mat_object.set_shader_parameter("wet", wet)
+	# Pioruny w czasie burzy.
+	var now := Time.get_ticks_msec() / 1000.0
+	if _storm > 0.6 and now > _next_flash:
+		_next_flash = now + randf_range(5.0, 14.0)
+		_flash = 1.0
+		var delay := randf_range(0.4, 1.6)
+		get_tree().create_timer(delay).timeout.connect(func(): Sfx.play("thunder"))
+	_flash = maxf(0.0, _flash - delta * 3.5)
+	var f := _flash * (0.6 + 0.4 * sin(now * 60.0))
+	sky_mat.set_shader_parameter("flash", f)
+	sky_mat.set_shader_parameter("storm", clampf(_storm * 0.7 + _rain_amt * 0.45, 0.0, 1.0))
+	hud.set_weather(weather if not dry or weather == "clear" else "clear", _rain_amt)
 
 
 func _build_map() -> void:
@@ -371,6 +454,8 @@ var _zone := ""
 func _update_zone() -> void:
 	var z := GameData.zone_at(my_pos.x, my_pos.y)
 	var b := GameData.biome_at(my_pos.x, my_pos.y)
+	var city := GameData.city_at(my_pos.x, my_pos.y)
+	hud.set_region(str(city.name) if not city.is_empty() else str(GameData.BIOME_NAMES.get(b, "")))
 	if b != _biome:
 		var first_b := _biome == ""
 		_biome = b
@@ -666,6 +751,7 @@ func _process(delta: float) -> void:
 		return
 	_update_camera(delta)
 	_update_day_night(delta)
+	_update_rain(delta)
 	_move_cooldown -= delta
 	if _move_cooldown > 0.0:
 		return
@@ -840,6 +926,7 @@ static func _facing(step: Vector2i) -> int:
 ## Pora dnia z zegara (wspólna dla wszystkich): długi dzień, zmierzch, noc, świt.
 func _update_day_night(_delta: float) -> void:
 	var t := fmod(Time.get_unix_time_from_system(), DAY_CYCLE) / DAY_CYCLE
+	hud.set_clock(t)
 	# 0.00–0.60 dzień, 0.60–0.70 zmierzch, 0.70–0.92 noc, 0.92–1.00 świt.
 	var n := 0.0
 	if t > 0.6 and t <= 0.7:
@@ -863,7 +950,7 @@ func _update_day_night(_delta: float) -> void:
 	# Słońce: biało-złote w dzień, pomarańczowe o zmierzchu, chłodny księżyc w nocy.
 	var sun_col := Color(1.0, 0.95, 0.86).lerp(Color(1.0, 0.66, 0.42), dusk).lerp(Color(0.55, 0.62, 1.0), deep)
 	sun.light_color = sun_col
-	sun.light_energy = lerpf(lerpf(1.05, 0.8, dusk), 0.25, deep)
+	sun.light_energy = lerpf(lerpf(1.05, 0.8, dusk), 0.25, deep) * (1.0 - 0.55 * _rain_amt) + _flash * 2.5
 	sun.rotation_degrees = Vector3(lerpf(-52.0, -28.0, dusk * (1.0 - deep)), -38.0 + dusk * 25.0, 0)
 	env.ambient_light_color = Color(0.62, 0.66, 0.78).lerp(Color(0.7, 0.6, 0.6), dusk).lerp(Color(0.22, 0.27, 0.5), deep)
 	env.ambient_light_energy = lerpf(0.42, 0.4, deep)
@@ -886,11 +973,17 @@ func _update_day_night(_delta: float) -> void:
 	sky_mat.set_shader_parameter("cloud_color", Color(1, 1, 1).lerp(Color(1.0, 0.72, 0.55), dusk).lerp(Color(0.16, 0.18, 0.26), deep).lerp(Color(0.45, 0.36, 0.34), hostile))
 	sky_mat.set_shader_parameter("cloud_shade", Color(0.62, 0.66, 0.76).lerp(Color(0.55, 0.36, 0.4), dusk).lerp(Color(0.05, 0.06, 0.1), deep).lerp(Color(0.2, 0.14, 0.13), hostile))
 	sky_mat.set_shader_parameter("cloud_cover", lerpf(0.42, 0.8, hostile))
+	var grey := Color(0.42, 0.45, 0.5).lerp(Color(0.05, 0.06, 0.09), deep)
+	hor = hor.lerp(grey, _rain_amt * 0.75)
+	zen = zen.lerp(grey.darkened(0.3), _rain_amt * 0.85)
+	sky_mat.set_shader_parameter("zenith_color", zen)
+	sky_mat.set_shader_parameter("horizon_color", hor)
 	var fog := hor
 	env.fog_light_color = fog
 	var near_fog := _zone in ["r", "b"] or _biome == "s" or _biome == "w" or _biome == "a"
 	env.fog_depth_begin = lerpf(30.0, 14.0, deep) if not near_fog else lerpf(18.0, 10.0, deep)
-	env.fog_depth_end = lerpf(300.0, 160.0, deep) if not near_fog else 140.0
+	env.fog_depth_end = (lerpf(300.0, 160.0, deep) if not near_fog else 140.0) * (1.0 - 0.55 * _rain_amt)
+	env.fog_depth_begin *= 1.0 - 0.5 * _rain_amt
 	if absf(n - _last_night) > 0.01 or not _night_ready:
 		_night_ready = true
 		_last_night = n

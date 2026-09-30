@@ -858,11 +858,20 @@ func _tile_details(obj: MeshKit, fol: MeshKit, gnd: MeshKit, x: int, y: int) -> 
 			if _houses.has(Vector2i(x, y)):
 				var hd: Array = _houses[Vector2i(x, y)]
 				var style := "snow" if b == "s" else ("desert" if b == "d" else "meadow")
-				WorldProps.house(obj, hd[0], hd[1], hd[2], hd[3], hd[4], style, _rand(x, y, 40))
+				match landmark_at(hd):
+					"citadel":
+						WorldProps.citadel(obj, hd[0], hd[1], hd[2], hd[3], style)
+					"cathedral":
+						WorldProps.cathedral(obj, hd[0], hd[1], hd[2], hd[3], style)
+					_:
+						WorldProps.house(obj, hd[0], hd[1], hd[2], hd[3], hd[4], style, _rand(x, y, 40))
 		"U":
 			if tile(x + 1, y) == "U" and tile(x, y + 1) == "U" and tile(x - 1, y) != "U" and tile(x, y - 1) != "U":
 				obj.reset()
-				WorldProps.fountain(obj, Vector3(x + 1.0, 0.0, y + 1.0), "desert" if b == "d" else "meadow")
+				var in_city := not GameData.city_at(x, y).is_empty()
+				WorldProps.fountain(obj, Vector3(x + 1.0, 0.0, y + 1.0), "desert" if b == "d" else "meadow", not in_city)
+				if in_city:
+					WorldProps.statue(obj, Vector3(x + 1.0, 0.1, y + 1.0))
 			elif tile(x + 1, y) != "U" and tile(x - 1, y) != "U" and tile(x, y - 1) != "U" and tile(x, y + 1) != "U":
 				obj.reset()
 				WorldProps.well(obj, center)
@@ -1384,6 +1393,22 @@ func _find_houses() -> void:
 				if score[i] > score[door]:
 					door = i
 			_houses[Vector2i(x, y)] = [x, y, x1, y1, door]
+
+
+## Wielkie budowle miast: kwartały domów 5×4 po bokach świątyni (lewy – cytadela, prawy – katedra).
+func landmark_at(hd: Array) -> String:
+	var c := GameData.city_at(int(hd[0]), int(hd[1]))
+	if c.is_empty() or int(hd[2]) - int(hd[0]) != 4 or int(hd[3]) - int(hd[1]) != 3:
+		return ""
+	var lx := int(hd[0]) - int(c.x0)
+	var ly := int(hd[1]) - int(c.y0)
+	if ly != 5:
+		return ""
+	if lx == 2:
+		return "citadel"
+	if lx == 24:
+		return "cathedral"
+	return ""
 
 
 func _find_fire_spots() -> void:

@@ -27,6 +27,24 @@ func _ready() -> void:
 	_streams["shot"] = _noise_burst(0.07, 4000.0, 0.3)
 	_streams["craft"] = _arpeggio([392.0, 523.0, 659.0], 0.07)
 	_streams["gather"] = _noise_burst(0.06, 1500.0, 0.4)
+	_streams["thunder"] = _rumble(2.2)
+
+
+## Grzmot: niskie, „brązowe” dudnienie z trzaskiem na początku i długim wygasaniem.
+func _rumble(dur: float) -> AudioStreamWAV:
+	var n := int(dur * RATE)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var v := 0.0
+	var lp := 0.0
+	for i in n:
+		var t := float(i) / n
+		v = clampf(v + randf_range(-0.08, 0.08), -1.0, 1.0) * 0.995
+		lp = lerpf(lp, v, 0.08)
+		var crack := randf_range(-1.0, 1.0) * maxf(0.0, 1.0 - t * 12.0) * 0.5
+		var env := minf(1.0, t * 30.0) * pow(1.0 - t, 1.6) * (0.8 + 0.2 * sin(t * 40.0))
+		out[i] = (lp * 2.2 + crack) * env
+	return _make(out)
 
 
 func play(name: String) -> void:

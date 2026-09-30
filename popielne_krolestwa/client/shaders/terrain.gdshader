@@ -13,6 +13,8 @@ uniform float layer_rough[14];
 uniform float tex_scale = 0.42;
 uniform float normal_strength = 1.3;
 uniform int rock_layer = 5;
+// Mokra ziemia po deszczu (0..1): ciemniejsza, błyszcząca, kałuże we wgłębieniach.
+uniform float wet = 0.0;
 
 varying vec3 wpos;
 varying vec3 wnorm;
@@ -77,9 +79,14 @@ void fragment() {
 		vec3 t1 = mix(vec3(1.0), c / max(layer_mean[i1], vec3(0.04)), layer_tint[i1]);
 		vec3 t2 = mix(vec3(1.0), c / max(layer_mean[i2], vec3(0.04)), layer_tint[i2]);
 		vec3 alb = a0.rgb * t0 * w.x + a1.rgb * t1 * w.y + a2.rgb * t2 * w.z;
+		float hgt0 = a0.a * w.x + a1.a * w.y + a2.a * w.z;
+		float puddle = wet * smoothstep(0.38, 0.22, hgt0) * step(0.5, n.y);
+		alb *= mix(1.0, 0.7, wet);
+		alb = mix(alb, alb * 0.55 + vec3(0.02, 0.025, 0.03), puddle);
 		ALBEDO = clamp(alb, vec3(0.0), vec3(1.0));
-		ROUGHNESS = layer_rough[i0] * w.x + layer_rough[i1] * w.y + layer_rough[i2] * w.z;
-		SPECULAR = 0.3;
+		ROUGHNESS = mix(layer_rough[i0] * w.x + layer_rough[i1] * w.y + layer_rough[i2] * w.z, 0.25, wet * 0.7);
+		ROUGHNESS = mix(ROUGHNESS, 0.04, puddle);
+		SPECULAR = mix(0.3, 0.6, wet);
 		vec2 sl = s0 * w.x + s1 * w.y + s2 * w.z;
 		vec3 pn = normalize(n + vec3(sl.x, 0.0, sl.y) * normal_strength);
 		NORMAL = normalize((VIEW_MATRIX * vec4(pn, 0.0)).xyz);

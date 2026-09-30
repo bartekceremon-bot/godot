@@ -42,6 +42,7 @@ func _ready() -> void:
 	_equip_grid = GridContainer.new()
 	_equip_grid.columns = 2
 	body.add_child(_equip_grid)
+	body.add_child(_build_preview())
 
 	_bag_grid = GridContainer.new()
 	_bag_grid.columns = 5
@@ -54,6 +55,94 @@ func _ready() -> void:
 	_actions = HBoxContainer.new()
 	_actions.add_theme_constant_override("separation", 10)
 	root.add_child(_actions)
+
+
+# --- Podgląd postaci 3D (obraca się powoli, zbroja i broń jak w grze) ---------------
+
+var _pv_root: Node3D
+var _pv_model: CharacterModel
+var _pv_key := ""
+
+
+func _build_preview() -> Control:
+	var frame := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.03, 0.035, 0.05, 0.9)
+	sb.border_color = Color(0.78, 0.58, 0.28, 0.6)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(8)
+	frame.add_theme_stylebox_override("panel", sb)
+	var svc := SubViewportContainer.new()
+	svc.stretch = true
+	svc.custom_minimum_size = Vector2(200, 300)
+	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(svc)
+	var vp := SubViewport.new()
+	vp.own_world_3d = true
+	vp.transparent_bg = true
+	vp.msaa_3d = Viewport.MSAA_2X
+	svc.add_child(vp)
+	_pv_root = Node3D.new()
+	vp.add_child(_pv_root)
+	var env := WorldEnvironment.new()
+	env.environment = Environment.new()
+	env.environment.background_mode = Environment.BG_CLEAR_COLOR
+	env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.environment.ambient_light_color = Color(0.55, 0.58, 0.68)
+	env.environment.tonemap_mode = Environment.TONE_MAPPER_ACES
+	env.environment.glow_enabled = true
+	_pv_root.add_child(env)
+	var key := DirectionalLight3D.new()
+	key.rotation_degrees = Vector3(-35, -40, 0)
+	key.light_energy = 1.2
+	_pv_root.add_child(key)
+	var rim := DirectionalLight3D.new()
+	rim.rotation_degrees = Vector3(-10, 150, 0)
+	rim.light_color = Color(1.0, 0.8, 0.55)
+	rim.light_energy = 0.9
+	_pv_root.add_child(rim)
+	var cam := Camera3D.new()
+	cam.fov = 30.0
+	cam.position = Vector3(0, 0.75, 3.1)
+	cam.rotation_degrees = Vector3(-5, 0, 0)
+	_pv_root.add_child(cam)
+	# Podest.
+	var mi := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.45
+	cyl.bottom_radius = 0.5
+	cyl.height = 0.08
+	mi.mesh = cyl
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.16, 0.15, 0.17)
+	m.metallic = 0.4
+	m.roughness = 0.5
+	mi.material_override = m
+	mi.position.y = -0.04
+	_pv_root.add_child(mi)
+	return frame
+
+
+## Model postaci do podglądu (przebudowa tylko przy zmianie wyglądu).
+func set_preview(app: Dictionary) -> void:
+	if _pv_root == null:
+		return
+	var key := str(app)
+	if key == _pv_key:
+		return
+	_pv_key = key
+	if _pv_model:
+		_pv_model.queue_free()
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://shaders/lowpoly_object.gdshader")
+	_pv_model = CharacterModel.new(mat)
+	_pv_model.build_humanoid(app)
+	_pv_root.add_child(_pv_model)
+
+
+func _process(delta: float) -> void:
+	if visible and _pv_model:
+		_pv_model.rotation.y += delta * 0.6
 
 
 func set_data(bag: Array, eq: Dictionary) -> void:

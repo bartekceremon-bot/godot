@@ -227,6 +227,16 @@ func _build_blocks() -> MeshKit:
 		var x1: int = hs[2]
 		var y1: int = hs[3]
 		var b := _wb.biome(x0, y0)
+		var lm: String = _wb.landmark_at(hs)
+		if lm != "":
+			# Cytadele i katedry widoczne z daleka w pełnej postaci (wyróżniają miasta na horyzoncie).
+			var st := "snow" if b == "s" else ("desert" if b == "d" else "meadow")
+			if lm == "citadel":
+				WorldProps.citadel(k, x0, y0, x1, y1, st)
+			else:
+				WorldProps.cathedral(k, x0, y0, x1, y1, st)
+			k.reset()
+			continue
 		var wall := Color(0.86, 0.8, 0.68)
 		var roof := Color(0.62, 0.22, 0.14)
 		if b == "s":

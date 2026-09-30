@@ -61,6 +61,10 @@ var minimap: Minimap
 var world_map: WorldMapPanel
 var _mount_btn: Button
 var _time_label: Label
+var _portrait_icon: TextureRect
+var _lvl_badge: Label
+var _region_title: Label
+var _region_sub: Label
 
 
 func _ready() -> void:
@@ -70,6 +74,7 @@ func _ready() -> void:
 	_root.theme = UiTheme.get_theme()
 	add_child(_root)
 	_build_status()
+	_build_region_banner()
 	_build_top_buttons()
 	_build_joystick()
 	_build_actions()
@@ -82,14 +87,54 @@ func _ready() -> void:
 # ============================================================================
 
 func _build_status() -> void:
+	# Portret w złotej obręczy z odznaką poziomu + nazwa i paski (jak w klasycznych MMO).
+	var row := HBoxContainer.new()
+	row.position = Vector2(10, 10)
+	row.add_theme_constant_override("separation", -14)
+	_root.add_child(row)
+	var portrait := Control.new()
+	portrait.custom_minimum_size = Vector2(112, 112)
+	portrait.z_index = 1
+	row.add_child(portrait)
+	var disc := Panel.new()
+	var disc_sb := StyleBoxFlat.new()
+	disc_sb.bg_color = Color(0.1, 0.11, 0.14)
+	disc_sb.set_corner_radius_all(56)
+	disc.add_theme_stylebox_override("panel", disc_sb)
+	disc.position = Vector2(8, 8)
+	disc.size = Vector2(96, 96)
+	portrait.add_child(disc)
+	_portrait_icon = TextureRect.new()
+	_portrait_icon.texture = load("res://assets/ui/icon_character.png")
+	_portrait_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait_icon.position = Vector2(16, 14)
+	_portrait_icon.size = Vector2(80, 80)
+	portrait.add_child(_portrait_icon)
+	var ring := TextureRect.new()
+	ring.texture = load("res://assets/ui/frame_round.png")
+	ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	ring.size = Vector2(112, 112)
+	portrait.add_child(ring)
+	var badge := PanelContainer.new()
+	var badge_sb := UiTheme._box(Color(0.08, 0.06, 0.03, 0.96), UiTheme.BORDER, 2, 10)
+	badge_sb.set_content_margin_all(2)
+	badge_sb.content_margin_left = 8
+	badge_sb.content_margin_right = 8
+	badge.add_theme_stylebox_override("panel", badge_sb)
+	badge.position = Vector2(34, 92)
+	portrait.add_child(badge)
+	_lvl_badge = UiTheme.label("1", 16, UiTheme.ACCENT)
+	_lvl_badge.add_theme_font_override("font", UiTheme.TITLE_FONT)
+	badge.add_child(_lvl_badge)
 	var panel := PanelContainer.new()
-	panel.position = Vector2(12, 12)
-	panel.custom_minimum_size = Vector2(330, 0)
-	_root.add_child(panel)
+	panel.custom_minimum_size = Vector2(320, 0)
+	panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	row.add_child(panel)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 4)
 	panel.add_child(box)
 	_lvl_label = UiTheme.label(GameData.my_name, 20, UiTheme.ACCENT)
+	_lvl_label.add_theme_font_override("font", UiTheme.TITLE_FONT)
 	box.add_child(_lvl_label)
 	var hp := _bar("hp", 26)
 	_hp_bar = hp[0]
@@ -157,6 +202,32 @@ func _build_top_buttons() -> void:
 	mm_row.add_child(info)
 	minimap = Minimap.new()
 	mm_row.add_child(minimap)
+
+
+## Baner krainy u góry ekranu: nazwa miasta/krainy i strefa (jak „Thais – strefa bezpieczna”).
+func _build_region_banner() -> void:
+	var box := VBoxContainer.new()
+	box.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.position.y = 10
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override("separation", -4)
+	_root.add_child(box)
+	_region_title = UiTheme.label("", 30, UiTheme.ACCENT)
+	_region_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_region_title.add_theme_constant_override("outline_size", 8)
+	box.add_child(_region_title)
+	_region_sub = UiTheme.label("", 16, Color(0.85, 0.85, 0.8))
+	_region_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(_region_sub)
+
+
+func set_region(name: String) -> void:
+	if _region_title.text == name:
+		return
+	_region_title.text = name
+	_region_title.modulate.a = 0.0
+	create_tween().tween_property(_region_title, "modulate:a", 1.0, 0.6)
 
 
 func _build_joystick() -> void:
@@ -253,8 +324,10 @@ func _build_chat() -> void:
 	panel.offset_bottom = -10
 	panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0, 0, 0, 0.45)
-	style.set_corner_radius_all(6)
+	style.bg_color = Color(0.03, 0.035, 0.05, 0.62)
+	style.border_color = Color(0.78, 0.58, 0.28, 0.45)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
 	style.content_margin_left = 8
 	style.content_margin_right = 8
 	style.content_margin_top = 4
@@ -415,6 +488,8 @@ func _toggle(w: Control) -> void:
 		else:
 			other.hide()
 	w.visible = show_it
+	if show_it and w == _inventory and game and game.me:
+		_inventory.set_preview(game.me.appearance())
 
 
 ## Pokazuje okno ekonomii (zamyka inne duże okna, zostawia dialog NPC).
@@ -432,7 +507,8 @@ func _open_window(w: Control) -> void:
 # ============================================================================
 
 func update_stats(s: Dictionary) -> void:
-	_lvl_label.text = "%s  •  poziom %d" % [GameData.my_name, int(s.lvl)]
+	_lvl_label.text = GameData.my_name
+	_lvl_badge.text = str(int(s.lvl))
 	_hp_bar.max_value = float(s.mhp)
 	_hp_bar.value = float(s.hp)
 	_hp_label.text = "%d / %d" % [int(s.hp), int(s.mhp)]
@@ -455,6 +531,8 @@ func update_inventory(msg: Dictionary) -> void:
 	_bag = msg.bag
 	_eq = msg.eq
 	_inventory.set_data(_bag, _eq)
+	if game and game.me:
+		_inventory.set_preview.call_deferred(game.me.appearance())
 	_hp_potion_btn.text = str(_count("hp_potion"))
 	_mp_potion_btn.text = str(_count("mp_potion"))
 	_refresh_abilities()
@@ -571,6 +649,8 @@ func set_zone(z: String, announce: bool) -> void:
 	var col: Color = GameData.ZONE_COLORS[z]
 	_zone_label.text = GameData.ZONE_NAMES[z]
 	_zone_label.add_theme_color_override("font_color", col)
+	_region_sub.text = GameData.ZONE_NAMES[z]
+	_region_sub.add_theme_color_override("font_color", col)
 	if not announce:
 		return
 	_zone_toast.text = "%s\n%s" % [GameData.ZONE_NAMES[z].to_upper(), GameData.ZONE_HINTS[z]]
@@ -584,6 +664,35 @@ func set_zone(z: String, announce: bool) -> void:
 		Sfx.play("hurt")
 
 
+## Zegar świata (0..1 doby cyklu -> godzina, 6:00 = początek dnia).
+func set_clock(t: float) -> void:
+	var minutes := int(fmod(t * 24.0 + 6.0, 24.0) * 60.0)
+	var txt := "%02d:%02d" % [minutes / 60, minutes % 60]
+	if _clock_text != txt:
+		_clock_text = txt
+		_update_time_label()
+
+
+var _clock_text := ""
+var _tod_text := ""
+
+
+var _weather_text := ""
+
+
+func set_weather(w: String, amount: float) -> void:
+	var t := ""
+	if amount > 0.2:
+		t = "  •  Burza" if w == "storm" else "  •  Deszcz"
+	if t != _weather_text:
+		_weather_text = t
+		_update_time_label()
+
+
+func _update_time_label() -> void:
+	_time_label.text = "%s  %s%s" % [_clock_text, _tod_text, _weather_text]
+
+
 ## Pora dnia (0 = dzień, 1 = noc) – napis przy minimapie.
 func set_time_of_day(n: float) -> void:
 	var t := "Dzień"
@@ -591,7 +700,8 @@ func set_time_of_day(n: float) -> void:
 		t = "Noc"
 	elif n > 0.05:
 		t = "Zmierzch"
-	_time_label.text = t
+	_tod_text = t
+	_update_time_label()
 
 
 func joystick_vector() -> Vector2:

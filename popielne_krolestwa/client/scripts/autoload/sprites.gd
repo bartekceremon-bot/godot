@@ -2,7 +2,8 @@ extends Node
 ## Grafiki interfejsu: ikony przedmiotów i HUD z res://assets/ (generowane przez tools/build_assets.sh,
 ## można je podmienić ręcznie narysowanymi), opisane w res://assets/atlas_index.json.
 
-const TS := 32
+## Rozmiar komórki atlasu ikon (z atlas_index.json, domyślnie 32 – stary pixel art).
+var TS := 32
 
 ## Kolory tierów (oznaczenia) i ramek jakości (1 zwykły … 5 arcydzieło).
 const TIER_COLORS := [Color.WHITE, Color("8a8a8a"), Color("4f9a3e"), Color("3f6fc0"), Color("9848b8"),
@@ -20,6 +21,7 @@ var _cache: Dictionary = {}
 func _ready() -> void:
 	index = JSON.parse_string(FileAccess.get_file_as_string("res://assets/atlas_index.json"))
 	items_tex = load("res://assets/items/items.png")
+	TS = int(index.get("tile", 32))
 
 
 ## Ikona przedmiotu (32x32) dla nazwy ikony i tieru.

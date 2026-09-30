@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cj5i1dty68efo"
-path="res://.godot/imported/items.png-c4408c4fe152b33a0c65216daba38a2d.ctex"
+uid="uid://chh5uur8cjmb1"
+path="res://.godot/imported/hotbar.png-3655543d2cb157a629646f94099aed74.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/items/items.png"
-dest_files=["res://.godot/imported/items.png-c4408c4fe152b33a0c65216daba38a2d.ctex"]
+source_file="res://assets/ui/hotbar.png"
+dest_files=["res://.godot/imported/hotbar.png-3655543d2cb157a629646f94099aed74.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

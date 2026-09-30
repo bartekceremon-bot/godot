@@ -337,6 +337,11 @@ func _refresh_model() -> void:
 	add_child(model)
 
 
+## Wygląd tej istoty (podgląd postaci w oknie ekwipunku).
+func appearance() -> Dictionary:
+	return _appearance(str(look))
+
+
 func _appearance(s: String) -> Dictionary:
 	if s == "skeleton":
 		return {"skeleton": true, "skin": Color(0.88, 0.85, 0.76), "held": "sword_skeleton_t1"}

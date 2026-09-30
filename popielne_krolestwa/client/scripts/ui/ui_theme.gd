@@ -1,10 +1,12 @@
 class_name UiTheme
-## Wspólny motyw interfejsu – duże elementy wygodne na telefonie.
+## Wspólny motyw interfejsu (dark fantasy: grafitowe panele, złocone ramki) – duże elementy
+## wygodne na telefonie. Grafiki ramek: tools/textures/gen_ui.py -> res://assets/ui/.
 
-const BG := Color(0.09, 0.07, 0.07, 0.92)
-const BORDER := Color(0.55, 0.36, 0.2)
-const ACCENT := Color(0.92, 0.55, 0.22)
-const TEXT := Color(0.94, 0.9, 0.84)
+const BG := Color(0.06, 0.065, 0.08, 0.94)
+const BORDER := Color(0.78, 0.58, 0.28)
+const ACCENT := Color(0.96, 0.8, 0.48)
+const TEXT := Color(0.93, 0.91, 0.86)
+const TITLE_FONT := preload("res://assets/fonts/DejaVuSerif-Bold.ttf")
 
 static var _theme: Theme = null
 
@@ -16,7 +18,7 @@ static func get_theme() -> Theme:
 	t.default_font_size = 22
 
 	# Ramki okien i przyciski z tekstur 9-patch (res://assets/ui/, generowane w pixel arcie).
-	var panel := tex_box("panel", 28, 22)
+	var panel := tex_box("panel", 32, 22)
 	t.set_stylebox("panel", "Panel", panel)
 	t.set_stylebox("panel", "PanelContainer", panel)
 
@@ -33,8 +35,8 @@ static func get_theme() -> Theme:
 	t.set_constant("outline_size", "Button", 4)
 	t.set_color("font_outline_color", "Button", Color(0, 0, 0, 0.8))
 
-	t.set_stylebox("normal", "LineEdit", _box(Color(0.05, 0.035, 0.035, 0.95), Color(0.4, 0.27, 0.15), 2, 4))
-	t.set_stylebox("focus", "LineEdit", _box(Color(0.05, 0.035, 0.035, 0.95), ACCENT, 2, 4))
+	t.set_stylebox("normal", "LineEdit", _box(Color(0.03, 0.035, 0.045, 0.95), Color(0.35, 0.3, 0.22), 2, 6))
+	t.set_stylebox("focus", "LineEdit", _box(Color(0.03, 0.035, 0.045, 0.95), ACCENT, 2, 6))
 	t.set_color("font_color", "LineEdit", TEXT)
 	t.set_color("font_color", "Label", TEXT)
 	t.set_constant("outline_size", "Label", 5)
@@ -45,7 +47,7 @@ static func get_theme() -> Theme:
 	t.set_font_size("normal_font_size", "RichTextLabel", 18)
 	t.set_constant("outline_size", "RichTextLabel", 4)
 	t.set_color("font_outline_color", "RichTextLabel", Color(0, 0, 0, 0.8))
-	var tip := _box(Color(0.08, 0.06, 0.05, 0.95), ACCENT, 2, 4)
+	var tip := _box(Color(0.05, 0.055, 0.07, 0.96), BORDER, 2, 6)
 	t.set_stylebox("panel", "TooltipPanel", tip)
 	_theme = t
 	return t
@@ -59,9 +61,9 @@ static func tex_box(name: String, margin: int, content: int) -> StyleBoxTexture:
 	sb.texture_margin_right = margin
 	sb.texture_margin_top = margin
 	sb.texture_margin_bottom = margin
-	# Środek i krawędzie kafelkowane (piksele nie rozciągają się).
-	sb.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_TILE_FIT
-	sb.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_TILE_FIT
+	# Gładkie grafiki – środek i krawędzie rozciągane.
+	sb.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
+	sb.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
 	sb.content_margin_left = content
 	sb.content_margin_right = content
 	sb.content_margin_top = maxi(4, content - 4)
@@ -99,6 +101,10 @@ static func label(text: String, size: int = 22, color: Color = TEXT) -> Label:
 	l.text = text
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", color)
+	# Tytuły (duże, złote) – czcionka szeryfowa.
+	if size >= 24 and color == ACCENT:
+		l.add_theme_font_override("font", TITLE_FONT)
+		l.add_theme_color_override("font_outline_color", Color(0.12, 0.07, 0.02, 0.95))
 	return l
 
 
@@ -111,7 +117,7 @@ static func item_slot(stack, placeholder: String = "", min_size := Vector2(72, 7
 	b.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 	b.add_theme_font_size_override("font_size", 14)
 	b.pressed.connect(func(): Sfx.play("click"))
-	var slot_box := tex_box("slot", 16, 6)
+	var slot_box := tex_box("slot", 16, 5)
 	for state in ["normal", "hover", "pressed"]:
 		b.add_theme_stylebox_override(state, slot_box)
 	if stack is Dictionary:
@@ -121,7 +127,8 @@ static func item_slot(stack, placeholder: String = "", min_size := Vector2(72, 7
 		if q > 1:
 			var col: Color = Sprites.QUALITY_COLORS[q]
 			for state in ["normal", "hover", "pressed"]:
-				var sb := _box(Color(0.1, 0.07, 0.06, 0.95), col, 3, 6)
+				var sb := _box(Color(0.04, 0.045, 0.06, 0.96), col, 3, 7)
+				sb.set_content_margin_all(5)
 				b.add_theme_stylebox_override(state, sb)
 		if int(stack.count) > 1:
 			b.text = _short_count(int(stack.count))
@@ -148,7 +155,7 @@ static func item_icon_rect(item_id: String, size: int = 40) -> TextureRect:
 	t.custom_minimum_size = Vector2(size, size)
 	t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	t.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	t.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	t.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	return t
 
 
