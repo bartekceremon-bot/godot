@@ -385,6 +385,17 @@ func _on_message(msg: Dictionary) -> void:
 			Sfx.play("death")
 		"cd":
 			hud.ability_cooldown(str(msg.id), float(msg.ms) / 1000.0)
+		"quests":
+			if not hud.quests.visible:
+				hud._toggle(hud.quests)
+			hud.npc_dialog.hide()
+			hud.quests.open_quests(msg)
+		"qlog":
+			hud.update_quest_log(msg.list)
+		"spell_shop":
+			if not hud.spellbook.visible:
+				hud._toggle(hud.spellbook)
+			hud.spellbook.open_shop(msg)
 		"sfx":
 			Sfx.play(str(msg.k))
 
@@ -445,6 +456,23 @@ func _fx_animate(f: Dictionary) -> void:
 			_recent_deaths[t] = Time.get_ticks_msec()
 		"gather":
 			me.play_attack("melee")
+		"sp":
+			var sid := str(f.get("s", ""))
+			var caster: Entity3D = entities.get(int(f.get("id", 0)))
+			if sid in ["impact", "storm_hit"]:
+				if sid == "storm_hit" and _dist(t, my_pos) < 12:
+					_shake = 0.2
+				return
+			if caster:
+				if f.has("tx"):
+					caster.face_tile(Vector2i(int(f.tx), int(f.ty)))
+				caster.play_attack("cast")
+				if sid == "ice_armor":
+					caster.aura("ice", 10.0)
+				elif sid == "haste":
+					caster.aura("haste", 10.0)
+			if sid == "meteor":
+				get_tree().create_timer(1.1).timeout.connect(func(): _shake = 0.45)
 
 
 var _zone := ""

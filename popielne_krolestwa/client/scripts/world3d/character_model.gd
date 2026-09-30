@@ -648,9 +648,18 @@ func _build_weapon(id: String) -> void:
 			k.metal = 1.0
 			k.box(Vector3(0, 0.33, 0), Vector3(0.07, 0.08, 0.16), IRON())
 		"staff":
-			k.box(Vector3(0, -0.2, 0), Vector3(0.035, 0.85, 0.035), Color(0.35, 0.24, 0.14))
+			# Kostur: sękate drzewce, szpony z metalu tieru, świecący klejnot.
+			var wood := Color(0.34, 0.22, 0.13) if t < 7 else Color(0.2, 0.17, 0.22)
+			k.loft([[Vector3(0, -0.45, 0), Vector2(0.016, 0.016)], [Vector3(0.01, 0.1, 0), Vector2(0.02, 0.02)], [Vector3(-0.01, 0.55, 0), Vector2(0.017, 0.017)]], wood, 7)
+			k.metal = 1.0
+			for a in 3:
+				var ang := TAU * a / 3.0
+				k.xf = Transform3D(Basis(Vector3.UP, ang), Vector3(0, 0.55, 0))
+				k.loft([[Vector3(0, 0, 0.012), Vector2(0.01, 0.01)], [Vector3(0, 0.1, 0.05), Vector2(0.007, 0.007)], [Vector3(0, 0.18, 0.02), Vector2(0.003, 0.003)]], metal, 5)
+				k.xf = Transform3D.IDENTITY
+			k.metal = 0.0
 			k.glow = 1.0
-			k.blob(Vector3(0, 0.7, 0), Vector3(0.07, 0.07, 0.07), trim if t > 1 else Color(0.5, 1.0, 0.4), 2, 6, 0.0)
+			k.ellipsoid(Vector3(0, 0.64, 0), Vector3(0.045, 0.05, 0.045), TIER_GLOW[t] if t > 1 else Color(0.5, 1.0, 0.4), 5, 8)
 			k.glow = 0.0
 		"club_big":
 			k.box(Vector3(0, -0.05, 0), Vector3(0.06, 0.3, 0.06), grip)
@@ -1365,7 +1374,14 @@ func _animate_humanoid(_delta: float) -> void:
 		arm_l.rotation.x = -0.3
 	if _attack_t >= 0.0:
 		var k := _attack_t / 0.45
-		if _attack_kind == "bow":
+		if _attack_kind == "cast":
+			# Rzucanie czaru: obie ręce unoszą się do przodu.
+			var up := sin(minf(1.0, k * 1.6) * PI / 2.0) * (1.0 - maxf(0.0, k - 0.7) / 0.3)
+			arm_l.rotation.x = lerpf(arm_l.rotation.x, -1.6, up)
+			arm_r.rotation.x = lerpf(arm_r.rotation.x, -1.7, up)
+			arm_l.rotation.z = -0.25 * up
+			arm_r.rotation.z = 0.25 * up
+		elif _attack_kind == "bow":
 			var raise := sin(minf(1.0, k * 2.0) * PI / 2.0)
 			arm_l.rotation.x = lerpf(arm_l.rotation.x, -1.5, raise)
 			arm_r.rotation.x = lerpf(arm_r.rotation.x, -1.4, raise)

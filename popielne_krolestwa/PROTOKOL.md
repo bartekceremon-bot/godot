@@ -13,7 +13,9 @@ wersję protokołu (`v` przy logowaniu) – w ETAPIE 4 podniesiona do **3** (now
 | `ping` | `ts` | Pomiar opóźnienia (odpowiedź `pong`). |
 | `move` | `d` | Krok: 0=N 1=E 2=S 3=W 4=NE 5=SE 6=SW 7=NW. Za szybki / niemożliwy krok → `pos`. |
 | `attack` | `id` | Ustaw cel ataku (0 = przerwij). Atak automatyczny co 2 s. |
-| `cast` | `spell` | Rzuć czar (`heal`). |
+| `cast` | `spell` | Rzuć czar (id z listy `spells` w `welcome`; ofensywne celują w aktualny cel). |
+| `learn` | `spell` | Naucz się czaru u kapłana w zasięgu (płatne złotem, szkoły zależą od miasta). |
+| `qaccept` / `qdone` / `qdrop` | `id` | Przyjmij zadanie / odbierz nagrodę / porzuć (przyjęcie i nagroda – przy NPC zleceniodawcy). |
 | `say` | `text` | Czat. Formuła czaru (`exura`) rzuca czar. Komendy: `/online`, `/pomoc`, `/dom`, `/gildia …`, `/g tekst` (czat gildii). |
 | `pickup` | `id` | Podnieś przedmiot z ziemi (max 1 pole od gracza). |
 | `equip` | `slot` | Załóż przedmiot ze slotu plecaka. |
@@ -41,6 +43,9 @@ wersję protokołu (`v` przy logowaniu) – w ETAPIE 4 podniesiona do **3** (now
 | `t` | Pola | Opis |
 |-----|------|------|
 | `auth_error` | `text` | Błąd logowania/rejestracji. |
+| `spell_shop` | `city`, `schools[]`, `spells[{id,price,known}]` | Oferta nauki czarów u kapłana (słowo „czary”). |
+| `quests` | `npc`, `list[{id,name,text,level,state,goals[[opis,postęp,cel]],reward}]` | Zadania NPC (słowo „zadanie”); `state`: available/active/ready/done/locked. |
+| `qlog` | `list[{id,name,goals,ready,city,px?,py?}]` | Dziennik aktywnych zadań (panel „Aktualne zadania”). |
 | `welcome` | `id`, `name`, `map{w,h,rows}`, `items[]`, `spells[]`, `recipes[]`, `stations`, `specs[]`, `tierSpecReq[]`, `qualities[]`, `abilities[]`, `zones[]`, `biomes[]`, `cities[]`, `territories[]` | Po zalogowaniu: mapa i definicje danych. `zones`: wiersze znaków `g`/`y`/`r`/`b` (zielona/żółta/czerwona/czarna); `biomes`: wiersze znaków krain `m` łąki, `f` puszcza, `s` śniegi, `r` góry, `d` pustynia, `w` moczary, `a` Popielisko; `cities`: `{id,name,biome,x0,y0,w,h,temple{x,y}}`; `territories`: obeliski `{id,name,x,y}`. |
 | `pos` | `x`, `y`, `d` | Autorytatywna pozycja własnej postaci (start, korekta, teleport, odrodzenie). |
 | `snap` | `e[]`, `g[]` | Stan widocznego obszaru (±16×13 pól) – wysyłany tylko przy zmianie. `e`: istoty `{i,k,n,x,y,d,h,l,s,…}`. `k`: `p` gracz (`eq` – założone przedmioty [głowa, tułów, nogi, stopy, broń, tarcza], `sk` – czaszka, `mt` – wierzchowiec, `gt` – skrót gildii), `m` potwór (`b`=1 – boss świata), `n` NPC, `r` złoże (`h` = % jednostek, `l` = `node_<rodzaj>_<tier>`), `t` obelisk terytorium (`h` = postęp przejmowania %, `o` – skrót gildii właściciela, `c` – gildii przejmującej). `g`: przedmioty na ziemi `{i,x,y,it,c,q}`. |

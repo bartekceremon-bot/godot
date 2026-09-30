@@ -11,7 +11,9 @@ const TIER_COLORS := [Color.WHITE, Color("8a8a8a"), Color("4f9a3e"), Color("3f6f
 const QUALITY_COLORS := [Color.TRANSPARENT, Color(0, 0, 0, 0), Color("7ac060"), Color("5a90e0"), Color("b060e0"), Color("f0b030")]
 
 ## Ikony HUD dostępne jako pliki ui/icon_*.png.
-const UI_ICONS := ["bag", "character", "specs", "people", "menu", "chat", "attack", "heal", "skull_white", "skull_red"]
+const UI_ICONS := ["bag", "character", "specs", "people", "menu", "chat", "attack", "heal", "skull_white", "skull_red", "book",
+	"spell_fire", "spell_meteor", "spell_ice", "spell_shield", "spell_lightning", "spell_storm", "spell_haste",
+	"spell_death", "spell_curse", "spell_holy", "spell_purify"]
 
 var index: Dictionary = {}
 var items_tex: Texture2D

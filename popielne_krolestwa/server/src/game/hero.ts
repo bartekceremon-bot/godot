@@ -9,9 +9,10 @@ import { EQUIP_SLOTS, EquipSlot, gearId } from './data/items';
 import { Player } from './entities';
 import { expForLevel, levelForExp } from './progression';
 import { SPEC_DEFS } from './specs';
+import { SPELL_LIST } from './data/spells';
 
 /** Podnieś, gdy dar ma zostać przyznany ponownie (np. po rozszerzeniu). */
-export const HERO_VERSION = 1;
+export const HERO_VERSION = 2;
 export const HERO_LEVEL = 100;
 const HERO_SKILL = 90;
 const HERO_MAGIC = 40;
@@ -55,6 +56,12 @@ export function isHeroName(name: string): boolean {
 export function grantHeroGift(p: Player, stash: (item: string, count: number, q: number) => void): boolean {
   if (!isHeroName(p.name) || (p.pvp.hero ?? 0) >= HERO_VERSION) return false;
   const inv = p.inventory;
+  if ((p.pvp.hero ?? 0) >= 1) {
+    // Wersja 2 daru: wszystkie czary i kostur T8 (ekwipunek z wersji 1 już jest).
+    grantSpells(p, stash);
+    p.pvp.hero = HERO_VERSION;
+    return true;
+  }
 
   if (p.level < HERO_LEVEL) {
     p.exp = expForLevel(HERO_LEVEL);
@@ -92,8 +99,16 @@ export function grantHeroGift(p: Player, stash: (item: string, count: number, q:
   stash('gold', HERO_DEPOT_GOLD, 1);
   inv.dirty = true;
 
+  grantSpells(p, stash);
   p.hp = p.maxHp();
   p.mp = p.maxMp();
   p.pvp.hero = HERO_VERSION;
   return true;
+}
+
+function grantSpells(p: Player, stash: (item: string, count: number, q: number) => void) {
+  p.pvp.spells = SPELL_LIST.filter((s) => s.id !== 'heal').map((s) => s.id);
+  const left = p.inventory.add(gearId('staff', 8), 1, MASTERPIECE);
+  if (left > 0) stash(gearId('staff', 8), 1, MASTERPIECE);
+  p.inventory.dirty = true;
 }

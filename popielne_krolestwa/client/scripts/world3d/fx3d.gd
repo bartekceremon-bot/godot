@@ -191,6 +191,8 @@ func spawn(f: Dictionary) -> void:
 			var col := Color(1, 0.3, 0.22)
 			if f.c == "heal":
 				col = Color(0.35, 1, 0.45)
+			elif f.c == "shield":
+				col = Color(0.55, 0.85, 1.0)
 			elif f.c == "mana":
 				col = Color(0.45, 0.65, 1)
 			overlay.float_text(head, str(int(f.v)), col, 1.0, 44.0, 22)
@@ -260,6 +262,8 @@ func spawn(f: Dictionary) -> void:
 			aoe(p, str(f.get("kind", "fire")), float(f.get("r", 3)))
 		"words":
 			overlay.float_text(head + Vector3(0, 0.35, 0), str(f.text), Color(1, 0.62, 0.22), 1.6, 12.0, 18)
+		"sp":
+			spell(f)
 
 
 ## Znacznik miejsca dotknięcia.
@@ -330,3 +334,295 @@ func aoe(p: Vector3, kind: String, r: float) -> void:
 	add_child(pp)
 	pp.emitting = true
 	get_tree().create_timer(1.3).timeout.connect(pp.queue_free)
+
+
+# ============================================================================
+# Czary
+# ============================================================================
+
+const SCHOOL_COL := {"light": Color(1.0, 0.9, 0.5), "fire": Color(1.0, 0.45, 0.1), "ice": Color(0.55, 0.85, 1.0),
+	"lightning": Color(0.75, 0.7, 1.0), "death": Color(0.6, 0.2, 0.75)}
+
+
+## Efekt czaru z pakietu serwera: {s: id czaru, x,y: rzucający, tx,ty: cel, r: promień, chain: [[x,y]…]}.
+func spell(f: Dictionary) -> void:
+	var s := str(f.get("s", ""))
+	var p := center(f.x, f.y)
+	var has_t := f.has("tx")
+	var t := center(f.get("tx", f.x), f.get("ty", f.y))
+	var r := float(f.get("r", 2))
+	match s:
+		"heal_area":
+			ring(p, Color(1.0, 0.9, 0.5), 0.3, r + 0.5, 0.8, 0.15)
+			pillar(p, Color(1.0, 0.92, 0.6), 1.2, 0.6, 2.4)
+			flash(p, Color(1.0, 0.9, 0.6), 2.0, r * 2.5, 0.6)
+		"purify":
+			pillar(p, Color(0.9, 0.95, 1.0), 0.9, 0.4, 2.0)
+			burst(p + Vector3(0, 0.6, 0), Color(0.95, 0.95, 1.0), 24, 1.5, 1.5, 0.9)
+		"holy":
+			bolt(p, t, Color(1.0, 0.92, 0.55))
+			_later(0.3, func(): pillar(t, Color(1.0, 0.9, 0.5), 0.7, 0.35, 2.8); flash(t, Color(1, 0.9, 0.6), 2.5, 5.0, 0.4))
+		"fireball":
+			orb(p, t, Color(1.0, 0.45, 0.1), 0.16, 0.32)
+			_later(0.32, func(): explode(t, Color(1.0, 0.45, 0.1), 0.9))
+		"firestorm":
+			for i in 7:
+				var o := Vector3(randf_range(-r, r), 0, randf_range(-r, r))
+				_later(i * 0.07, func(): orb(t + o + Vector3(-2.5, 3.5, -2.0), t + o, Color(1.0, 0.5, 0.12), 0.12, 0.35, false))
+			_later(0.45, func(): aoe(t, "fire", r); flash(t, Color(1, 0.5, 0.2), 3.0, r * 3.0, 0.6))
+		"meteor":
+			meteor(t, r)
+		"icebolt":
+			orb(p, t, Color(0.6, 0.88, 1.0), 0.13, 0.3)
+			_later(0.3, func(): shards(t, 8, 0.5))
+		"frost_nova":
+			ring(p, Color(0.6, 0.9, 1.0), 0.3, r + 0.6, 0.6, 0.3)
+			shards(p, 18, r)
+			flash(p, Color(0.6, 0.85, 1.0), 2.5, r * 3.0, 0.5)
+		"ice_armor":
+			shards(p, 10, 0.7)
+			ring(p, Color(0.6, 0.9, 1.0), 0.2, 1.0, 0.5)
+		"lightning":
+			lightning(p + Vector3(0, 1.0, 0), t + Vector3(0, 0.7, 0), Color(0.8, 0.8, 1.0))
+			lightning(t + Vector3(randf_range(-0.5, 0.5), 7.0, 0), t + Vector3(0, 0.6, 0), Color(0.85, 0.85, 1.0))
+			flash(t, Color(0.7, 0.75, 1.0), 4.0, 7.0, 0.25)
+		"chain":
+			var pts: Array = f.get("chain", [])
+			var prev := p + Vector3(0, 1.0, 0)
+			for i in pts.size():
+				var c: Array = pts[i]
+				var q := center(c[0], c[1]) + Vector3(0, 0.7, 0)
+				var a := prev
+				_later(i * 0.12, func(): lightning(a, q, Color(0.8, 0.8, 1.0)); flash(q, Color(0.7, 0.75, 1.0), 3.0, 5.0, 0.2))
+				prev = q
+		"storm":
+			ring(t, Color(0.55, 0.55, 0.9, 0.7), r + 0.5, r + 0.3, float(f.get("ms", 4000)) / 1000.0, 0.05)
+			cloud(t, Color(0.25, 0.25, 0.35), r, float(f.get("ms", 4000)) / 1000.0, 3.0)
+		"storm_hit":
+			lightning(p + Vector3(randf_range(-0.4, 0.4), 7.0, randf_range(-0.4, 0.4)), p + Vector3(0, 0.3, 0), Color(0.85, 0.85, 1.0))
+			flash(p, Color(0.7, 0.75, 1.0), 4.0, 7.0, 0.25)
+			burst(p + Vector3(0, 0.2, 0), Color(0.8, 0.8, 1.0), 12, 2.5, -4.0, 0.3)
+		"haste":
+			burst(p + Vector3(0, 0.3, 0), Color(1.0, 0.95, 0.5), 20, 2.5, 0.0, 0.5, 0.8, 60.0)
+			ring(p, Color(1.0, 0.95, 0.5), 0.2, 1.2, 0.4)
+		"drain":
+			drain(t, p, Color(0.8, 0.1, 0.2))
+		"curse":
+			ring(t, Color(0.6, 0.2, 0.75), 1.2, 0.2, 0.8, 0.2)
+			burst(t + Vector3(0, 0.9, 0), Color(0.45, 0.1, 0.55), 20, 1.0, -1.0, 1.2, 1.2)
+		"poison_cloud":
+			cloud(t, Color(0.4, 0.8, 0.2), r, float(f.get("ms", 6000)) / 1000.0, 0.8)
+		"impact":
+			burst(p + Vector3(0, 0.7, 0), Color(1, 1, 1), 5, 1.5, 0.0, 0.25, 0.6)
+
+
+func _later(sec: float, fn: Callable) -> void:
+	get_tree().create_timer(sec).timeout.connect(fn)
+
+
+## Chwilowe światło (błysk czaru, piorun, wybuch) – oświetla okolicę, najlepiej widoczne nocą.
+func flash(pos: Vector3, col: Color, energy: float, rng: float, dur: float) -> void:
+	if not Config.effects:
+		return
+	var l := OmniLight3D.new()
+	l.light_color = col
+	l.light_energy = energy
+	l.omni_range = rng
+	l.position = pos + Vector3(0, 1.2, 0)
+	add_child(l)
+	var tw := create_tween()
+	tw.tween_property(l, "light_energy", 0.0, dur)
+	tw.tween_callback(l.queue_free)
+
+
+func _glow_mat(col: Color, energy := 3.0) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.albedo_color = col
+	m.emission_enabled = true
+	m.emission = col
+	m.emission_energy_multiplier = energy
+	return m
+
+
+## Świecąca kula z ogonem iskier (kula ognia, lodowy pocisk).
+func orb(from: Vector3, to: Vector3, col: Color, size: float, dur: float, lift := true) -> void:
+	var mi := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = size
+	sm.height = size * 2.0
+	sm.radial_segments = 8
+	sm.rings = 4
+	sm.material = _glow_mat(col, 4.0)
+	mi.mesh = sm
+	add_child(mi)
+	if Config.effects:
+		var tr := CPUParticles3D.new()
+		tr.mesh = _dot_mesh
+		tr.amount = 24
+		tr.lifetime = 0.35
+		tr.local_coords = false
+		tr.direction = Vector3.UP
+		tr.spread = 180
+		tr.initial_velocity_min = 0.2
+		tr.initial_velocity_max = 0.6
+		tr.gravity = Vector3(0, 0.5, 0)
+		tr.scale_amount_min = 1.0
+		tr.scale_amount_max = 2.2
+		var g := Gradient.new()
+		g.colors = PackedColorArray([col.lightened(0.5), col, Color(col, 0.0)])
+		tr.color_ramp = g
+		mi.add_child(tr)
+		var l := OmniLight3D.new()
+		l.light_color = col
+		l.light_energy = 1.5
+		l.omni_range = 3.0
+		mi.add_child(l)
+	var a := from + (Vector3(0, 0.9, 0) if lift else Vector3.ZERO)
+	var b := to + Vector3(0, 0.6, 0)
+	mi.position = a
+	var tw := create_tween()
+	tw.tween_method(_bolt_step.bind(mi, a, b), 0.0, 1.0, dur)
+	tw.tween_callback(mi.queue_free)
+
+
+## Wybuch: kula światła, iskry, fala.
+func explode(pos: Vector3, col: Color, size: float) -> void:
+	burst(pos + Vector3(0, 0.6, 0), col, 30, 3.0 * size, -2.0, 0.6, 1.4)
+	burst(pos + Vector3(0, 0.6, 0), Color(1, 0.95, 0.7), 10, 1.5, 0.5, 0.3, 1.0)
+	ring(pos, col, 0.2, 1.4 * size, 0.4, 0.2)
+	flash(pos, col, 3.0, 6.0 * size, 0.5)
+
+
+## Lodowe kolce wyrastające z ziemi i znikające.
+func shards(pos: Vector3, count: int, r: float) -> void:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.7, 0.9, 1.0, 0.85)
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.emission_enabled = true
+	m.emission = Color(0.4, 0.7, 1.0)
+	m.emission_energy_multiplier = 0.8
+	m.metallic = 0.3
+	m.roughness = 0.1
+	for i in count:
+		var k := MeshKit.new(i)
+		k.cone(Vector3.ZERO, 0.08 + randf() * 0.05, 0.4 + randf() * 0.4, 4, Color.WHITE, randf())
+		var mi := MeshInstance3D.new()
+		mi.mesh = k.commit()
+		mi.material_override = m
+		var a := randf() * TAU
+		var d := sqrt(randf()) * r
+		mi.position = pos + Vector3(cos(a) * d, 0, sin(a) * d)
+		mi.rotation = Vector3(randf_range(-0.4, 0.4), randf() * TAU, randf_range(-0.4, 0.4))
+		mi.scale = Vector3(1, 0.01, 1)
+		add_child(mi)
+		var tw := create_tween()
+		tw.tween_property(mi, "scale", Vector3.ONE, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_interval(0.6 + randf() * 0.3)
+		tw.tween_property(mi, "scale", Vector3(0.6, 0.01, 0.6), 0.3)
+		tw.tween_callback(mi.queue_free)
+
+
+## Piorun: łamana linia między punktami (dwie skrzyżowane wstęgi), szybko gaśnie.
+func lightning(a: Vector3, b: Vector3, col: Color) -> void:
+	var k := MeshKit.new(randi())
+	var segs := 9
+	var pts: Array[Vector3] = []
+	var d := b - a
+	var side := d.cross(Vector3.UP).normalized()
+	if side.length() < 0.1:
+		side = Vector3.RIGHT
+	var up := d.cross(side).normalized()
+	for i in segs + 1:
+		var t := float(i) / segs
+		var off := Vector3.ZERO if i == 0 or i == segs else (side * randf_range(-0.35, 0.35) + up * randf_range(-0.35, 0.35)) * d.length() * 0.08
+		pts.append(a.lerp(b, t) + off)
+	for i in segs:
+		var p0 := pts[i]
+		var p1 := pts[i + 1]
+		for axis in [side, up]:
+			var w: Vector3 = axis * 0.045
+			k.quad(p0 - w, p1 - w, p1 + w, p0 + w, Color.WHITE)
+	var mi := MeshInstance3D.new()
+	mi.mesh = k.commit()
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	m.albedo_color = col
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+	var tw := create_tween()
+	tw.tween_property(m, "albedo_color:a", 0.0, 0.3)
+	tw.tween_callback(mi.queue_free)
+
+
+## Meteor: rozżarzona skała spada z nieba, po 1,1 s wybuch w promieniu.
+func meteor(t: Vector3, r: float) -> void:
+	ring(t, Color(1.0, 0.4, 0.1, 0.9), r + 0.3, r, 1.1, 0.06)
+	var mi := MeshInstance3D.new()
+	var k := MeshKit.new(7)
+	k.blob(Vector3.ZERO, Vector3(0.45, 0.4, 0.45), Color(0.35, 0.12, 0.05), 3, 7, 0.25)
+	mi.mesh = k.commit()
+	mi.material_override = _glow_mat(Color(1.0, 0.4, 0.1), 2.0)
+	add_child(mi)
+	var start := t + Vector3(-6.0, 14.0, -4.0)
+	mi.position = start
+	orb(start, t, Color(1.0, 0.5, 0.15), 0.35, 1.1, false)
+	var tw := create_tween()
+	tw.tween_property(mi, "position", t + Vector3(0, 0.3, 0), 1.1).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(mi, "rotation", Vector3(4, 2, 3), 1.1)
+	tw.tween_callback(func():
+		mi.queue_free()
+		explode(t, Color(1.0, 0.45, 0.1), r * 0.8)
+		aoe(t, "fire", r)
+		burst(t + Vector3(0, 0.3, 0), Color(0.3, 0.25, 0.22), 30, 2.0, -3.0, 1.2, 2.0))
+
+
+## Obłok (trucizna, chmura burzowa) nad obszarem przez `dur` sekund.
+func cloud(t: Vector3, col: Color, r: float, dur: float, hgt: float) -> void:
+	if not Config.effects:
+		ring(t, col, r, r, dur, 0.05)
+		return
+	var pp := CPUParticles3D.new()
+	pp.position = t + Vector3(0, hgt, 0)
+	pp.mesh = _dot_mesh
+	pp.amount = 60
+	pp.lifetime = 1.6
+	pp.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	pp.emission_box_extents = Vector3(r, 0.3, r)
+	pp.direction = Vector3.UP
+	pp.spread = 180
+	pp.initial_velocity_min = 0.1
+	pp.initial_velocity_max = 0.4
+	pp.gravity = Vector3.ZERO
+	pp.scale_amount_min = 3.0
+	pp.scale_amount_max = 6.0
+	var g := Gradient.new()
+	g.colors = PackedColorArray([Color(col, 0.0), Color(col, 0.55), Color(col, 0.0)])
+	g.offsets = PackedFloat32Array([0.0, 0.4, 1.0])
+	pp.color_ramp = g
+	add_child(pp)
+	pp.emitting = true
+	_later(dur, func(): pp.emitting = false)
+	_later(dur + 1.8, pp.queue_free)
+
+
+## Wysysanie życia: czerwone iskry płyną od celu do rzucającego.
+func drain(from: Vector3, to: Vector3, col: Color) -> void:
+	for i in 10:
+		var mi := MeshInstance3D.new()
+		mi.mesh = _dot_mesh
+		mi.material_override = _glow_mat(col, 3.0)
+		mi.scale = Vector3.ONE * 2.0
+		add_child(mi)
+		var a := from + Vector3(randf_range(-0.2, 0.2), 0.7 + randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
+		var b := to + Vector3(0, 0.9, 0)
+		mi.position = a
+		var tw := create_tween()
+		tw.tween_interval(i * 0.04)
+		tw.tween_method(_bolt_step.bind(mi, a, b), 0.0, 1.0, 0.45)
+		tw.tween_callback(mi.queue_free)
+	ring(from, col, 0.8, 0.2, 0.5, 0.2)

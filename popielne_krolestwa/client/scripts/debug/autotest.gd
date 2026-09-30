@@ -65,6 +65,10 @@ func _process(delta: float) -> void:
 			_steps = _scenario_bestiary(game)
 		elif scenario == "widoki":
 			_steps = _scenario_views(game)
+		elif scenario == "zadania":
+			_steps = _scenario_quests(game)
+		elif scenario == "magia":
+			_steps = _scenario_magic(game)
 		elif scenario == "bohater":
 			_steps = _scenario_hero(game)
 		elif scenario == "etap3":
@@ -213,6 +217,49 @@ func _scenario_etap4(game: Node) -> Array:
 		func(): return _tap_entity(game, "n", "Mistrz gildii"),
 		func(): Net.send({"t": "npc", "id": hud.npc_dialog.npc_id, "word": "terytoria"}); return 1.0,
 		func(): await _shot("03_mistrz_gildii"); hud.npc_dialog.hide(); return 0.3,
+	]
+
+
+## Zadania: okno zadań mistrza gildii, przyjęcie, panel „Aktualne zadania”.
+func _scenario_quests(game: Node) -> Array:
+	var hud = game.hud
+	return [
+		func(): return _tap_entity(game, "n", "Mistrz gildii"),
+		func(): Net.send({"t": "npc", "id": hud.npc_dialog.npc_id, "word": "zadanie"}); return 1.0,
+		func(): await _shot("01_zadania_gildii"); Net.send({"t": "qaccept", "id": "pop_rats"}); return 0.8,
+		func(): Net.send({"t": "qaccept", "id": "pop_hunt"}); return 0.8,
+		func(): await _shot("02_przyjete"); hud.quests.close_window(); return 0.5,
+		func(): await _shot("03_aktualne_zadania"); return 0.2,
+	]
+
+
+## Magia: Księga czarów, pasek czarów i czary rzucane na potwory za miastem (postać sazuqe zna wszystkie).
+func _scenario_magic(game: Node) -> Array:
+	var hud = game.hud
+	var cast := func(id: String) -> void:
+		Net.send({"t": "cast", "spell": id})
+	var target := func() -> void:
+		game.attack_nearest()
+	return [
+		func():
+			# Kostur do rąk – miecz zabijałby cele, zanim zobaczymy czary.
+			for i in hud._bag.size():
+				var st = hud._bag[i]
+				if st is Dictionary and str(st.item) == "staff_t8":
+					Net.send({"t": "equip", "slot": i})
+			hud._toggle_spellbook()
+			return 1.0,
+		func(): await _shot("01_ksiega"); hud.pin_spell("fireball"); hud.pin_spell("chain"); hud.pin_spell("meteor"); hud.pin_spell("frost_nova"); hud._toggle(hud.spellbook); return 0.5,
+		func(): game._on_tap(_zone_tile(game, "y")); return 18.0,
+		func(): target.call(); return 1.0,
+		func(): target.call(); cast.call("fireball"); return 0.3,
+		func(): await _shot("02_kula_ognia"); target.call(); cast.call("chain"); return 0.25,
+		func(): await _shot("03_lancuch_piorunow"); target.call(); cast.call("meteor"); return 1.05,
+		func(): await _shot("04_meteor"); hud._use_item("great_mp_potion"); cast.call("frost_nova"); return 0.3,
+		func(): await _shot("05_mrozna_nova"); target.call(); cast.call("storm"); return 1.2,
+		func(): await _shot("06_nawalnica"); cast.call("ice_armor"); return 0.6,
+		func(): await _shot("07_lodowa_zbroja"); cast.call("poison_cloud"); return 1.0,
+		func(): await _shot("08_trujacy_oblok"); return 0.2,
 	]
 
 

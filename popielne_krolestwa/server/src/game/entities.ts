@@ -6,6 +6,7 @@ import { getItem, QUALITY_MULT } from './data/items';
 import { NpcDef } from './data/npcs';
 import { NodeKind, NODE_NAMES, nodeCharges } from './data/resources';
 import { Specs, SPEC_DEFS, fameForNextLevel, TIER_SPEC_REQ } from './specs';
+import { QuestState, loadQuests } from './data/quests';
 import { Inventory } from './inventory';
 import { Skills, maxHpForLevel, maxMpForLevel, stepMsForLevel, levelForExp, expForLevel, skillPercent } from './progression';
 import { SKILL_NAMES } from './data/items';
@@ -92,6 +93,8 @@ export interface PvpState {
   hero?: number;
   /** Nauczone czary (poza „exura”, którą zna każdy). */
   spells?: string[];
+  /** Zadania: aktywne (postęp) i ukończone. */
+  quests?: QuestState;
 }
 
 export function loadPvp(json: string | undefined): PvpState {
@@ -105,6 +108,7 @@ export function loadPvp(json: string | undefined): PvpState {
     if (typeof v.home === 'string') d.home = v.home;
     if (Number.isFinite(v.mv)) d.mv = v.mv;
     if (Number.isFinite(v.hero)) d.hero = v.hero;
+    if (v.quests) d.quests = loadQuests(v.quests);
     if (Array.isArray(v.spells)) d.spells = v.spells.filter((x: unknown) => typeof x === 'string').slice(0, 64);
   } catch {
     /* domyślne */
@@ -134,6 +138,8 @@ export class Player implements Creature {
   mp: number;
   exp: number;
   level: number;
+  /** Ostatnio wysłany dziennik zadań (wysyłamy tylko zmiany). */
+  lastQuestLog = '';
   /** Wariant wyglądu (kolor stroju) – losowany przy tworzeniu postaci. */
   look: number;
   skills: Skills;

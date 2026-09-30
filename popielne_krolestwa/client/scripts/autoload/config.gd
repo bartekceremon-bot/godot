@@ -16,6 +16,8 @@ var show_fps := false
 var effects := true
 ## Przybliżenie kamery (0.45 = widok bohatera nisko nad ziemią, 1.5 = widok z góry).
 var cam_zoom := 0.55
+## Czary przypięte do paska czarów (4 miejsca, id czaru albo "").
+var spell_slots: Array = ["", "", "", ""]
 
 
 func _ready() -> void:
@@ -35,6 +37,7 @@ func load_settings() -> void:
 	show_fps = cfg.get_value("video", "show_fps", show_fps)
 	effects = cfg.get_value("video", "effects", effects)
 	cam_zoom = cfg.get_value("video", "cam_zoom", cam_zoom)
+	spell_slots = cfg.get_value("game", "spell_slots", spell_slots)
 
 
 func save_settings() -> void:
@@ -45,6 +48,7 @@ func save_settings() -> void:
 	cfg.set_value("video", "show_fps", show_fps)
 	cfg.set_value("video", "effects", effects)
 	cfg.set_value("video", "cam_zoom", cam_zoom)
+	cfg.set_value("game", "spell_slots", spell_slots)
 	cfg.save(PATH)
 
 

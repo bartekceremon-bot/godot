@@ -9,7 +9,7 @@ import { CITY_LIST, CITIES, CityDef, NpcRole, cityNpcPositions } from './cities'
 export { CITIES };
 export type { CityDef };
 
-export type NpcAction = 'shop' | 'depot' | 'market' | 'craft' | 'bless' | 'guild' | 'spells';
+export type NpcAction = 'shop' | 'depot' | 'market' | 'craft' | 'bless' | 'guild' | 'spells' | 'quests';
 
 export interface NpcKeyword {
   text: string;
@@ -185,7 +185,14 @@ function npcFor(city: CityDef, role: Exclude<NpcRole, ''>, x: number, y: number)
 
 export const NPCS: NpcDef[] = [];
 for (const city of CITY_LIST)
-  for (const [role, pos] of cityNpcPositions(city)) if (role) NPCS.push(npcFor(city, role, pos.x, pos.y));
+  for (const [role, pos] of cityNpcPositions(city))
+    if (role) {
+      const def = npcFor(city, role, pos.x, pos.y);
+      // Zadania: mistrz gildii (łowy), rzemieślnik (surowce), kapłan (wyprawy).
+      if (role === 'guild' || role === 'crafter' || role === 'priest')
+        def.keywords = { zadanie: { text: 'Mam dla ciebie robotę. Oto, czego potrzebujemy.', action: 'quests' }, ...def.keywords };
+      NPCS.push(def);
+    }
 
 /** Słowa powitania rozpoczynające rozmowę. */
 export const GREETINGS = ['witaj', 'hi', 'hello', 'cześć', 'czesc', 'dzień dobry'];

@@ -7,7 +7,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.8.0 – interfejs dark fantasy, malowane ikony, zamki i katedry, deszcz i burze, nowe modele broni i zwierząt) (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.9.0 – magia: 18 czarów w 5 szkołach, zadania z panelem „Aktualne zadania”, kostury) (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
@@ -174,6 +174,28 @@ W menu gry: **„Efekty graficzne: wysokie/niskie”** – wyłącza cienie, po�
 | Drzewa i trawa | `tree_models.gd`: pnie z teksturą kory, korony z kart liści (dęby, brzozy, wierzby), świerki z gałęzi igieł (też ośnieżone), palmy, kaktusy, martwe drzewa – rysowane jako MultiMesh; kępy trawy kołysane wiatrem |
 | Budynki | Mury z kamiennych bloków, dachówka, szachulec z tynkiem i belkami, chaty z bali, skały z teksturą (rzut trójpłaszczyznowy w `lowpoly_object.gdshader`) |
 | Postacie | Ludzie (gracze, NPC, bandyci) mają realistyczne proporcje i gładkie kształty: zbroja płytowa z naramiennikami, peleryna od T4, hełmy z przyłbicą i pióropuszem, fryzury, brody |
+
+### Wersja 0.9.0 – magia i zadania
+
+**Magia – 5 szkół, 18 czarów.** Czarów uczą kapłani (słowo „czary”); każde miasto strzeże innych szkół:
+Popielgród – Światło i Ogień, Szronogród – Lód i Nekromancja, Złotopiask – Błyskawica i Światło.
+Czar rzuca się przyciskiem z paska czarów (4 miejsca, przypinane w Księdze czarów), z Księgi albo formułą na czacie.
+
+| Szkoła | Czary (formuła) |
+|--------|-----------------|
+| Światło | Leczenie (exura), Wielkie leczenie (exura gran), Krąg światła (exura mas – leczy sojuszników), Oczyszczenie (exana pox), Święty pocisk (exori san – ×2 na nieumarłych) |
+| Ogień | Kula ognia (exori flam – podpala), Burza ognia (exevo gran mas flam – obszar), Meteor (exevo flam hur – spada po sekundzie, promień 3) |
+| Lód | Lodowy pocisk (exori frigo – spowalnia), Mroźna nova (exevo frigo – zamraża wokół), Lodowa zbroja (utamo frigo – pochłania obrażenia) |
+| Błyskawica | Błyskawica (exori vis), Łańcuch piorunów (exori gran vis – przeskakuje na 2 cele), Nawałnica (exevo gran vis hur – pioruny przez 4 s), Przyspieszenie (utani hur) |
+| Nekromancja | Wyssanie życia (exori mort – leczy rzucającego), Klątwa (utori mort – +25% obrażeń), Trujący obłok (exevo gran mort) |
+
+Siła czarów rośnie z poziomem i poziomem magii; **kostury T1–T8** (Pracownia) dają +10…+45% siły czarów
+i strzelają magicznym pociskiem. Efekty 3D: świecące pociski z ogonem iskier, pioruny, spadający meteor
+z wybuchem, lodowe kolce, obłoki, aury (lodowa bańka, złote smugi), błyski oświetlające okolicę nocą.
+
+**Zadania.** Mistrz gildii daje zlecenia łowieckie, rzemieślnik – zbieranie surowców, kapłan – wyprawy
+(odwiedź inne miasto, Świątynię Ognia, obelisk; pokonaj bossa). 22 zadania w trzech miastach, część w łańcuchach,
+część powtarzalna. Postęp widać w panelu **„Aktualne zadania”** pod portretem.
 
 ### Wersja 0.8.0 – interfejs, przedmioty, zamki, pogoda
 
@@ -580,7 +602,7 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 10. **Wydajność**: siatka zajętości pól dla potworów i „usypianie” potworów dalej niż 22 pola od graczy
     (serwer: ~1 ms na tick przy 20 graczach i ~560 potworach); klient buduje i zwalnia kawałki świata wokół gracza.
 11. **Protokół w wersji 3** – nowy świat wymaga aktualizacji klienta i serwera jednocześnie.
-12. **Dar bohatera** – postacie z listy `HERO_NAMES` (domyślnie `sazuqe`) przy pierwszym logowaniu dostają jednorazowo
+12. **Dar bohatera** – postacie z listy `HERO_NAMES` (domyślnie `sazuqe`) przy pierwszym logowaniu dostają jednorazowo wszystkie czary, kostur T8,
     poziom 100, skille walki 90, magię 40, specjalizacje 40, 5 błogosławieństw i komplet arcydzieł T8 (miecz, tarcza,
     zbroja płytowa), zapasowy topór/buławę/łuk T8, narzędzia T8, po 100 wielkich mikstur, Popielnego drake'a
     i 100 000 zł (10 000 w plecaku, reszta w depozycie). Dotychczasowy ekwipunek trafia do plecaka lub depozytu.

@@ -23,6 +23,7 @@ import { SPEC_DEFS, TIER_SPEC_REQ, addFame, bonusYieldChance, fameForTier } from
 import { PvpSystem } from './systems/pvp';
 import { AbilitySystem } from './systems/abilities';
 import { SpellSystem } from './systems/spells';
+import { QuestSystem } from './systems/quests';
 import { ABILITY_LIST } from './data/abilities';
 import { GuildSystem } from './systems/guilds';
 import { TerritorySystem } from './systems/territories';
@@ -87,6 +88,7 @@ export class World {
   readonly pvp = new PvpSystem(this);
   readonly abilities = new AbilitySystem(this);
   readonly spells = new SpellSystem(this);
+  readonly quests = new QuestSystem(this);
   readonly guilds: GuildSystem;
   readonly territories: TerritorySystem;
   /** Zajętość pól przez potwory (id potwora, 0 = wolne) – szybkie sprawdzanie kolizji. */
@@ -172,11 +174,13 @@ export class World {
     });
     p.send({ t: 'pos', x: p.x, y: p.y, d: p.dir });
     p.inventory.dirty = true;
+    p.lastQuestLog = '';
+    this.quests.sendLog(p);
     this.sendSystem(p, `Witaj w Popielnych Królestwach, ${p.name}! Online: ${this.players.size}.`);
     this.broadcastSystem(`${p.name} wchodzi do gry.`, p.id);
     if (hero) {
       this.savePlayer(p);
-      this.sendSystem(p, `Dar bohatera: poziom ${p.level}, komplet arcydzieł T8, drake w plecaku, 10 000 zł przy sobie i 90 000 zł w depozycie. Czego nie zmieścił plecak, czeka w depozycie.`);
+      this.sendSystem(p, `Dar bohatera: poziom ${p.level}, komplet arcydzieł T8, wszystkie czary i kostur T8, drake w plecaku, 10 000 zł przy sobie i 90 000 zł w depozycie. Czego nie zmieścił plecak, czeka w depozycie.`);
     }
   }
 
@@ -235,6 +239,12 @@ export class World {
         return this.spells.cast(p, String(msg.spell ?? ''), now);
       case 'learn':
         return this.economy.learnSpell(p, String(msg.spell ?? ''));
+      case 'qaccept':
+        return this.quests.accept(p, String(msg.id ?? ''));
+      case 'qdone':
+        return this.quests.turnIn(p, String(msg.id ?? ''));
+      case 'qdrop':
+        return this.quests.abandon(p, String(msg.id ?? ''));
       case 'say':
         return this.handleSay(p, String(msg.text ?? ''), now);
       case 'pickup':
@@ -477,6 +487,7 @@ export class World {
   tick(now: number) {
     this.tickSpawns(now);
     this.spells.tick(now);
+    this.quests.tick(now);
     this.gathering.tickNodes(now);
     this.territories.tick(now);
     for (const m of this.monsters.values()) this.tickBleed(m, now);
@@ -528,7 +539,9 @@ export class World {
     if (addSkillTries(p.skills, skill, 1)) this.announceSkill(p, skill);
 
     if (range > 1) {
-      this.fxQueue.push({ x: p.x, y: p.y, k: 'shot', tx: t.x, ty: t.y });
+      // Kostur strzela magicznym pociskiem, łuk – strzałą.
+      if (skill === 'magic') this.fxQueue.push({ x: p.x, y: p.y, k: 'bolt', tx: t.x, ty: t.y, col: '#9ec2ff' });
+      else this.fxQueue.push({ x: p.x, y: p.y, k: 'shot', tx: t.x, ty: t.y });
       if (!chance(distanceHitChance(p.skills[skill].level, dist))) {
         this.fxQueue.push({ x: t.x, y: t.y, k: 'miss' });
         return;
@@ -627,6 +640,7 @@ export class World {
       st.pending.push(Date.now() + m.def.respawnMs * (m.def.boss ? config.bossRespawnScale : 1));
     }
     this.fxQueue.push({ x: m.x, y: m.y, k: 'death', look: m.def.look, boss: m.def.boss ? 1 : 0 });
+    if (killer) this.quests.onKill(killer, m.def.id);
     for (const p of this.players.values()) if (p.targetId === m.id) p.targetId = 0;
     // Sługi przywołującego znikają razem z nim.
     for (const s of [...this.monsters.values()])
@@ -1004,6 +1018,7 @@ export class World {
       if (p.inventory.dirty) {
         p.inventory.dirty = false;
         p.send({ t: 'inv', bag: p.inventory.bag, eq: p.inventory.equipment });
+        if (p.pvp.quests && Object.keys(p.pvp.quests.active).length) this.quests.sendLog(p);
       }
       const visibleFx = fx.filter((f) => this.inView(p, f.x, f.y));
       if (visibleFx.length) p.send({ t: 'fx', l: visibleFx });

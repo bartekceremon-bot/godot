@@ -109,6 +109,8 @@ export class EconomySystem {
         return this.sendDialog(p, n, this.world.pvp.buyBlessing(p));
       case 'spells':
         return this.world.spells.offer(p, n.def.city);
+      case 'quests':
+        return this.world.quests.offer(p, n);
       case 'guild':
         return this.world.guilds.info(p);
       case 'craft':

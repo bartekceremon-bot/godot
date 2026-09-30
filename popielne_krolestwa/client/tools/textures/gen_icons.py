@@ -27,7 +27,7 @@ ICONS = ["wood", "stone", "ore", "fiber", "hide", "planks", "blocks", "bars", "c
          "plate_head", "plate_body", "plate_legs", "plate_feet", "leather_head", "leather_body",
          "leather_legs", "leather_feet", "cloth_head", "cloth_body", "cloth_legs", "cloth_feet",
          "gold", "meat", "bone", "hp_potion", "mp_potion", "mount_horse", "mount_elk", "mount_camel",
-         "mount_warwolf", "mount_drake", "unknown"]
+         "mount_warwolf", "mount_drake", "unknown", "staff"]
 
 # Materiały tierów: metal (jasny, ciemny), skóra, płótno, drewno, akcent (klejnoty, poświata).
 METAL = [(0.62, 0.62, 0.64), (0.6, 0.6, 0.62), (0.78, 0.52, 0.3), (0.62, 0.72, 0.86), (0.48, 0.38, 0.62),
@@ -289,6 +289,19 @@ def i_shield(cv, t):
     metal(cv, boss, METAL[t])
     if t >= 4:
         gem(cv, 0.5, 0.4, 0.04, ACCENT[t])
+
+
+def i_staff(cv, t):
+    glow(cv, t)
+    shaft = line([(0.22, 0.9), (0.66, 0.26)], 0.05)
+    solid(cv, shaft, WOOD[t], tex=noise(W / 20, 17))
+    head = line([(0.6, 0.34), (0.66, 0.14), (0.8, 0.12), (0.84, 0.26), (0.74, 0.34)], 0.035)
+    metal(cv, head, METAL[t] if t > 1 else (0.5, 0.35, 0.2))
+    col = ACCENT[max(t, 2)]
+    cv.paint(blur(ellipse(0.74, 0.24, 0.1, 0.1), 10), C(col))
+    gem(cv, 0.74, 0.24, 0.06, col)
+    for i in range(3):
+        cv.paint(line([(0.4 - i * 0.04, 0.6 + i * 0.06), (0.46 - i * 0.04, 0.63 + i * 0.06)], 0.012), C((0.15, 0.1, 0.06)), 0.8)
 
 
 def i_woodaxe(cv, t):

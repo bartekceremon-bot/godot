@@ -272,7 +272,68 @@ def hud_icon(name):
         for x in (0.38, 0.62):
             cv.paint(gi.ellipse(x, 0.46, 0.08, 0.09), C((0.05, 0.03, 0.03)))
         cv.paint(gi.poly([(0.5, 0.56), (0.46, 0.64), (0.54, 0.64)]), C((0.05, 0.03, 0.03)))
+    elif name == 'book':
+        gi.solid(cv, gi.rect(0.18, 0.14, 0.82, 0.86, 0.04), (0.45, 0.14, 0.12), tex=gi.noise(gi.W / 24, 3))
+        gi.solid(cv, gi.rect(0.22, 0.18, 0.78, 0.82, 0.03), (0.92, 0.88, 0.76))
+        gi.solid(cv, gi.rect(0.18, 0.14, 0.3, 0.86, 0.02), (0.35, 0.1, 0.08))
+        gi.metal(cv, gi.ellipse(0.55, 0.5, 0.12, 0.12), gi.METAL[5])
+        gi.glow(cv, 6, 0.55, 0.5, 0.25)
+        cv.paint(gi.ellipse(0.55, 0.5, 0.05, 0.05), C((1, 0.6, 0.2)))
+    elif name.startswith('spell_'):
+        spell_icon(cv, name[6:])
     return cv.image()
+
+
+def spell_icon(cv, kind):
+    C = gi.C
+    col = {'fire': (1.0, 0.45, 0.1), 'meteor': (1.0, 0.35, 0.08), 'ice': (0.55, 0.85, 1.0), 'shield': (0.55, 0.85, 1.0),
+           'lightning': (0.75, 0.7, 1.0), 'storm': (0.6, 0.6, 0.95), 'haste': (1.0, 0.92, 0.4), 'death': (0.6, 0.2, 0.75),
+           'curse': (0.55, 0.15, 0.6), 'holy': (1.0, 0.9, 0.5), 'purify': (0.9, 0.95, 1.0)}[kind]
+    # Tło: ciemny medalion z poświatą szkoły.
+    disc = gi.ellipse(0.5, 0.5, 0.46, 0.46)
+    cv.paint(disc, gi.grad((0.12, 0.12, 0.16), (0.03, 0.03, 0.05), 0))
+    d = np.sqrt((gi.XX - 0.5) ** 2 + (gi.YY - 0.5) ** 2) / 0.46
+    cv.paint(disc * np.clip(1 - d, 0, 1) ** 1.5 * 0.8, C(col))
+    if kind in ('fire', 'meteor'):
+        flame = gi.poly([(0.5, 0.12), (0.7, 0.42), (0.72, 0.62), (0.6, 0.8), (0.4, 0.8), (0.28, 0.62), (0.32, 0.42), (0.44, 0.5)])
+        cv.paint(gi.blur(flame, 6), C(col))
+        cv.paint(flame, gi.grad((1, 0.95, 0.5), col, 0, 0.3, 0.9))
+        cv.paint(gi.poly([(0.5, 0.42), (0.6, 0.62), (0.5, 0.76), (0.4, 0.62)]), C((1, 1, 0.8)))
+        if kind == 'meteor':
+            gi.solid(cv, gi.ellipse(0.62, 0.66, 0.14, 0.13), (0.35, 0.15, 0.08))
+    elif kind in ('ice', 'shield'):
+        for a in range(6):
+            ang = a * math.pi / 3
+            sp = gi.line([(0.5, 0.5), (0.5 + math.cos(ang) * 0.34, 0.5 + math.sin(ang) * 0.34)], 0.06)
+            cv.paint(gi.blur(sp, 4), C(col))
+            cv.paint(sp, C((0.9, 0.97, 1.0)))
+        if kind == 'shield':
+            sh = gi.poly([(0.3, 0.26), (0.7, 0.26), (0.7, 0.52), (0.5, 0.8), (0.3, 0.52)])
+            gi.metal(cv, sh, (0.6, 0.8, 0.95))
+    elif kind in ('lightning', 'storm'):
+        if kind == 'storm':
+            gi.solid(cv, np.clip(gi.ellipse(0.4, 0.34, 0.18, 0.12) + gi.ellipse(0.6, 0.32, 0.2, 0.14), 0, 1), (0.35, 0.36, 0.45))
+        bolt = gi.poly([(0.56, 0.18), (0.36, 0.52), (0.5, 0.52), (0.42, 0.84), (0.66, 0.44), (0.52, 0.44), (0.62, 0.18)])
+        cv.paint(gi.blur(bolt, 8), C(col))
+        cv.paint(bolt, C((1, 1, 1)))
+    elif kind == 'haste':
+        for i in range(3):
+            cv.paint(gi.line([(0.24 + i * 0.05, 0.3 + i * 0.2), (0.62 + i * 0.05, 0.3 + i * 0.2)], 0.035), C(col))
+        gi.solid(cv, gi.poly([(0.6, 0.24), (0.8, 0.5), (0.6, 0.76)]), col)
+    elif kind in ('death', 'curse'):
+        sk = np.clip(gi.ellipse(0.5, 0.44, 0.22, 0.2) + gi.rect(0.38, 0.5, 0.62, 0.72, 0.04), 0, 1)
+        cv.paint(gi.blur(sk, 6), C(col))
+        gi.solid(cv, sk, (0.85, 0.82, 0.9) if kind == 'death' else (0.6, 0.3, 0.7))
+        for x in (0.42, 0.58):
+            cv.paint(gi.ellipse(x, 0.46, 0.05, 0.06), C((0.3, 1.0, 0.4) if kind == 'death' else (1, 0.2, 0.2)))
+    elif kind in ('holy', 'purify'):
+        for a in range(12):
+            ang = a * math.pi / 6
+            cv.paint(gi.line([(0.5, 0.5), (0.5 + math.cos(ang) * 0.36, 0.5 + math.sin(ang) * 0.36)], 0.025), C(col))
+        cv.paint(gi.blur(gi.ellipse(0.5, 0.5, 0.16, 0.16), 6), C((1, 1, 0.9)))
+        cv.paint(gi.ellipse(0.5, 0.5, 0.12, 0.12), C((1, 1, 0.95)))
+    ring = disc - gi.ellipse(0.5, 0.5, 0.42, 0.42)
+    gi.metal(cv, np.clip(ring, 0, 1), (0.78, 0.6, 0.3))
 
 
 def main():
@@ -287,7 +348,9 @@ def main():
     hotbar().save(os.path.join(OUT, 'hotbar.png'))
     joystick_base().save(os.path.join(OUT, 'joystick_base.png'))
     joystick_knob().save(os.path.join(OUT, 'joystick_knob.png'))
-    for n in ['bag', 'character', 'specs', 'people', 'menu', 'chat', 'attack', 'heal', 'skull_white', 'skull_red']:
+    for n in ['bag', 'character', 'specs', 'people', 'menu', 'chat', 'attack', 'heal', 'skull_white', 'skull_red', 'book',
+              'spell_fire', 'spell_meteor', 'spell_ice', 'spell_shield', 'spell_lightning', 'spell_storm', 'spell_haste',
+              'spell_death', 'spell_curse', 'spell_holy', 'spell_purify']:
         hud_icon(n).save(os.path.join(OUT, 'icon_%s.png' % n))
         print('ikona HUD', n)
     print('gotowe ->', os.path.abspath(OUT))

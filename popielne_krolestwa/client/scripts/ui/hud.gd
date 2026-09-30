@@ -41,6 +41,11 @@ var _perf: Label
 var _spell_btn: Button
 var _cooldowns: Dictionary = {}  # id -> [pozostało, całość]
 var _ability_btns: Array[Button] = []
+var _spell_slots: Array[Button] = []
+var spellbook: SpellbookPanel
+var quests: QuestPanel
+var _tracker: PanelContainer
+var _tracker_box: VBoxContainer
 var _zone_label: Label
 var _zone_toast: Label
 var _hp_potion_btn: Button
@@ -74,6 +79,7 @@ func _ready() -> void:
 	_root.theme = UiTheme.get_theme()
 	add_child(_root)
 	_build_status()
+	_build_tracker()
 	_build_region_banner()
 	_build_top_buttons()
 	_build_joystick()
@@ -179,6 +185,7 @@ func _build_top_buttons() -> void:
 		["character", "Postać", func(): _toggle(_character)],
 		["specs", "Specjalizacje", func(): _toggle(specs)],
 		["people", "Gracze online", func(): Net.send({"t": "who"})],
+		["book", "Księga czarów", func(): _toggle_spellbook()],
 		["menu", "Menu", func(): _toggle(_menu)],
 	]
 	for d in defs:
@@ -202,6 +209,44 @@ func _build_top_buttons() -> void:
 	mm_row.add_child(info)
 	minimap = Minimap.new()
 	mm_row.add_child(minimap)
+
+
+## Panel „Aktualne zadania” pod portretem (z pakietu qlog).
+func _build_tracker() -> void:
+	_tracker = PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.03, 0.035, 0.05, 0.55)
+	sb.border_color = Color(0.78, 0.58, 0.28, 0.35)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(6)
+	sb.set_content_margin_all(8)
+	_tracker.add_theme_stylebox_override("panel", sb)
+	_tracker.position = Vector2(12, 132)
+	_tracker.custom_minimum_size = Vector2(300, 0)
+	_tracker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tracker.hide()
+	_root.add_child(_tracker)
+	_tracker_box = VBoxContainer.new()
+	_tracker_box.add_theme_constant_override("separation", 1)
+	_tracker.add_child(_tracker_box)
+
+
+func update_quest_log(list: Array) -> void:
+	UiTheme.clear(_tracker_box)
+	_tracker.visible = not list.is_empty()
+	if list.is_empty():
+		return
+	var head := UiTheme.label("Aktualne zadania", 18, UiTheme.ACCENT)
+	head.add_theme_font_override("font", UiTheme.TITLE_FONT)
+	_tracker_box.add_child(head)
+	for q in list.slice(0, 4):
+		_tracker_box.add_child(UiTheme.label(str(q.name), 15, Color(0.95, 0.9, 0.75)))
+		if bool(q.ready):
+			_tracker_box.add_child(UiTheme.label("  ✔ Wróć po nagrodę", 14, Color(0.55, 1.0, 0.55)))
+			continue
+		for g in q.goals:
+			var done := int(g[1]) >= int(g[2])
+			_tracker_box.add_child(UiTheme.label("  %s %s (%d/%d)" % ["✔" if done else "•", g[0], int(g[1]), int(g[2])], 14, Color(0.6, 1.0, 0.6) if done else Color(0.85, 0.85, 0.85)))
 
 
 ## Baner krainy u góry ekranu: nazwa miasta/krainy i strefa (jak „Thais – strefa bezpieczna”).
@@ -250,6 +295,13 @@ func _build_actions() -> void:
 	_root.add_child(grid)
 
 	var size := Vector2(86, 86)
+	# Rząd czarów przypiętych z Księgi czarów.
+	for i in 4:
+		var sb := _action_button("", "book", size)
+		sb.add_theme_font_size_override("font_size", 13)
+		sb.pressed.connect(_cast_slot.bind(i))
+		_spell_slots.append(sb)
+		grid.add_child(sb)
 	for i in 3:
 		var b := _action_button("", "attack", size)
 		b.add_theme_font_size_override("font_size", 13)
@@ -274,6 +326,63 @@ func _build_actions() -> void:
 	_mount_btn.pressed.connect(func(): Net.send({"t": "mount"}))
 	grid.add_child(_mount_btn)
 	_refresh_abilities()
+	_refresh_spell_slots()
+
+
+## Czary przypięte do paska (Config.spell_slots); puste miejsce otwiera Księgę czarów.
+func _refresh_spell_slots() -> void:
+	for i in 4:
+		var b: Button = _spell_slots[i]
+		var id := str(Config.spell_slots[i]) if i < Config.spell_slots.size() else ""
+		var sp: Dictionary = GameData.spells.get(id, {})
+		b.set_meta("ability", id)
+		if sp.is_empty():
+			b.text = "+"
+			b.icon = Sprites.icon("book")
+			b.tooltip_text = "Przypnij czar z Księgi czarów"
+			b.modulate = Color(1, 1, 1, 0.55)
+		else:
+			b.text = str(sp.name).get_slice(" ", 0)
+			b.icon = Sprites.icon(str(sp.icon))
+			b.tooltip_text = "%s „%s” – %d many" % [sp.name, sp.words, int(sp.mana)]
+			# Czar nieznany tej postaci (pasek jest wspólny dla konta na urządzeniu) – wyszarzony.
+			b.modulate = Color(1, 1, 1, 0.95) if spellbook == null or spellbook.known.has(id) else Color(0.45, 0.45, 0.5, 0.7)
+
+
+func _cast_slot(i: int) -> void:
+	var id := str(Config.spell_slots[i])
+	if id == "" or not GameData.spells.has(id):
+		_toggle_spellbook()
+		return
+	cast_spell(id)
+
+
+func cast_spell(id: String) -> void:
+	Net.send({"t": "cast", "spell": id})
+
+
+## Przypina czar do pierwszego wolnego miejsca (albo przesuwa pasek, gdy pełny).
+func pin_spell(id: String) -> void:
+	var slots: Array = Config.spell_slots.duplicate()
+	if slots.has(id):
+		return
+	var free := slots.find("")
+	if free < 0:
+		slots.pop_front()
+		slots.append(id)
+	else:
+		slots[free] = id
+	Config.spell_slots = slots
+	Config.save_settings()
+	_refresh_spell_slots()
+	add_chat("[color=#a0d0ff]Przypięto czar „%s” do paska.[/color]" % GameData.spells[id].name)
+
+
+func _toggle_spellbook() -> void:
+	var show_it := not spellbook.visible
+	_toggle(spellbook)
+	if show_it:
+		spellbook.open_book()
 
 
 ## Umiejętności zależą od broni w ręku (jak w Albionie). Bez broni przyciski są wyłączone.
@@ -381,8 +490,12 @@ func _build_windows() -> void:
 	specs = SpecsPanel.new()
 	world_map = WorldMapPanel.new()
 	world_map.game = game
+	spellbook = SpellbookPanel.new()
+	spellbook.hud = self
+	quests = QuestPanel.new()
+	quests.hud = self
 	minimap.opened.connect(func(): _toggle(world_map))
-	for w in [npc_dialog, shop, depot, market, craft, specs, world_map]:
+	for w in [npc_dialog, shop, depot, market, craft, specs, world_map, spellbook, quests]:
 		w.set("hud", self)
 		_root.add_child(w)
 	for w in [shop, depot, market, craft]:
@@ -477,7 +590,7 @@ func _simple_window(title: String) -> PanelContainer:
 
 
 func _all_windows() -> Array:
-	return [_inventory, _character, _online, _menu, shop, depot, market, craft, specs, world_map]
+	return [_inventory, _character, _online, _menu, shop, depot, market, craft, specs, world_map, spellbook, quests]
 
 
 func _toggle(w: Control) -> void:
@@ -507,6 +620,11 @@ func _open_window(w: Control) -> void:
 # ============================================================================
 
 func update_stats(s: Dictionary) -> void:
+	if s.has("spells") and spellbook:
+		var changed: bool = spellbook.known != s.spells
+		spellbook.set_known(s.spells)
+		if changed:
+			_refresh_spell_slots()
 	_lvl_label.text = GameData.my_name
 	_lvl_badge.text = str(int(s.lvl))
 	_hp_bar.max_value = float(s.mhp)
@@ -714,6 +832,15 @@ func _process(delta: float) -> void:
 		if _cooldowns[id][0] <= 0:
 			_cooldowns.erase(id)
 	_spell_btn.modulate = Color(0.55, 0.55, 0.55, 0.9) if _cooldowns.has("heal") else Color(1, 1, 1, 0.95)
+	for b in _spell_slots:
+		var sid := str(b.get_meta("ability", ""))
+		if sid == "":
+			continue
+		if _cooldowns.has(sid):
+			b.modulate = Color(0.5, 0.5, 0.5, 0.9)
+			b.text = "%.0f s" % ceil(_cooldowns[sid][0])
+		elif b.text.ends_with(" s"):
+			_refresh_spell_slots()
 	for b in _ability_btns:
 		var id := str(b.get_meta("ability", ""))
 		if _cooldowns.has(id):

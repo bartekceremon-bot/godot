@@ -337,6 +337,58 @@ func _refresh_model() -> void:
 	add_child(model)
 
 
+## Aura czaru wokół istoty: „ice” – lodowa bańka, „haste” – złote smugi (znika po `dur` s).
+func aura(kind: String, dur: float) -> void:
+	var old := get_node_or_null("Aura_" + kind)
+	if old:
+		old.queue_free()
+	var node := Node3D.new()
+	node.name = "Aura_" + kind
+	add_child(node)
+	if kind == "ice":
+		var mi := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		sm.radius = 0.62
+		sm.height = 1.5
+		mi.mesh = sm
+		var m := StandardMaterial3D.new()
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.albedo_color = Color(0.45, 0.75, 1.0, 0.22)
+		m.cull_mode = BaseMaterial3D.CULL_DISABLED
+		mi.material_override = m
+		mi.position.y = 0.72
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.add_child(mi)
+		var tw := create_tween().set_loops(int(dur / 1.2))
+		tw.tween_property(m, "albedo_color:a", 0.35, 0.6)
+		tw.tween_property(m, "albedo_color:a", 0.18, 0.6)
+	else:
+		var p := CPUParticles3D.new()
+		p.amount = 16
+		p.lifetime = 0.5
+		p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+		p.emission_sphere_radius = 0.35
+		p.position.y = 0.5
+		p.direction = Vector3.UP
+		p.initial_velocity_min = 0.4
+		p.initial_velocity_max = 1.0
+		p.gravity = Vector3.ZERO
+		var sm := SphereMesh.new()
+		sm.radius = 0.03
+		sm.height = 0.06
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.albedo_color = Color(1.0, 0.92, 0.45)
+		sm.material = m
+		p.mesh = sm
+		node.add_child(p)
+	get_tree().create_timer(dur).timeout.connect(func():
+		if is_instance_valid(node):
+			node.queue_free())
+
+
 ## Wygląd tej istoty (podgląd postaci w oknie ekwipunku).
 func appearance() -> Dictionary:
 	return _appearance(str(look))
