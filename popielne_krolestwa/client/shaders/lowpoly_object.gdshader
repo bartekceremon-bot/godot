@@ -77,9 +77,9 @@ void fragment() {
 		} else if (id == 3) {
 			// Dachówka: rzędy wzdłuż spadku dachu (rzut na płaszczyznę prostopadłą do kalenicy).
 			vec2 uv = abs(n.x) > abs(n.z) ? vec2(wpos.z, wpos.y + wpos.x * sign(n.x)) : vec2(wpos.x, wpos.y + wpos.z * sign(n.z));
-			detail = texture(tex_roof, uv * 0.7).rgb / vec3(0.566, 0.217, 0.128);
+			detail = texture(tex_roof, uv * 0.36).rgb / vec3(0.566, 0.217, 0.128);
 			detail = vec3(lum(detail * vec3(0.566, 0.217, 0.128)) / 0.29);
-			nrm = texture(tex_roof_n, uv * 0.7).rgb;
+			nrm = texture(tex_roof_n, uv * 0.36).rgb;
 			rough = 0.75;
 		} else if (id == 4) {
 			detail = vec3(lum(tri_sample(tex_wood, wpos, bw, 0.9).rgb) / 0.29);

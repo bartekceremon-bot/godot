@@ -7,7 +7,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.6.0) (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.7.0 – Grafika 2.0: realistyczny teren, drzewa i postacie, panorama z horyzontem) (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
@@ -161,6 +161,22 @@ Serwer, protokół i mechaniki się nie zmieniły – świat 3D powstaje z tej s
 
 Dalsze kawałki świata budują się w tle (limit 5 ms na klatkę), zaczynając od najbliższych graczowi.
 W menu gry: **„Efekty graficzne: wysokie/niskie”** – wyłącza cienie, poświatę i cząsteczki na słabszych telefonach.
+
+### Grafika 2.0 (wersja 0.7.0) – bardziej realistycznie
+
+| Element | Jak zrobiony |
+|---------|--------------|
+| Kamera bohatera | Przybliżenie steruje kątem: blisko – kamera nisko za plecami bohatera (widać niebo i horyzont), daleko – widok z góry jak dotąd. Obiekty między kamerą a bohaterem stają się ażurowe |
+| Niebo | Shader `sky_world.gdshader`: gradient pory dnia, słońce, księżyc z kraterami, gwiazdy, płynące chmury, niebo zabarwione nastrojem strefy (czerwona/czarna – dymne) |
+| Daleki świat | `far_world.gd`: cała mapa w niskiej rozdzielczości (teren, woda, lawa, domy, mury, las) i pierścień wysokich gór za krawędzią świata; nad załadowanymi kawałkami wycinany maską |
+| Tekstury | `tools/textures/gen_textures.py` generuje bezszwowe tekstury z mapami normalnych (trawa, ściółka, ziemia, piasek, śnieg, skała, bruk, marmur, błoto, popiół, obsydian, lód, żwir, pole; kora, liście, igły, liście palm, trawa, kamienne bloki, dachówka, deski, tynk). Wynik w `client/assets/textures/` |
+| Teren | Shader `terrain.gdshader`: trzy warstwy tekstur na trójkąt mieszane z uwzględnieniem wysokości tekstury (kamienie wystają z trawy), gładkie cieniowanie, rzut trójpłaszczyznowy na zboczach, barwa krainy i strefy |
+| Drzewa i trawa | `tree_models.gd`: pnie z teksturą kory, korony z kart liści (dęby, brzozy, wierzby), świerki z gałęzi igieł (też ośnieżone), palmy, kaktusy, martwe drzewa – rysowane jako MultiMesh; kępy trawy kołysane wiatrem |
+| Budynki | Mury z kamiennych bloków, dachówka, szachulec z tynkiem i belkami, chaty z bali, skały z teksturą (rzut trójpłaszczyznowy w `lowpoly_object.gdshader`) |
+| Postacie | Ludzie (gracze, NPC, bandyci) mają realistyczne proporcje i gładkie kształty: zbroja płytowa z naramiennikami, peleryna od T4, hełmy z przyłbicą i pióropuszem, fryzury, brody |
+
+Tekstury są generowane algorytmicznie, bo z tego środowiska nie ma dostępu do bibliotek darmowych zasobów
+(Poly Haven, Kenney itp.). Każdy plik w `client/assets/textures/` można podmienić lepszym (ten sam rozmiar i układ).
 
 ### Grafiki interfejsu (PNG)
 
