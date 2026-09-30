@@ -22,6 +22,14 @@ export const config = {
   viewRadiusY: 13,
   /** Mnożnik czasu odrodzenia bossów świata (np. 0.05 do testów). */
   bossRespawnScale: Number(process.env.BOSS_RESPAWN_SCALE ?? 1),
+  /**
+   * Postacie, które przy logowaniu dostają jednorazowo „dar bohatera” (wysoki poziom i najlepszy ekwipunek).
+   * Lista nazw oddzielonych przecinkami, bez rozróżniania wielkości liter; pusta = wyłączone.
+   */
+  heroNames: (process.env.HERO_NAMES ?? 'sazuqe')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean),
   /** Wersja protokołu – klient i serwer muszą się zgadzać. */
   protocolVersion: 3,
 };

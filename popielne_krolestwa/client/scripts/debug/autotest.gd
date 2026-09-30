@@ -65,6 +65,8 @@ func _process(delta: float) -> void:
 			_steps = _scenario_bestiary(game)
 		elif scenario == "widoki":
 			_steps = _scenario_views(game)
+		elif scenario == "bohater":
+			_steps = _scenario_hero(game)
 		elif scenario == "etap3":
 			_steps = _scenario_etap3(game)
 		else:
@@ -204,6 +206,18 @@ func _scenario_etap4(game: Node) -> Array:
 		func(): return _tap_entity(game, "n", "Mistrz gildii"),
 		func(): Net.send({"t": "npc", "id": hud.npc_dialog.npc_id, "word": "terytoria"}); return 1.0,
 		func(): await _shot("03_mistrz_gildii"); hud.npc_dialog.hide(); return 0.3,
+	]
+
+
+## Dar bohatera: postać, plecak i jazda na drake'u.
+func _scenario_hero(game: Node) -> Array:
+	var hud = game.hud
+	return [
+		func(): await _shot("01_bohater"); hud._toggle(hud._character); return 0.5,
+		func(): await _shot("02_postac"); hud._toggle(hud._character); hud._toggle(hud._inventory); return 0.5,
+		func(): await _shot("03_plecak"); hud._toggle(hud._inventory); Net.send({"t": "mount"}); return 1.0,
+		func(): game._on_tap(game.my_pos + Vector2i(0, 6)); return 3.0,
+		func(): await _shot("04_drake"); return 0.3,
 	]
 
 

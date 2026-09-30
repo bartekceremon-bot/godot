@@ -183,3 +183,28 @@ test('potwory dystansowe i trucizna', () => {
   (w as any).monsterAttack(scorpion, p, Date.now());
   assert.ok(p.status.bleedUntil > Date.now(), 'trucizna działa');
 });
+
+test('dar bohatera: postać z listy dostaje poziom i komplet T8 tylko raz', () => {
+  const w = new World(new Database(':memory:'));
+  const t = w.map.temple;
+  const { p, conn } = mk(w, 'Sazuqe', t.x, t.y);
+  assert.ok(p.level >= 100);
+  assert.equal(p.skills.sword.level, 90);
+  assert.equal(p.inventory.equipment.weapon?.item, 'sword_t8');
+  assert.equal(p.inventory.equipment.weapon?.q, 5);
+  assert.equal(p.inventory.equipment.body?.item, 'plate_body_t8');
+  assert.equal(p.pvp.blessings, 5);
+  assert.equal(p.hp, p.maxHp());
+  assert.ok(p.inventory.bag.some((s) => s?.item === 'mount_drake'));
+  assert.ok(w.depots.get(p.charId, 'popielgrod').some((s) => s.item === 'gold' && s.count === 90000));
+  assert.ok(conn.sys().some((s) => s.startsWith('Dar bohatera')));
+  // Drugie logowanie – bez ponownego daru.
+  const drakes = p.inventory.bag.filter((s) => s?.item === 'mount_drake').length;
+  w.removePlayer(p);
+  w.addPlayer(p);
+  assert.equal(p.inventory.bag.filter((s) => s?.item === 'mount_drake').length, drakes);
+  // Inne postacie nic nie dostają.
+  const { p: other } = mk(w, 'Zwykly', t.x, t.y);
+  assert.equal(other.level, 1);
+  assert.equal(other.inventory.equipment.weapon, undefined);
+});

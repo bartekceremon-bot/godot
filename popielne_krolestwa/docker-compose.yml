@@ -10,6 +10,8 @@ services:
     environment:
       - PORT=7171
       - DB_PATH=/data/game.db
+      # Postacie z „darem bohatera” (poziom 100 + komplet T8), nazwy po przecinku; pusta wartość wyłącza.
+      - HERO_NAMES=sazuqe
     volumes:
       - ./data:/data
     # Czas na zapisanie postaci przy zatrzymaniu kontenera.

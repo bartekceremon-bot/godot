@@ -552,6 +552,11 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 10. **Wydajność**: siatka zajętości pól dla potworów i „usypianie” potworów dalej niż 22 pola od graczy
     (serwer: ~1 ms na tick przy 20 graczach i ~560 potworach); klient buduje i zwalnia kawałki świata wokół gracza.
 11. **Protokół w wersji 3** – nowy świat wymaga aktualizacji klienta i serwera jednocześnie.
+12. **Dar bohatera** – postacie z listy `HERO_NAMES` (domyślnie `sazuqe`) przy pierwszym logowaniu dostają jednorazowo
+    poziom 100, skille walki 90, magię 40, specjalizacje 40, 5 błogosławieństw i komplet arcydzieł T8 (miecz, tarcza,
+    zbroja płytowa), zapasowy topór/buławę/łuk T8, narzędzia T8, po 100 wielkich mikstur, Popielnego drake'a
+    i 100 000 zł (10 000 w plecaku, reszta w depozycie). Dotychczasowy ekwipunek trafia do plecaka lub depozytu.
+    Działa na serwerze (zmienna w `docker-compose.yml`) i w trybie offline w przeglądarce.
 
 ## Plan etapów
 

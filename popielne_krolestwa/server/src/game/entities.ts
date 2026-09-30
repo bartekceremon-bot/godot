@@ -80,6 +80,8 @@ export interface PvpState {
   home?: string;
   /** Wersja mapy, na której zapisano pozycję (zmiana świata = powrót do świątyni). */
   mv?: number;
+  /** Wersja „daru bohatera” już przyznanego tej postaci (patrz game/hero.ts). */
+  hero?: number;
 }
 
 export function loadPvp(json: string | undefined): PvpState {
@@ -92,6 +94,7 @@ export function loadPvp(json: string | undefined): PvpState {
     d.blessings = Math.max(0, Math.min(5, Math.floor(Number(v.blessings) || 0)));
     if (typeof v.home === 'string') d.home = v.home;
     if (Number.isFinite(v.mv)) d.mv = v.mv;
+    if (Number.isFinite(v.hero)) d.hero = v.hero;
   } catch {
     /* domyślne */
   }

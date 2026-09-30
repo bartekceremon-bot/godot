@@ -15,6 +15,7 @@ import { RECIPE_LIST, STATION_NAMES } from './data/recipes';
 import { NPCS } from './data/npcs';
 import { Player, Monster, GroundItem, MOVE_VECTORS, allocEntityId, dirFromDelta, Npc, ResourceNode } from './entities';
 import { DepotStore } from './economy/depot';
+import { grantHeroGift } from './hero';
 import { Market } from './economy/market';
 import { GatheringSystem } from './systems/gathering';
 import { EconomySystem } from './systems/economy';
@@ -145,6 +146,7 @@ export class World {
       p.y = t.y;
       p.pvp.mv = MAP_VERSION;
     }
+    const hero = grantHeroGift(p, (item, count, q) => this.depots.add(p.charId, p.pvp.home ?? 'popielgrod', item, count, q, true));
     this.guilds.attach(p);
     this.players.set(p.id, p);
     p.send({
@@ -170,6 +172,10 @@ export class World {
     p.inventory.dirty = true;
     this.sendSystem(p, `Witaj w Popielnych Królestwach, ${p.name}! Online: ${this.players.size}.`);
     this.broadcastSystem(`${p.name} wchodzi do gry.`, p.id);
+    if (hero) {
+      this.savePlayer(p);
+      this.sendSystem(p, `Dar bohatera: poziom ${p.level}, komplet arcydzieł T8, drake w plecaku, 10 000 zł przy sobie i 90 000 zł w depozycie. Czego nie zmieścił plecak, czeka w depozycie.`);
+    }
   }
 
   removePlayer(p: Player) {
