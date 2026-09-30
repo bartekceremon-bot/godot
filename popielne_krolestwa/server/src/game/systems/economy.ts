@@ -43,6 +43,12 @@ export class EconomySystem {
     return n;
   }
 
+  /** Nauka czaru u kapłana w zasięgu (miasto kapłana decyduje o szkołach). */
+  learnSpell(p: Player, spellId: string) {
+    const n = this.require(p, 'spells');
+    if (n) this.world.spells.learn(p, spellId, n.def.city);
+  }
+
   private gold(p: Player) {
     return p.inventory.countOf('gold');
   }
@@ -101,6 +107,8 @@ export class EconomySystem {
         return this.sendMarket(p, n.def.city);
       case 'bless':
         return this.sendDialog(p, n, this.world.pvp.buyBlessing(p));
+      case 'spells':
+        return this.world.spells.offer(p, n.def.city);
       case 'guild':
         return this.world.guilds.info(p);
       case 'craft':

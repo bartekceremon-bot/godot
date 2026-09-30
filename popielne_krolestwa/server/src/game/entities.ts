@@ -56,6 +56,14 @@ export class StatusEffects {
   bleedDamage = 0;
   /** Id gracza, który wywołał krwawienie (zasługa za zabójstwo). */
   bleedSource = 0;
+  /** Klątwa: +25% otrzymywanych obrażeń. */
+  cursedUntil = 0;
+  /** Lodowa zbroja: pochłania obrażenia. */
+  shieldUntil = 0;
+  shieldHp = 0;
+  /** Przyspieszenie (ułamek szybkości). */
+  hasteUntil = 0;
+  haste = 0;
 
   stunned(now: number) {
     return now < this.stunUntil;
@@ -82,6 +90,8 @@ export interface PvpState {
   mv?: number;
   /** Wersja „daru bohatera” już przyznanego tej postaci (patrz game/hero.ts). */
   hero?: number;
+  /** Nauczone czary (poza „exura”, którą zna każdy). */
+  spells?: string[];
 }
 
 export function loadPvp(json: string | undefined): PvpState {
@@ -95,6 +105,7 @@ export function loadPvp(json: string | undefined): PvpState {
     if (typeof v.home === 'string') d.home = v.home;
     if (Number.isFinite(v.mv)) d.mv = v.mv;
     if (Number.isFinite(v.hero)) d.hero = v.hero;
+    if (Array.isArray(v.spells)) d.spells = v.spells.filter((x: unknown) => typeof x === 'string').slice(0, 64);
   } catch {
     /* domyślne */
   }
@@ -223,7 +234,8 @@ export class Player implements Creature {
   }
 
   stepMs() {
-    return Math.round(stepMsForLevel(this.level) / (1 + this.mountStats().speed));
+    const haste = Date.now() < this.status.hasteUntil ? this.status.haste : 0;
+    return Math.round(stepMsForLevel(this.level) / (1 + this.mountStats().speed + haste));
   }
 
   weapon() {
@@ -275,6 +287,10 @@ export class Player implements Creature {
       mount: this.mounted,
       guild: this.guildTag,
       home: this.pvp.home ?? '',
+      spells: ['heal', ...(this.pvp.spells ?? [])],
+      shield: Date.now() < this.status.shieldUntil ? this.status.shieldHp : 0,
+      haste: Date.now() < this.status.hasteUntil ? 1 : 0,
+      cursed: Date.now() < this.status.cursedUntil ? 1 : 0,
     };
   }
 }

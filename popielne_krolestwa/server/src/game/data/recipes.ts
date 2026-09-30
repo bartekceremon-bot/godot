@@ -68,6 +68,7 @@ const GEAR_RECIPES: Record<string, { station: Station; mats: [ResourceKind, numb
   pickaxe: { station: 'forge', mats: [['ore', 2], ['wood', 2]] },
   sickle: { station: 'forge', mats: [['ore', 2], ['wood', 1]] },
   bow: { station: 'workshop', mats: [['wood', 6], ['fiber', 2]] },
+  staff: { station: 'workshop', mats: [['wood', 5], ['fiber', 3]] },
   leather_head: { station: 'workshop', mats: [['hide', 4]] },
   leather_body: { station: 'workshop', mats: [['hide', 8]] },
   leather_legs: { station: 'workshop', mats: [['hide', 6]] },

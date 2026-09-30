@@ -54,6 +54,8 @@ export interface ItemDef {
   twoHanded?: boolean;
   /** Minimalny poziom postaci do założenia. */
   minLevel?: number;
+  /** Kostury: premia do siły czarów (ułamek, np. 0,3 = +30%). */
+  spellPower?: number;
   /** Efekt użycia (mikstury, jedzenie). */
   use?: { heal?: number; mana?: number };
   /** Tier T1–T8. */
@@ -177,6 +179,8 @@ export interface GearTemplate {
   range?: number;
   twoHanded?: boolean;
   tool?: ToolKind;
+  /** Premia do czarów na T1 (rośnie o 0,05 na tier). */
+  spellPower?: number;
 }
 
 export const GEAR_TEMPLATES: GearTemplate[] = [
@@ -184,6 +188,7 @@ export const GEAR_TEMPLATES: GearTemplate[] = [
   { base: 'sword', name: 'Miecz', icon: 'sword', category: 'weapon', slot: 'weapon', weight: 30, skill: 'sword', attack: 10, defense: 8, range: 1 },
   { base: 'axe', name: 'Topór', icon: 'axe', category: 'weapon', slot: 'weapon', weight: 35, skill: 'axe', attack: 12, defense: 5, range: 1 },
   { base: 'mace', name: 'Buława', icon: 'club', category: 'weapon', slot: 'weapon', weight: 35, skill: 'club', attack: 11, defense: 6, range: 1 },
+  { base: 'staff', name: 'Kostur', icon: 'staff', category: 'weapon', slot: 'weapon', weight: 22, skill: 'magic', attack: 7, range: 4, twoHanded: true, mpBonus: 10, spellPower: 0.1 },
   { base: 'bow', name: 'Łuk', icon: 'bow', category: 'weapon', slot: 'weapon', weight: 20, skill: 'distance', attack: 13, range: 6, twoHanded: true },
   { base: 'shield', name: 'Tarcza', icon: 'shield', category: 'shield', slot: 'shield', weight: 40, defense: 14 },
   // Pancerz płytowy – najwyższy pancerz
@@ -233,6 +238,10 @@ for (const g of GEAR_TEMPLATES) {
     if (g.mpBonus) d.mpBonus = Math.round(g.mpBonus * m);
     if (g.range) d.range = g.range;
     if (g.twoHanded) d.twoHanded = true;
+    if (g.spellPower) {
+      d.spellPower = Math.round((g.spellPower + (t - 1) * 0.05) * 100) / 100;
+      d.description = `Siła czarów +${Math.round(d.spellPower * 100)}%.`;
+    }
     if (g.tool) {
       d.tool = g.tool;
       d.description = `Pozwala zbierać surowce do T${t}.`;

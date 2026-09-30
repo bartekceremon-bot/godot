@@ -22,6 +22,7 @@ import { EconomySystem } from './systems/economy';
 import { SPEC_DEFS, TIER_SPEC_REQ, addFame, bonusYieldChance, fameForTier } from './specs';
 import { PvpSystem } from './systems/pvp';
 import { AbilitySystem } from './systems/abilities';
+import { SpellSystem } from './systems/spells';
 import { ABILITY_LIST } from './data/abilities';
 import { GuildSystem } from './systems/guilds';
 import { TerritorySystem } from './systems/territories';
@@ -85,6 +86,7 @@ export class World {
   readonly economy = new EconomySystem(this);
   readonly pvp = new PvpSystem(this);
   readonly abilities = new AbilitySystem(this);
+  readonly spells = new SpellSystem(this);
   readonly guilds: GuildSystem;
   readonly territories: TerritorySystem;
   /** Zajętość pól przez potwory (id potwora, 0 = wolne) – szybkie sprawdzanie kolizji. */
@@ -230,7 +232,9 @@ export class World {
       case 'attack':
         return this.handleAttack(p, Number(msg.id));
       case 'cast':
-        return this.castSpell(p, String(msg.spell ?? ''), now);
+        return this.spells.cast(p, String(msg.spell ?? ''), now);
+      case 'learn':
+        return this.economy.learnSpell(p, String(msg.spell ?? ''));
       case 'say':
         return this.handleSay(p, String(msg.text ?? ''), now);
       case 'pickup':
@@ -381,7 +385,7 @@ export class World {
     if (!text) return;
     // Formuły czarów mają własny cooldown – nie podlegają limitowi czatu.
     const spell = findSpellByWords(text);
-    if (spell) return this.castSpell(p, spell.id, now);
+    if (spell) return this.spells.cast(p, spell.id, now);
 
     if (now - p.lastChatAt < CHAT_INTERVAL_MS) return;
     p.lastChatAt = now;
@@ -457,25 +461,7 @@ export class World {
   // =========================================================================
 
   castSpell(p: Player, spellId: string, now: number) {
-    const spell = SPELLS[spellId];
-    if (!spell) return;
-    if ((p.spellCooldowns[spell.id] ?? 0) > now) return;
-    if (p.level < spell.minLevel) return this.sendSystem(p, `Potrzebujesz poziomu ${spell.minLevel}.`);
-    if (p.mp < spell.mana) {
-      this.fxQueue.push({ x: p.x, y: p.y, k: 'puff' });
-      return this.sendSystem(p, 'Za mało many.');
-    }
-    p.mp -= spell.mana;
-    p.spellCooldowns[spell.id] = now + spell.cooldownMs;
-    if (addSkillTries(p.skills, 'magic', spell.mana)) this.announceSkill(p, 'magic');
-
-    if (spell.id === 'heal') {
-      const { min, max } = healAmount(p.level, p.skills.magic.level);
-      this.healPlayer(p, randInt(min, max));
-      this.fxQueue.push({ x: p.x, y: p.y, k: 'heal' });
-    }
-    // Formuła „wypowiadana” nad głową jak w Tibii.
-    this.fxQueue.push({ x: p.x, y: p.y, k: 'words', id: p.id, text: spell.words });
+    this.spells.cast(p, spellId, now);
   }
 
   private healPlayer(p: Player, amount: number) {
@@ -490,6 +476,7 @@ export class World {
 
   tick(now: number) {
     this.tickSpawns(now);
+    this.spells.tick(now);
     this.gathering.tickNodes(now);
     this.territories.tick(now);
     for (const m of this.monsters.values()) this.tickBleed(m, now);
@@ -592,10 +579,19 @@ export class World {
   }
 
   /** Zadaje obrażenia (efekty, śmierć). source = kto zadał (zasługa za zabójstwo). */
-  applyDamage(t: Target, dmg: number, source: Player | Monster | null) {
+  applyDamage(t: Target, dmg: number, source: Player | Monster | null): number {
+    const now = Date.now();
+    if (dmg > 0 && now < t.status.cursedUntil) dmg = Math.round(dmg * 1.25);
+    // Lodowa zbroja pochłania obrażenia.
+    if (dmg > 0 && t.status.shieldHp > 0 && now < t.status.shieldUntil) {
+      const absorbed = Math.min(t.status.shieldHp, dmg);
+      t.status.shieldHp -= absorbed;
+      dmg -= absorbed;
+      this.fxQueue.push({ x: t.x, y: t.y, k: 'num', v: absorbed, c: 'shield' });
+    }
     if (dmg <= 0) {
       this.fxQueue.push({ x: t.x, y: t.y, k: 'block' });
-      return;
+      return 0;
     }
     t.hp -= dmg;
     this.fxQueue.push({ x: t.x, y: t.y, k: 'num', v: dmg, c: 'dmg' });
@@ -603,9 +599,10 @@ export class World {
       t.lastCombatAt = Date.now();
       this.dismount(t, 'Spadasz z wierzchowca!');
     }
-    if (t.hp > 0) return;
+    if (t.hp > 0) return dmg;
     if (t instanceof Monster) this.killMonster(t, source instanceof Player ? source : null);
     else this.killPlayer(t, source);
+    return dmg;
   }
 
   /** Krwawienie – obrażenia co sekundę. */

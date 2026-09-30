@@ -9,7 +9,7 @@ import { CITY_LIST, CITIES, CityDef, NpcRole, cityNpcPositions } from './cities'
 export { CITIES };
 export type { CityDef };
 
-export type NpcAction = 'shop' | 'depot' | 'market' | 'craft' | 'bless' | 'guild';
+export type NpcAction = 'shop' | 'depot' | 'market' | 'craft' | 'bless' | 'guild' | 'spells';
 
 export interface NpcKeyword {
   text: string;
@@ -142,9 +142,11 @@ function npcFor(city: CityDef, role: Exclude<NpcRole, ''>, x: number, y: number)
     case 'priest':
       return {
         ...base,
-        greeting: 'Niech popiół cię nie pochłonie, {name}. Powiedz „błogosławieństwo”, a zmniejszę karę za twoją śmierć.',
+        greeting: 'Niech popiół cię nie pochłonie, {name}. Powiedz „błogosławieństwo”, a zmniejszę karę za twoją śmierć. Uczę też „czary”.',
         keywords: {
           błogosławieństwo: { text: 'Przyjmij łaskę.', action: 'bless' },
+          czary: { text: 'Oto czary, których uczymy w naszej świątyni. Formułę możesz też wypowiedzieć na czacie.', action: 'spells' },
+          magia: { text: 'Każde miasto strzeże innych szkół magii: Popielgród – Światła i Ognia, Szronogród – Lodu i Nekromancji, Złotopiask – Błyskawicy i Światła. Kostur wzmacnia czary.' },
           śmierć: {
             text: 'Śmierć odbiera doświadczenie i część umiejętności. W żółtej strefie tracisz część plecaka, w czerwonej i czarnej – wszystko, co masz przy sobie. Każde z pięciu błogosławieństw zmniejsza karę; pięć chroni plecak w żółtej strefie.',
           },
