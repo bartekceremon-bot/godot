@@ -76,6 +76,10 @@ export interface PvpState {
   unjustKills: number[];
   /** Liczba błogosławieństw (0–5) – zmniejszają karę za śmierć. */
   blessings: number;
+  /** Miasto domowe (świątynia odrodzenia). */
+  home?: string;
+  /** Wersja mapy, na której zapisano pozycję (zmiana świata = powrót do świątyni). */
+  mv?: number;
 }
 
 export function loadPvp(json: string | undefined): PvpState {
@@ -86,6 +90,8 @@ export function loadPvp(json: string | undefined): PvpState {
     d.skullUntil = Number(v.skullUntil) || 0;
     d.unjustKills = Array.isArray(v.unjustKills) ? v.unjustKills.filter((t: unknown) => Number.isFinite(t)) : [];
     d.blessings = Math.max(0, Math.min(5, Math.floor(Number(v.blessings) || 0)));
+    if (typeof v.home === 'string') d.home = v.home;
+    if (Number.isFinite(v.mv)) d.mv = v.mv;
   } catch {
     /* domyślne */
   }
@@ -145,6 +151,14 @@ export class Player implements Creature {
   spellCooldowns: Record<string, number> = {};
   /** Czas ostatniej walki – blokuje wylogowanie „w walce” w kolejnych etapach. */
   lastCombatAt = 0;
+  /** Id przedmiotu wierzchowca, na którym gracz jedzie ('' = pieszo). */
+  mounted = '';
+  /** Gildia (0 = brak), jej skrót i ranga. */
+  guildId = 0;
+  guildTag = '';
+  guildRank: '' | 'leader' | 'member' = '';
+  /** Zaproszenie do gildii (id) czekające na „/gildia dołącz”. */
+  guildInvite = 0;
 
   /** Cache ostatnio wysłanych pakietów – wysyłamy tylko zmiany. */
   lastSnapshot = '';
@@ -187,9 +201,15 @@ export class Player implements Creature {
     return maxMpForLevel(this.level) + this.inventory.equipmentStat('mpBonus');
   }
 
-  /** Udźwig w oz. (ETAP 4: wierzchowce zwiększą go dodatkowo). */
+  /** Premie wierzchowca, na którym jedzie gracz. */
+  mountStats(): { speed: number; cap: number } {
+    const m = this.mounted ? getItem(this.mounted)?.mount : undefined;
+    return { speed: m?.speed ?? 0, cap: m?.cap ?? 0 };
+  }
+
+  /** Udźwig w oz. (wierzchowiec zwiększa go dodatkowo). */
   capacity() {
-    return 400 + (this.level - 1) * 20;
+    return 400 + (this.level - 1) * 20 + this.mountStats().cap;
   }
 
   /** Ile jeszcze sztuk przedmiotu zmieści się w plecaku z uwzględnieniem udźwigu. */
@@ -200,7 +220,7 @@ export class Player implements Creature {
   }
 
   stepMs() {
-    return stepMsForLevel(this.level);
+    return Math.round(stepMsForLevel(this.level) / (1 + this.mountStats().speed));
   }
 
   weapon() {
@@ -249,6 +269,9 @@ export class Player implements Creature {
       skull: this.pvp.skull,
       bless: this.pvp.blessings,
       pzLock: Math.max(0, Math.ceil((this.pzLockUntil - Date.now()) / 1000)),
+      mount: this.mounted,
+      guild: this.guildTag,
+      home: this.pvp.home ?? '',
     };
   }
 }
@@ -313,12 +336,22 @@ export class Monster implements Creature {
   nextAttackAt = 0;
   lastStepMs = 0;
   readonly status = new StatusEffects();
+  /** Punkt, do którego potwór wraca (spawn albo miejsce przywołania). */
+  homeX: number;
+  homeY: number;
+  /** Ataki specjalne: obszarowy i przywoływanie (bossowie, demony). */
+  nextAreaAt = 0;
+  nextSummonAt = 0;
+  /** Przywołane sługi znikają po śmierci przywołującego. */
+  summonerId = 0;
 
   constructor(def: MonsterDef, x: number, y: number, spawnIndex: number) {
     this.def = def;
     this.name = def.name;
     this.x = x;
     this.y = y;
+    this.homeX = x;
+    this.homeY = y;
     this.hp = def.hp;
     this.spawnIndex = spawnIndex;
   }

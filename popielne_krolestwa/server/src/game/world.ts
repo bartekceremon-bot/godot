@@ -22,6 +22,9 @@ import { SPEC_DEFS, TIER_SPEC_REQ, addFame, bonusYieldChance, fameForTier } from
 import { PvpSystem } from './systems/pvp';
 import { AbilitySystem } from './systems/abilities';
 import { ABILITY_LIST } from './data/abilities';
+import { GuildSystem } from './systems/guilds';
+import { TerritorySystem } from './systems/territories';
+import { CITIES, cityAt, cityTemple } from './data/cities';
 
 /** Cel ataku: potwór albo gracz. */
 export type Target = Monster | Player;
@@ -53,6 +56,10 @@ const GROUND_ITEM_TTL_MS = 120_000;
 const MOVE_TOLERANCE_MS = 150;
 const CHAT_INTERVAL_MS = 400;
 const MONSTER_LEASH = 14;
+/** Potwory dalej niż tyle pól od każdego gracza „śpią” (oszczędność CPU na dużej mapie). */
+const DORMANT_RANGE = 22;
+/** Wersja mapy – zmiana świata przenosi zapisane postacie do świątyni. */
+export const MAP_VERSION = 2;
 
 interface SpawnState {
   alive: Set<number>;
@@ -77,6 +84,10 @@ export class World {
   readonly economy = new EconomySystem(this);
   readonly pvp = new PvpSystem(this);
   readonly abilities = new AbilitySystem(this);
+  readonly guilds: GuildSystem;
+  readonly territories: TerritorySystem;
+  /** Zajętość pól przez potwory (id potwora, 0 = wolne) – szybkie sprawdzanie kolizji. */
+  private occ: Int32Array;
   private spawnStates: SpawnState[] = [];
   private fxQueue: Fx[] = [];
   private timer: NodeJS.Timeout | null = null;
@@ -85,6 +96,9 @@ export class World {
   constructor(db: GameDatabase, map: GameMap = generateWorld()) {
     this.db = db;
     this.map = map;
+    this.occ = new Int32Array(map.width * map.height);
+    this.guilds = new GuildSystem(this);
+    this.territories = new TerritorySystem(this);
     this.depots = new DepotStore(db);
     this.market = new Market(db, {
       deliverItem: (charId, city, item, count, q) => this.deliver(charId, city, item, count, q),
@@ -105,7 +119,7 @@ export class World {
     this.map.spawns.forEach((s, i) => {
       const st: SpawnState = { alive: new Set(), pending: [] };
       this.spawnStates.push(st);
-      for (let k = 0; k < s.count; k++) this.spawnMonster(i);
+      for (let k = 0; k < s.count; k++) this.spawnMonster(i, true);
     });
   }
 
@@ -124,11 +138,14 @@ export class World {
   // =========================================================================
 
   addPlayer(p: Player) {
-    // Jeśli postać jest w złym miejscu (np. zmiana mapy) – przenieś do świątyni.
-    if (!this.map.isWalkable(p.x, p.y)) {
-      p.x = this.map.temple.x;
-      p.y = this.map.temple.y;
+    // Postać z poprzedniej wersji świata albo w złym miejscu – przenieś do świątyni domowej.
+    if (p.pvp.mv !== MAP_VERSION || !this.map.isWalkable(p.x, p.y)) {
+      const t = this.homeTemple(p);
+      p.x = t.x;
+      p.y = t.y;
+      p.pvp.mv = MAP_VERSION;
     }
+    this.guilds.attach(p);
     this.players.set(p.id, p);
     p.send({
       t: 'welcome',
@@ -145,6 +162,9 @@ export class World {
       qualities: QUALITY_NAMES,
       abilities: ABILITY_LIST,
       zones: this.map.zoneRows(),
+      biomes: this.map.biomeRows(),
+      cities: this.map.cities,
+      territories: this.map.territories,
     });
     p.send({ t: 'pos', x: p.x, y: p.y, d: p.dir });
     p.inventory.dirty = true;
@@ -158,6 +178,12 @@ export class World {
     this.players.delete(p.id);
     for (const m of this.monsters.values()) if (m.targetId === p.id) m.targetId = 0;
     this.broadcastSystem(`${p.name} opuszcza grę.`);
+  }
+
+  /** Świątynia miasta domowego gracza (domyślnie miasto startowe). */
+  homeTemple(p: Player): { x: number; y: number } {
+    const c = CITIES[p.pvp.home ?? ''];
+    return c ? cityTemple(c) : this.map.temple;
   }
 
   findPlayerByCharId(charId: number): Player | undefined {
@@ -219,6 +245,8 @@ export class World {
         return this.gathering.start(p, Number(msg.id), now);
       case 'ability':
         return this.abilities.use(p, Number(msg.slot), now);
+      case 'mount':
+        return this.toggleMount(p, now);
       case 'npc':
         return this.economy.talk(p, Number(msg.id), String(msg.word ?? ''));
       case 'close':
@@ -282,12 +310,40 @@ export class World {
     p.dir = dirFromDelta(dx, dy, p.dir);
     p.lastStepMs = step;
     p.nextMoveAt = Math.max(now, p.nextMoveAt) + step;
+    // Posadzka świątyni ustawia miasto domowe (odrodzenie po śmierci).
+    if (this.map.tileAt(nx, ny) === 'x') {
+      const c = cityAt(nx, ny);
+      if (c && p.pvp.home !== c.id) {
+        p.pvp.home = c.id;
+        this.sendSystem(p, `${c.name} jest teraz twoim domem – tu odrodzisz się po śmierci.`);
+      }
+    }
+  }
+
+  /** Wsiadanie / zsiadanie z wierzchowca (pierwszy wierzchowiec z plecaka). */
+  toggleMount(p: Player, now: number) {
+    if (p.mounted) return this.dismount(p, 'Zsiadasz z wierzchowca.');
+    if (now - p.lastCombatAt < 5000) return this.sendSystem(p, 'Nie możesz dosiąść wierzchowca w trakcie walki.');
+    const s = p.inventory.bag.find((b) => b && getItem(b.item)?.mount);
+    if (!s) return this.sendSystem(p, 'Nie masz wierzchowca. Kupisz go u stajennego w każdym mieście.');
+    const def = getItem(s.item)!;
+    if (p.level < (def.minLevel ?? 0)) return this.sendSystem(p, `${def.name} wymaga poziomu ${def.minLevel}.`);
+    p.mounted = s.item;
+    p.gathering = null;
+    this.fxQueue.push({ x: p.x, y: p.y, k: 'puff' });
+    this.sendSystem(p, `Dosiadasz: ${def.name}. ${def.description ?? ''}`);
+  }
+
+  dismount(p: Player, text?: string) {
+    if (!p.mounted) return;
+    p.mounted = '';
+    if (text) this.sendSystem(p, text);
   }
 
   private canPlayerStep(x: number, y: number): boolean {
     if (!this.map.isWalkable(x, y)) return false;
     // Gracze nie blokują się nawzajem (zapobiega blokowaniu bram), potwory i NPC tak.
-    for (const m of this.monsters.values()) if (m.x === x && m.y === y) return false;
+    if (this.occ[y * this.map.width + x]) return false;
     for (const n of this.npcs.values()) if (n.x === x && n.y === y) return false;
     return true;
   }
@@ -304,6 +360,7 @@ export class World {
       return;
     }
     if (t instanceof Player) {
+      if (this.guilds.sameGuild(p, t)) return this.sendSystem(p, 'Nie możesz atakować członka swojej gildii.');
       const err = this.pvp.canAttack(p, t);
       if (err) return this.sendSystem(p, err);
       if (!this.pvp.isJustified(p, t, Date.now()) && this.pvp.zoneOf(p) === 'yellow' && p.pvp.skull === '')
@@ -326,13 +383,17 @@ export class World {
     // Słowa kluczowe NPC (Tibia): „witaj”, „handel”… przy NPC trafiają do niego.
     if (!text.startsWith('/') && this.economy.handleChat(p, text)) return;
 
+    if (text.startsWith('/') && this.guilds.command(p, text)) return;
     if (text.startsWith('/')) {
       const cmd = text.slice(1).split(' ')[0].toLowerCase();
       if (cmd === 'online' || cmd === 'who') {
         const names = [...this.players.values()].map((o) => `${o.name} (${o.level})`);
         this.sendSystem(p, `Online (${names.length}): ${names.join(', ')}`);
       } else if (cmd === 'pomoc' || cmd === 'help') {
-        this.sendSystem(p, 'Komendy: /online, /pomoc. Czar leczący: exura.');
+        this.sendSystem(p, 'Komendy: /online, /pomoc, /gildia, /g tekst (czat gildii), /dom. Czar leczący: exura.');
+      } else if (cmd === 'dom') {
+        const c = CITIES[p.pvp.home ?? ''];
+        this.sendSystem(p, `Twój dom: ${c ? c.name : CITIES.popielgrod.name}. Stań na posadzce świątyni innego miasta, by go zmienić.`);
       } else {
         this.sendSystem(p, 'Nieznana komenda. Wpisz /pomoc.');
       }
@@ -363,6 +424,7 @@ export class World {
     const s = p.inventory.bag[slot];
     if (!s) return;
     const def = getItem(s.item);
+    if (def?.mount) return this.toggleMount(p, Date.now());
     if (!def?.use) {
       if (def?.slot) this.reportError(p, p.inventory.equipFromBag(slot));
       return;
@@ -423,9 +485,11 @@ export class World {
   tick(now: number) {
     this.tickSpawns(now);
     this.gathering.tickNodes(now);
+    this.territories.tick(now);
     for (const m of this.monsters.values()) this.tickBleed(m, now);
     for (const p of this.players.values()) this.tickBleed(p, now);
-    for (const m of this.monsters.values()) this.tickMonster(m, now);
+    const active = [...this.players.values()];
+    for (const m of this.monsters.values()) this.tickMonster(m, now, active);
     for (const p of this.players.values()) this.tickPlayer(p, now);
     for (const [id, g] of this.groundItems) if (g.expiresAt <= now) this.groundItems.delete(id);
     this.flush();
@@ -466,6 +530,7 @@ export class World {
 
     p.nextAttackAt = now + (now < p.status.frenzyUntil ? FRENZY_ATTACK_MS : ATTACK_INTERVAL_MS);
     p.lastCombatAt = now;
+    this.dismount(p, 'Zsiadasz z wierzchowca do walki.');
     p.dir = dirFromDelta(t.x - p.x, t.y - p.y, p.dir);
     if (addSkillTries(p.skills, skill, 1)) this.announceSkill(p, skill);
 
@@ -511,6 +576,7 @@ export class World {
     const d = this.defenseOf(t, now);
     let dmg = rollDamage(Math.round(maxDmg), opts.ignoreArmor ? 0 : d.armor, d.defense);
     if (t instanceof Player) {
+      if (this.guilds.sameGuild(attacker, t)) return;
       if (!opts.ranged && now < t.status.parryUntil) dmg = Math.floor(dmg / 2);
       this.pvp.onAttack(attacker, t, now);
     } else if (!t.targetId) {
@@ -527,7 +593,10 @@ export class World {
     }
     t.hp -= dmg;
     this.fxQueue.push({ x: t.x, y: t.y, k: 'num', v: dmg, c: 'dmg' });
-    if (t instanceof Player) t.lastCombatAt = Date.now();
+    if (t instanceof Player) {
+      t.lastCombatAt = Date.now();
+      this.dismount(t, 'Spadasz z wierzchowca!');
+    }
     if (t.hp > 0) return;
     if (t instanceof Monster) this.killMonster(t, source instanceof Player ? source : null);
     else this.killPlayer(t, source);
@@ -548,19 +617,31 @@ export class World {
 
   private killMonster(m: Monster, killer: Player | null) {
     this.monsters.delete(m.id);
+    this.occ[m.y * this.map.width + m.x] = 0;
     const st = this.spawnStates[m.spawnIndex];
-    st.alive.delete(m.id);
-    st.pending.push(Date.now() + m.def.respawnMs);
-    this.fxQueue.push({ x: m.x, y: m.y, k: 'death', look: m.def.look });
+    if (st) {
+      st.alive.delete(m.id);
+      st.pending.push(Date.now() + m.def.respawnMs * (m.def.boss ? config.bossRespawnScale : 1));
+    }
+    this.fxQueue.push({ x: m.x, y: m.y, k: 'death', look: m.def.look, boss: m.def.boss ? 1 : 0 });
     for (const p of this.players.values()) if (p.targetId === m.id) p.targetId = 0;
+    // Sługi przywołującego znikają razem z nim.
+    for (const s of [...this.monsters.values()])
+      if (s.summonerId === m.id) {
+        this.monsters.delete(s.id);
+        this.occ[s.y * this.map.width + s.x] = 0;
+        this.fxQueue.push({ x: s.x, y: s.y, k: 'puff' });
+      }
+    if (m.def.boss)
+      this.broadcastSystem(`${m.name} ${killer ? `pokonany przez ${killer.name}` : 'pokonany'}! Łup czeka na ziemi – spieszcie się.`);
 
     // Loot ląduje na ziemi – trzeba go podnieść (dotknij przedmiotu).
     for (const l of m.def.loot) {
       if (!chance(l.chance)) continue;
-      this.addGroundItem(m.x, m.y, l.item, randInt(l.min ?? 1, l.max ?? 1));
+      this.addGroundItem(m.x, m.y, l.item, randInt(l.min ?? 1, l.max ?? 1), 1, m.def.boss ? CORPSE_TTL_MS : GROUND_ITEM_TTL_MS);
     }
     // Oskórowanie zwierzęcia – skóra zależna od tieru zwierzęcia i specjalizacji zabójcy.
-    if (m.def.hideTier && killer) {
+    if (m.def.hideTier && killer && m.summonerId === 0) {
       const t = m.def.hideTier;
       const spec = killer.specs.skinner;
       if (spec.level >= TIER_SPEC_REQ[t]) {
@@ -573,8 +654,10 @@ export class World {
       }
     }
     if (!killer) return;
-    this.giveExp(killer, m.def.exp);
-    this.sendSystem(killer, `Pokonałeś: ${m.name}. +${m.def.exp} doświadczenia.`);
+    const bonus = this.territories.hasBonus(killer) ? 1.25 : 1;
+    const exp = Math.round(m.def.exp * bonus * (m.summonerId ? 0.3 : 1));
+    this.giveExp(killer, exp);
+    this.sendSystem(killer, `Pokonałeś: ${m.name}. +${exp} doświadczenia${bonus > 1 ? ' (premia terytorium)' : ''}.`);
   }
 
   giveExp(p: Player, amount: number) {
@@ -613,27 +696,36 @@ export class World {
   // Potwory
   // =========================================================================
 
-  private spawnMonster(spawnIndex: number): boolean {
+  private spawnMonster(spawnIndex: number, initial = false): boolean {
     const s = this.map.spawns[spawnIndex];
     const def = MONSTERS[s.monster];
-    for (let attempt = 0; attempt < 10; attempt++) {
-      const x = s.x + randInt(-2, 2);
-      const y = s.y + randInt(-2, 2);
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const x = s.x + (attempt === 0 && s.boss ? 0 : randInt(-2, 2));
+      const y = s.y + (attempt === 0 && s.boss ? 0 : randInt(-2, 2));
       if (!this.canMonsterStep(x, y)) continue;
       // Nie odradzamy potwora na oczach gracza stojącego tuż obok.
       let near = false;
       for (const p of this.players.values()) if (chebyshev(p.x, p.y, x, y) <= 2) near = true;
       if (near) continue;
       const m = new Monster(def, x, y, spawnIndex);
-      this.monsters.set(m.id, m);
+      m.homeX = s.x;
+      m.homeY = s.y;
+      this.addMonster(m);
       this.spawnStates[spawnIndex].alive.add(m.id);
+      if (def.boss && !initial) this.broadcastSystem(`Ziemia drży! ${def.name} pojawia się w świecie.`);
       return true;
     }
     return false;
   }
 
+  private addMonster(m: Monster) {
+    this.monsters.set(m.id, m);
+    this.occ[m.y * this.map.width + m.x] = m.id;
+  }
+
   private tickSpawns(now: number) {
     this.spawnStates.forEach((st, i) => {
+      if (!st.pending.length) return;
       const due = st.pending.filter((t) => t <= now);
       if (!due.length) return;
       st.pending = st.pending.filter((t) => t > now);
@@ -643,28 +735,37 @@ export class World {
 
   private canMonsterStep(x: number, y: number): boolean {
     if (!this.map.isWalkable(x, y) || this.map.isProtectionZone(x, y)) return false;
-    for (const m of this.monsters.values()) if (m.x === x && m.y === y) return false;
+    if (this.occ[y * this.map.width + x]) return false;
     for (const p of this.players.values()) if (p.x === x && p.y === y) return false;
+    for (const n of this.npcs.values()) if (n.x === x && n.y === y) return false;
     return true;
   }
 
-  private tickMonster(m: Monster, now: number) {
+  private tickMonster(m: Monster, now: number, active: Player[]) {
     if (m.status.stunned(now)) return;
-    const spawn = this.map.spawns[m.spawnIndex];
+    // Uśpienie: nikogo w pobliżu, potwór w domu – nic nie liczymy.
+    let awake = false;
+    for (const p of active)
+      if (Math.abs(p.x - m.x) <= DORMANT_RANGE && Math.abs(p.y - m.y) <= DORMANT_RANGE) {
+        awake = true;
+        break;
+      }
+    if (!awake && !m.targetId && chebyshev(m.x, m.y, m.homeX, m.homeY) <= 4) return;
+    const leash = m.def.boss ? 10 : MONSTER_LEASH;
     // Wybór / weryfikacja celu
     let target = m.targetId ? this.players.get(m.targetId) : undefined;
     if (
       target &&
       (chebyshev(target.x, target.y, m.x, m.y) > 10 ||
         this.map.isProtectionZone(target.x, target.y) ||
-        chebyshev(m.x, m.y, spawn.x, spawn.y) > MONSTER_LEASH)
+        chebyshev(m.x, m.y, m.homeX, m.homeY) > leash)
     ) {
       target = undefined;
       m.targetId = 0;
     }
     if (!target) {
       let best = Infinity;
-      for (const p of this.players.values()) {
+      for (const p of active) {
         const d = chebyshev(p.x, p.y, m.x, m.y);
         if (d <= m.def.aggroRange && d < best && !this.map.isProtectionZone(p.x, p.y)) {
           best = d;
@@ -676,6 +777,25 @@ export class World {
 
     if (target) {
       const dist = chebyshev(target.x, target.y, m.x, m.y);
+      // Atak obszarowy i przywoływanie (bossowie, demony).
+      if (m.def.area && now >= m.nextAreaAt && dist <= m.def.area.radius + 2) {
+        m.nextAreaAt = now + m.def.area.everyMs;
+        this.areaAttack(m, now);
+      }
+      if (m.def.summon && now >= m.nextSummonAt) {
+        m.nextSummonAt = now + m.def.summon.everyMs;
+        this.summon(m);
+      }
+      const r = m.def.ranged;
+      if (r && dist <= r.range && dist > 1 && this.map.hasLineOfSight(m.x, m.y, target.x, target.y)) {
+        if (now >= m.nextAttackAt) {
+          m.nextAttackAt = now + m.def.attackMs;
+          m.dir = dirFromDelta(target.x - m.x, target.y - m.y, m.dir);
+          this.monsterRanged(m, target, now);
+        }
+        // Dystansowiec trzyma odległość – nie podchodzi bliżej niż 2 pola.
+        if (dist >= 3 || now < m.nextMoveAt) return;
+      }
       if (dist <= 1) {
         if (now >= m.nextAttackAt) {
           m.nextAttackAt = now + m.def.attackMs;
@@ -690,8 +810,8 @@ export class World {
 
     // Bez celu: wraca na spawn albo spaceruje w okolicy.
     if (now < m.nextMoveAt) return;
-    if (chebyshev(m.x, m.y, spawn.x, spawn.y) > 4) {
-      this.stepToward(m, spawn.x, spawn.y, now);
+    if (chebyshev(m.x, m.y, m.homeX, m.homeY) > 4) {
+      this.stepToward(m, m.homeX, m.homeY, now);
     } else if (chance(0.25)) {
       const [dx, dy] = MOVE_VECTORS[randInt(0, 3)];
       this.tryMonsterStep(m, dx, dy, now);
@@ -723,8 +843,11 @@ export class World {
     const ny = m.y + dy;
     if (!this.canMonsterStep(nx, ny)) return false;
     const step = Math.round(m.def.stepMs * (dx !== 0 && dy !== 0 ? 1.4 : 1) * (m.status.slowed(now) ? SLOW_FACTOR : 1));
+    const w = this.map.width;
+    this.occ[m.y * w + m.x] = 0;
     m.x = nx;
     m.y = ny;
+    this.occ[ny * w + nx] = m.id;
     m.dir = dirFromDelta(dx, dy, m.dir);
     m.lastStepMs = step;
     m.nextMoveAt = now + step;
@@ -738,6 +861,62 @@ export class World {
     let dmg = rollDamage(m.def.maxDamage, d.armor, d.defense);
     if (now < p.status.parryUntil) dmg = Math.floor(dmg / 2);
     this.applyDamage(p, dmg, m);
+    if (m.def.poison && dmg > 0 && this.players.has(p.id)) this.poison(p, m.def.poison, now);
+  }
+
+  /** Trucizna: obrażenia co sekundę przez 5 s (jak krwawienie). */
+  private poison(p: Player, dmg: number, now: number) {
+    const st = p.status;
+    st.bleedUntil = now + 5000;
+    st.bleedNextAt = now + 1000;
+    st.bleedDamage = dmg;
+    st.bleedSource = 0;
+    this.fxQueue.push({ x: p.x, y: p.y, k: 'poison' });
+  }
+
+  private monsterRanged(m: Monster, p: Player, now: number) {
+    const r = m.def.ranged!;
+    p.lastCombatAt = now;
+    this.fxQueue.push({ x: m.x, y: m.y, k: r.fx, tx: p.x, ty: p.y, col: r.color ?? '' });
+    const d = this.defenseOf(p, now);
+    const dmg = rollDamage(r.maxDamage, r.fx === 'bolt' ? Math.floor(d.armor / 2) : d.armor, r.fx === 'bolt' ? 0 : d.defense);
+    this.applyDamage(p, dmg, m);
+    if (r.slowMs && dmg > 0) p.status.slowUntil = now + r.slowMs;
+  }
+
+  private areaAttack(m: Monster, now: number) {
+    const a = m.def.area!;
+    this.fxQueue.push({ x: m.x, y: m.y, k: 'aoe', kind: a.fx, r: a.radius });
+    if (a.shout) this.fxQueue.push({ x: m.x, y: m.y, k: 'words', id: m.id, text: a.shout });
+    for (const p of [...this.players.values()]) {
+      if (chebyshev(p.x, p.y, m.x, m.y) > a.radius || this.map.isProtectionZone(p.x, p.y)) continue;
+      const d = this.defenseOf(p, now);
+      const dmg = rollDamage(a.maxDamage, Math.floor(d.armor / 2), 0);
+      this.applyDamage(p, dmg, m);
+      if (a.slowMs && this.players.has(p.id)) p.status.slowUntil = now + a.slowMs;
+    }
+  }
+
+  private summon(m: Monster) {
+    const s = m.def.summon!;
+    let alive = 0;
+    for (const o of this.monsters.values()) if (o.summonerId === m.id) alive++;
+    const def = MONSTERS[s.monster];
+    for (let k = alive; k < s.count; k++) {
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const x = m.x + randInt(-2, 2);
+        const y = m.y + randInt(-2, 2);
+        if (!this.canMonsterStep(x, y)) continue;
+        const o = new Monster(def, x, y, -1);
+        o.summonerId = m.id;
+        o.homeX = m.homeX;
+        o.homeY = m.homeY;
+        o.targetId = m.targetId;
+        this.addMonster(o);
+        this.fxQueue.push({ x, y, k: 'puff' });
+        break;
+      }
+    }
   }
 
   private killPlayer(p: Player, killer: Player | Monster | null) {
@@ -762,8 +941,10 @@ export class World {
     p.status.slowUntil = 0;
     p.aggressors.clear();
     p.pzLockUntil = 0;
-    p.x = this.map.temple.x;
-    p.y = this.map.temple.y;
+    p.mounted = '';
+    const home = this.homeTemple(p);
+    p.x = home.x;
+    p.y = home.y;
     p.nextMoveAt = 0;
     for (const m of this.monsters.values()) if (m.targetId === p.id) m.targetId = 0;
     for (const o of this.players.values()) if (o.targetId === p.id) o.targetId = 0;
@@ -793,10 +974,11 @@ export class World {
       const ents: object[] = [];
       for (const o of this.players.values())
         if (this.inView(p, o.x, o.y))
-          ents.push({ i: o.id, k: 'p', n: o.name, x: o.x, y: o.y, d: o.dir, h: hpPct(o.hp, o.maxHp()), l: o.look, s: o.lastStepMs, eq: equipLook(o), sk: o.pvp.skull });
+          ents.push({ i: o.id, k: 'p', n: o.name, x: o.x, y: o.y, d: o.dir, h: hpPct(o.hp, o.maxHp()), l: o.look, s: o.lastStepMs, eq: equipLook(o), sk: o.pvp.skull, mt: o.mounted, gt: o.guildTag });
       for (const m of this.monsters.values())
         if (this.inView(p, m.x, m.y))
-          ents.push({ i: m.id, k: 'm', n: m.name, x: m.x, y: m.y, d: m.dir, h: hpPct(m.hp, m.maxHp()), l: m.def.look, s: m.lastStepMs });
+          ents.push({ i: m.id, k: 'm', n: m.name, x: m.x, y: m.y, d: m.dir, h: hpPct(m.hp, m.maxHp()), l: m.def.look, s: m.lastStepMs, b: m.def.boss ? 1 : 0 });
+      for (const t of this.territories.list) if (this.inView(p, t.spot.x, t.spot.y)) ents.push(this.territories.snapshot(t));
       for (const n of this.npcs.values())
         if (this.inView(p, n.x, n.y)) ents.push({ i: n.id, k: 'n', n: n.def.name, x: n.x, y: n.y, d: n.dir, h: 100, l: n.def.look, s: 0 });
       for (const r of this.nodes.values())

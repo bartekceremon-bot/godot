@@ -25,7 +25,7 @@ export const RED_SKULL_KILLS = 3;
 export const UNJUST_WINDOW_MS = 24 * 60 * 60_000;
 export const MAX_BLESSINGS = 5;
 
-const ZONE_NAMES: Record<Zone, string> = { green: 'zielonej', yellow: 'żółtej', red: 'czerwonej' };
+const ZONE_NAMES: Record<Zone, string> = { green: 'zielonej', yellow: 'żółtej', red: 'czerwonej', black: 'czarnej' };
 
 export interface DeathResult {
   expLost: number;
@@ -95,7 +95,7 @@ export class PvpSystem {
   applyDeath(victim: Player, zone: Zone): DeathResult {
     const bless = victim.pvp.blessings;
     const redSkull = victim.pvp.skull === 'red';
-    let expPct = zone === 'red' ? 0.1 : zone === 'yellow' ? 0.07 : 0.05;
+    let expPct = zone === 'red' || zone === 'black' ? 0.1 : zone === 'yellow' ? 0.07 : 0.05;
     if (redSkull) expPct = 0.1;
     expPct *= 1 - 0.16 * bless;
 
@@ -109,7 +109,7 @@ export class PvpSystem {
 
     const dropped: ItemStack[] = [];
     const inv = victim.inventory;
-    const dropAll = redSkull || zone === 'red';
+    const dropAll = redSkull || zone === 'red' || zone === 'black';
     if (dropAll) {
       for (let i = 0; i < inv.bag.length; i++) {
         const s = inv.takeFromBag(i);

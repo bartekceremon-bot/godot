@@ -159,14 +159,15 @@ export class OfflineHost {
 
   private spawnBots() {
     const t = this.world.map.temple;
+    // Domy botów: świątynia, okolice bram Popielgrodu i żółta strefa (rozbójnik).
     const homes = [
       { x: t.x, y: t.y + 3 },
-      { x: 30, y: 46 },
-      { x: 62, y: 49 },
-      { x: 48, y: 34 },
-      { x: 49, y: 62 },
-      { x: 12, y: 60 },
-    ];
+      { x: t.x - 24, y: t.y + 6 },
+      { x: t.x + 24, y: t.y + 6 },
+      { x: t.x, y: t.y - 16 },
+      { x: t.x + 10, y: t.y + 24 },
+      { x: t.x - 40, y: t.y - 30 },
+    ].map((h) => this.nearestWalkable(h));
     BOT_NAMES.forEach((name, i) => {
       const db = this.world.db;
       let acc = db.findAccount(name);
@@ -241,6 +242,16 @@ export class OfflineHost {
       }
       this.stepToward(p, b.goal.x, b.goal.y);
     }
+  }
+
+  /** Najbliższe wolne, chodliwe pole poza strefą ochronną (dla świątyni – dowolne chodliwe). */
+  private nearestWalkable(p: { x: number; y: number }): { x: number; y: number } {
+    const map = this.world.map;
+    for (let r = 0; r < 20; r++)
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++)
+          if (map.isWalkable(p.x + dx, p.y + dy)) return { x: p.x + dx, y: p.y + dy };
+    return map.temple;
   }
 
   private pvpEnemy(b: Bot, now: number): Player | null {

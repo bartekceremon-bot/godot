@@ -10,6 +10,7 @@ interface State {
   characters: CharacterRow[];
   depots: Record<string, string>;
   orders: MarketOrderRow[];
+  world?: Record<string, string>;
   nextId: number;
 }
 
@@ -95,6 +96,16 @@ export class MemoryDatabase implements GameDatabase {
       const o = this.s.orders.find((r) => r.id === id);
       if (o) o.amount = amount;
     }
+    this.save();
+  }
+
+  loadWorldState(key: string) {
+    return this.s.world?.[key];
+  }
+
+  saveWorldState(key: string, value: string) {
+    this.s.world = this.s.world ?? {};
+    this.s.world[key] = value;
     this.save();
   }
 

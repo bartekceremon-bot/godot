@@ -2,7 +2,7 @@
  * Definicje przedmiotów. Definicje są wysyłane do klienta przy logowaniu,
  * więc klient nie musi mieć ich „na sztywno” – zmiana balansu = zmiana tylko tutaj.
  *
- * ETAP 2: surowce i materiały przetworzone T1–T4, ekwipunek T1–T4 generowany
+ * Surowce i materiały przetworzone T1–T8, ekwipunek T1–T8 generowany
  * z szablonów (broń, trzy typy pancerzy jak w Albionie, tarcze, narzędzia).
  * Jakość (1–5) jest cechą konkretnego egzemplarza (ItemStack.q), nie definicji.
  */
@@ -28,7 +28,7 @@ export const TOOL_FOR_RESOURCE: Record<ResourceKind, ToolKind | null> = {
   hide: null, // skóry pochodzą z upolowanych zwierząt
 };
 
-export type ItemCategory = 'resource' | 'material' | 'weapon' | 'armor' | 'shield' | 'tool' | 'consumable' | 'misc';
+export type ItemCategory = 'resource' | 'material' | 'weapon' | 'armor' | 'shield' | 'tool' | 'consumable' | 'mount' | 'misc';
 
 export interface ItemDef {
   id: string;
@@ -56,17 +56,19 @@ export interface ItemDef {
   minLevel?: number;
   /** Efekt użycia (mikstury, jedzenie). */
   use?: { heal?: number; mana?: number };
-  /** Tier T1–T8 (w ETAPIE 2: T1–T4). */
+  /** Tier T1–T8. */
   tier?: number;
   /** Dla surowców/materiałów: rodzaj. */
   resource?: ResourceKind;
   /** Dla narzędzi: rodzaj. */
   tool?: ToolKind;
+  /** Wierzchowiec: premia do szybkości (0.3 = +30%) i udźwigu. */
+  mount?: { speed: number; cap?: number };
   description?: string;
 }
 
-export const MAX_TIER = 4;
-export const TIERS = [1, 2, 3, 4];
+export const MAX_TIER = 8;
+export const TIERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 /** Nazwy jakości (indeks = jakość 1–5) i mnożniki statystyk. */
 export const QUALITY_NAMES = ['', 'Zwykły', 'Dobry', 'Wyjątkowy', 'Doskonały', 'Arcydzieło'];
@@ -78,7 +80,7 @@ export function tierMult(tier: number): number {
 }
 
 /** Minimalny poziom postaci do założenia ekwipunku danego tieru. */
-export const TIER_MIN_LEVEL = [0, 1, 6, 12, 20];
+export const TIER_MIN_LEVEL = [0, 1, 6, 12, 20, 30, 42, 56, 72];
 
 // ---------------------------------------------------------------------------
 // Surowce i materiały
@@ -86,19 +88,19 @@ export const TIER_MIN_LEVEL = [0, 1, 6, 12, 20];
 
 /** Nazwy surowców (indeks = tier). */
 const RAW_NAMES: Record<ResourceKind, string[]> = {
-  wood: ['', 'Kłody brzozowe', 'Kłody kasztanowe', 'Kłody sosnowe', 'Kłody cedrowe'],
-  stone: ['', 'Wapień', 'Piaskowiec', 'Trawertyn', 'Granit'],
-  ore: ['', 'Ruda miedzi', 'Ruda cyny', 'Ruda żelaza', 'Ruda tytanu'],
-  fiber: ['', 'Len', 'Konopie', 'Bawełna', 'Ognista pokrzywa'],
-  hide: ['', 'Surowa skóra szczurza', 'Surowa skóra dzika', 'Surowa skóra wilcza', 'Surowa skóra ogara'],
+  wood: ['', 'Kłody brzozowe', 'Kłody kasztanowe', 'Kłody sosnowe', 'Kłody cedrowe', 'Kłody dębowe', 'Kłody krwistego buku', 'Kłody widmowego jesionu', 'Kłody drzewa żaru'],
+  stone: ['', 'Wapień', 'Piaskowiec', 'Trawertyn', 'Granit', 'Bazalt', 'Marmur', 'Obsydian', 'Kamień żaru'],
+  ore: ['', 'Ruda miedzi', 'Ruda cyny', 'Ruda żelaza', 'Ruda tytanu', 'Ruda runitu', 'Ruda meteorytu', 'Ruda adamantytu', 'Ruda żarytu'],
+  fiber: ['', 'Len', 'Konopie', 'Bawełna', 'Ognista pokrzywa', 'Niebokwiat', 'Bursztynolist', 'Słonecznolen', 'Widmowe konopie'],
+  hide: ['', 'Surowa skóra szczurza', 'Surowa skóra dzika', 'Surowa skóra wilcza', 'Surowa skóra ogara', 'Surowa skóra niedźwiedzia', 'Surowa skóra yeti', 'Surowa skóra bazyliszka', 'Surowa skóra smocza'],
 };
 
 const REFINED_NAMES: Record<ResourceKind, string[]> = {
-  wood: ['', 'Deski brzozowe', 'Deski kasztanowe', 'Deski sosnowe', 'Deski cedrowe'],
-  stone: ['', 'Bloki wapienne', 'Bloki piaskowca', 'Bloki trawertynu', 'Bloki granitu'],
-  ore: ['', 'Sztaby miedzi', 'Sztaby cyny', 'Sztaby żelaza', 'Sztaby tytanu'],
-  fiber: ['', 'Płótno lniane', 'Płótno konopne', 'Tkanina bawełniana', 'Tkanina ognista'],
-  hide: ['', 'Skóra szczurza', 'Skóra dzika', 'Skóra wilcza', 'Skóra ogara'],
+  wood: ['', 'Deski brzozowe', 'Deski kasztanowe', 'Deski sosnowe', 'Deski cedrowe', 'Deski dębowe', 'Deski krwistego buku', 'Deski widmowego jesionu', 'Deski drzewa żaru'],
+  stone: ['', 'Bloki wapienne', 'Bloki piaskowca', 'Bloki trawertynu', 'Bloki granitu', 'Bloki bazaltu', 'Bloki marmuru', 'Bloki obsydianu', 'Bloki kamienia żaru'],
+  ore: ['', 'Sztaby miedzi', 'Sztaby cyny', 'Sztaby żelaza', 'Sztaby tytanu', 'Sztaby runitu', 'Sztaby meteorytu', 'Sztaby adamantytu', 'Sztaby żarytu'],
+  fiber: ['', 'Płótno lniane', 'Płótno konopne', 'Tkanina bawełniana', 'Tkanina ognista', 'Tkanina niebiańska', 'Tkanina bursztynowa', 'Tkanina słoneczna', 'Tkanina widmowa'],
+  hide: ['', 'Skóra szczurza', 'Skóra dzika', 'Skóra wilcza', 'Skóra ogara', 'Skóra niedźwiedzia', 'Skóra yeti', 'Skóra bazyliszka', 'Skóra smocza'],
 };
 
 const REFINED_ICON: Record<ResourceKind, string> = {
@@ -157,7 +159,7 @@ for (const kind of ['wood', 'stone', 'ore', 'fiber', 'hide'] as ResourceKind[]) 
 // Ekwipunek z szablonów. Wartość liczona później z receptur (recipes.ts).
 // ---------------------------------------------------------------------------
 
-const TIER_WORD = ['', 'Nowicjusza', 'Czeladnika', 'Adepta', 'Eksperta'];
+const TIER_WORD = ['', 'Nowicjusza', 'Czeladnika', 'Adepta', 'Eksperta', 'Mistrza', 'Arcymistrza', 'Legendy', 'Pradawnych'];
 
 export interface GearTemplate {
   base: string;
@@ -244,11 +246,29 @@ for (const g of GEAR_TEMPLATES) {
 // ---------------------------------------------------------------------------
 
 defs.push(
-  { id: 'gold', name: 'Złota moneta', icon: 'gold', category: 'misc', weight: 0.1, value: 1, stackable: true },
+  { id: 'gold', name: 'Złota moneta', icon: 'gold', category: 'misc', weight: 0.01, value: 1, stackable: true },
   { id: 'meat', name: 'Mięso', icon: 'meat', category: 'consumable', weight: 1, value: 2, stackable: true, use: { heal: 15 }, description: 'Przywraca trochę zdrowia.' },
   { id: 'bone', name: 'Popielna kość', icon: 'bone', category: 'misc', weight: 1, value: 4, stackable: true, description: 'Pachnie spalenizną. Kupcy za nią płacą.' },
   { id: 'hp_potion', name: 'Mikstura życia', icon: 'hp_potion', category: 'consumable', weight: 1.5, value: 30, stackable: true, use: { heal: 70 } },
   { id: 'mp_potion', name: 'Mikstura many', icon: 'mp_potion', category: 'consumable', weight: 1.5, value: 30, stackable: true, use: { mana: 60 } },
+  { id: 'great_hp_potion', name: 'Wielka mikstura życia', icon: 'hp_potion', tier: 5, category: 'consumable', weight: 1.8, value: 120, stackable: true, use: { heal: 260 } },
+  { id: 'great_mp_potion', name: 'Wielka mikstura many', icon: 'mp_potion', tier: 5, category: 'consumable', weight: 1.8, value: 130, stackable: true, use: { mana: 220 } },
+  { id: 'dragon_scale', name: 'Łuska Żarogniewa', icon: 'hide', tier: 8, category: 'misc', weight: 2, value: 2500, stackable: true, description: 'Trofeum z Popielnego Smoka. Kolekcjonerzy płacą fortunę.' },
+  { id: 'frost_crown', name: 'Korona Szronu', icon: 'plate_head', tier: 7, category: 'misc', weight: 5, value: 3000, description: 'Lodowa korona zdjęta z Króla Szronu.' },
+  { id: 'worm_fang', name: 'Kieł Pustynnego Czerwia', icon: 'bone', tier: 7, category: 'misc', weight: 3, value: 2200, stackable: true, description: 'Trofeum z pustyni.' },
+  { id: 'bog_heart', name: 'Serce Matki Moczarów', icon: 'meat', tier: 7, category: 'misc', weight: 2, value: 2400, description: 'Wciąż bije.' },
+);
+
+// ---------------------------------------------------------------------------
+// Wierzchowce (trzymane w plecaku, przycisk „wierzchowiec” – wsiadanie / zsiadanie)
+// ---------------------------------------------------------------------------
+
+defs.push(
+  { id: 'mount_horse', name: 'Koń wierzchowy', icon: 'mount_horse', tier: 3, category: 'mount', weight: 0, value: 900, minLevel: 5, mount: { speed: 0.3 }, description: 'Szybkość +30%.' },
+  { id: 'mount_elk', name: 'Łoś szronowy', icon: 'mount_elk', tier: 4, category: 'mount', weight: 0, value: 3500, minLevel: 15, mount: { speed: 0.3, cap: 250 }, description: 'Szybkość +30%, udźwig +250.' },
+  { id: 'mount_camel', name: 'Wielbłąd juczny', icon: 'mount_camel', tier: 4, category: 'mount', weight: 0, value: 3000, minLevel: 15, mount: { speed: 0.22, cap: 500 }, description: 'Szybkość +22%, udźwig +500.' },
+  { id: 'mount_warwolf', name: 'Wilk bojowy', icon: 'mount_warwolf', tier: 5, category: 'mount', weight: 0, value: 9000, minLevel: 25, mount: { speed: 0.4 }, description: 'Szybkość +40%.' },
+  { id: 'mount_drake', name: 'Popielny drake', icon: 'mount_drake', tier: 8, category: 'mount', weight: 0, value: 60000, minLevel: 40, mount: { speed: 0.5, cap: 200 }, description: 'Szybkość +50%, udźwig +200. Wykluty z jaja Żarogniewa.' },
 );
 
 export const ITEMS: Record<string, ItemDef> = Object.fromEntries(defs.map((d) => [d.id, d]));

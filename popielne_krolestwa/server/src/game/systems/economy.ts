@@ -8,6 +8,7 @@
 import type { World } from '../world';
 import { Player, Npc } from '../entities';
 import { CITIES, GREETINGS, NPC_BUY_RATIO, NPC_RANGE, NpcAction } from '../data/npcs';
+import { cityReturn } from '../data/cities';
 import { getItem, QUALITY_NAMES } from '../data/items';
 import { RECIPES, STATION_NAMES } from '../data/recipes';
 import { MAX_ORDERS_PER_PLAYER, MAX_PRICE, Market } from '../economy/market';
@@ -100,6 +101,8 @@ export class EconomySystem {
         return this.sendMarket(p, n.def.city);
       case 'bless':
         return this.sendDialog(p, n, this.world.pvp.buyBlessing(p));
+      case 'guild':
+        return this.world.guilds.info(p);
       case 'craft':
         if (n.def.station) {
           p.openWindow = 'craft';
@@ -403,7 +406,7 @@ export class EconomySystem {
     }
     const want = Math.max(1, Math.min(100, int(countRaw) || 1));
     const out = getItem(r.output)!;
-    const returnRate = r.station === 'refinery' ? city.refiningReturn : city.craftingReturn;
+    const returnRate = cityReturn(city, r.station);
     const used: Record<string, number> = {};
     const qualities = [0, 0, 0, 0, 0, 0];
     let made = 0;

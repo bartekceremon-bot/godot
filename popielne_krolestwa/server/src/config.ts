@@ -18,8 +18,10 @@ export const config = {
   /** Maksymalna liczba wiadomości od klienta na sekundę (ochrona przed floodem). */
   maxMessagesPerSecond: 40,
   /** Promień widoczności (w kafelkach) – ile świata widzi klient. */
-  viewRadiusX: 13,
-  viewRadiusY: 9,
+  viewRadiusX: 16,
+  viewRadiusY: 13,
+  /** Mnożnik czasu odrodzenia bossów świata (np. 0.05 do testów). */
+  bossRespawnScale: Number(process.env.BOSS_RESPAWN_SCALE ?? 1),
   /** Wersja protokołu – klient i serwer muszą się zgadzać. */
-  protocolVersion: 2,
+  protocolVersion: 3,
 };

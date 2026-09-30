@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { expForLevel, levelForExp, defaultSkills, addSkillTries } from '../src/game/progression';
 import { Inventory } from '../src/game/inventory';
 import { generateWorld } from '../src/game/map';
+import { CITIES } from '../src/game/data/cities';
 import { hashPassword, verifyPassword, validateName } from '../src/auth';
 
 test('krzywa doświadczenia jak w Tibii', () => {
@@ -56,7 +57,7 @@ test('plecak odrzuca nieznane przedmioty z bazy i migruje stare z ETAPU 1', () =
     { weapon: { item: 'rusty_sword', count: 1 } },
   );
   assert.equal(inv.bag[0], null);
-  assert.equal(inv.bag[1]?.count, 100);
+  assert.equal(inv.bag[1]?.count, 10000); // złoto: stos do 10 000
   assert.deepEqual(inv.bag[2], { item: 'sword_t2', count: 1, q: 3 });
   assert.equal(inv.equipment.weapon?.item, 'sword_t1');
 });
@@ -83,7 +84,8 @@ test('mapa: świątynia jest w strefie ochronnej, spawny są osiągalne', () => 
     assert.ok(!map.isProtectionZone(s.x, s.y));
   }
   // Mur zasłania linię strzału.
-  assert.equal(map.hasLineOfSight(36, 42, 40, 42), false);
+  const P = CITIES.popielgrod;
+  assert.equal(map.hasLineOfSight(P.x0 - 2, P.y0 + 6, P.x0 + 2, P.y0 + 6), false);
 });
 
 test('hasła: hash + weryfikacja, walidacja nazw', () => {

@@ -8,10 +8,10 @@ export type NodeKind = Exclude<ResourceKind, 'hide'>;
 export const NODE_KINDS: NodeKind[] = ['wood', 'stone', 'ore', 'fiber'];
 
 export const NODE_NAMES: Record<NodeKind, string[]> = {
-  wood: ['', 'Brzoza', 'Kasztanowiec', 'Sosna', 'Cedr'],
-  stone: ['', 'Głaz wapienny', 'Głaz piaskowca', 'Głaz trawertynu', 'Głaz granitu'],
-  ore: ['', 'Żyła miedzi', 'Żyła cyny', 'Żyła żelaza', 'Żyła tytanu'],
-  fiber: ['', 'Len', 'Konopie', 'Bawełna', 'Ognista pokrzywa'],
+  wood: ['', 'Brzoza', 'Kasztanowiec', 'Sosna', 'Cedr', 'Dąb', 'Krwisty buk', 'Widmowy jesion', 'Drzewo żaru'],
+  stone: ['', 'Głaz wapienny', 'Głaz piaskowca', 'Głaz trawertynu', 'Głaz granitu', 'Głaz bazaltu', 'Głaz marmuru', 'Blok obsydianu', 'Kamień żaru'],
+  ore: ['', 'Żyła miedzi', 'Żyła cyny', 'Żyła żelaza', 'Żyła tytanu', 'Żyła runitu', 'Żyła meteorytu', 'Żyła adamantytu', 'Żyła żarytu'],
+  fiber: ['', 'Len', 'Konopie', 'Bawełna', 'Ognista pokrzywa', 'Niebokwiat', 'Bursztynolist', 'Słonecznolen', 'Widmowe konopie'],
 };
 
 /** Liczba jednostek w złożu. */

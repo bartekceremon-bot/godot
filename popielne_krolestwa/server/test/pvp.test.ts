@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Database } from '../src/db/database';
-import { World } from '../src/game/world';
+import { World, MAP_VERSION } from '../src/game/world';
 import { Player, Connection, Monster } from '../src/game/entities';
 import { Inventory } from '../src/game/inventory';
 import { defaultSkills } from '../src/game/progression';
@@ -32,14 +32,19 @@ function mk(world: World, name: string, x: number, y: number) {
   });
   const conn = new FakeConn();
   const p = new Player({ charId, name, conn, x, y, hp: 150, mp: 50, exp: 0, look: 0, skills: defaultSkills(), specs: defaultSpecs(), inventory: new Inventory() });
+  p.pvp.mv = MAP_VERSION; // pozycja z bieżącej mapy – bez przenoszenia do świątyni
   world.addPlayer(p);
   return { p, conn };
 }
 
-// Na drodze na południe od miasta: zielona (48,60), żółta (48,72), czerwona (48,85).
-const GREEN = { x: 48, y: 60 };
-const YELLOW = { x: 48, y: 72 };
-const RED = { x: 48, y: 85 };
+import { zoneSpot } from './spots';
+import { CITIES } from '../src/game/data/cities';
+
+// Miejsca w strefach wyszukiwane na wygenerowanej mapie.
+const probe = new World(new Database(':memory:'));
+const GREEN = zoneSpot(probe, 'green');
+const YELLOW = zoneSpot(probe, 'yellow');
+const RED = zoneSpot(probe, 'red');
 
 /** Zadaje obrażenia aż do śmierci ofiary (z pominięciem losowości). */
 function killBy(world: World, killer: Player, victim: Player) {
@@ -94,7 +99,7 @@ test('żółta strefa: utrata części plecaka; 5 błogosławieństw chroni plec
   assert.equal(v.inventory.bag.filter(Boolean).length, 20, 'plecak nietknięty');
   assert.equal(v.pvp.blessings, 0, 'błogosławieństwa zużyte');
   assert.ok(v.exp > 1000 - 70, 'mniejsza strata doświadczenia');
-  assert.equal(v.x, w.map.temple.x);
+  assert.equal(v.x, w.map.temple.x, 'odrodzenie w świątyni domowej');
   // Bez błogosławieństw – część plecaka zostaje w zwłokach.
   v.x = YELLOW.x + 1;
   v.y = YELLOW.y;
@@ -123,19 +128,20 @@ test('czerwona strefa: full loot – plecak i ekwipunek w zwłokach', () => {
 test('blokada strefy ochronnej po ataku na gracza', () => {
   const w = new World(new Database(':memory:'));
   const { p: a, conn } = mk(w, 'Uciekinier', 0, 0);
-  a.x = 48;
-  a.y = 57; // tuż za południową bramą (48,56 = brama, strefa ochronna)
+  const P = CITIES.popielgrod;
+  a.x = P.x0 + 15;
+  a.y = P.y0 + 25; // tuż za południową bramą (brama = strefa ochronna)
   a.pzLockUntil = Date.now() + 60_000;
   w.handle(a, { t: 'move', d: 0 });
-  assert.equal(a.y, 57);
+  assert.equal(a.y, P.y0 + 25);
   assert.ok(conn.sys().some((t) => /strefy ochronnej/.test(t)));
 });
 
 test('kapłanka sprzedaje błogosławieństwa', () => {
   const w = new World(new Database(':memory:'));
-  const { p } = mk(w, 'Pobozny', 50, 46);
-  p.inventory.add('gold', 1000);
   const priest = [...w.npcs.values()].find((x) => x.def.id === 'priest')!;
+  const { p } = mk(w, 'Pobozny', priest.x + 1, priest.y);
+  p.inventory.add('gold', 1000);
   w.handle(p, { t: 'npc', id: priest.id, word: 'witaj' });
   w.handle(p, { t: 'npc', id: priest.id, word: 'błogosławieństwo' });
   assert.equal(p.pvp.blessings, 1);
@@ -144,13 +150,14 @@ test('kapłanka sprzedaje błogosławieństwa', () => {
 
 test('umiejętności broni: koszt many, cooldown, ogłuszenie i wir', () => {
   const w = new World(new Database(':memory:'));
-  const { p, conn } = mk(w, 'Wojak', 30, 48);
+  const G = zoneSpot(w, 'green');
+  const { p, conn } = mk(w, 'Wojak', G.x, G.y);
   // Bez broni – brak umiejętności.
   w.handle(p, { t: 'ability', slot: 1 });
   assert.ok(conn.sys().some((t) => /Załóż broń/.test(t)));
   p.inventory.add('mace_t1');
   p.inventory.equipFromBag(p.inventory.bag.findIndex((s) => s?.item === 'mace_t1'));
-  const rat = new Monster({ ...MONSTERS.rat, hp: 500 }, 31, 48, 0);
+  const rat = new Monster({ ...MONSTERS.rat, hp: 500 }, G.x + 1, G.y, 0);
   w.monsters.set(rat.id, rat);
   p.targetId = rat.id;
   const mp = p.mp;
@@ -163,7 +170,7 @@ test('umiejętności broni: koszt many, cooldown, ogłuszenie i wir', () => {
   // Topór: wir trafia dwa potwory naraz.
   p.inventory.add('axe_t1');
   p.inventory.equipFromBag(p.inventory.bag.findIndex((s) => s?.item === 'axe_t1'));
-  const rat2 = new Monster({ ...MONSTERS.rat, hp: 500, armor: 0, defense: 0 }, 29, 48, 0);
+  const rat2 = new Monster({ ...MONSTERS.rat, hp: 500, armor: 0, defense: 0 }, G.x - 1, G.y, 0);
   w.monsters.set(rat2.id, rat2);
   const hp1 = rat.hp;
   const hp2 = rat2.hp;

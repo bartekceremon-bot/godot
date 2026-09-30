@@ -8,6 +8,7 @@ import { Database } from '../src/db/database';
 import { World } from '../src/game/world';
 import { GameServer } from '../src/net/server';
 import { Monster } from '../src/game/entities';
+import { zoneSpot } from './spots';
 import { MONSTERS } from '../src/game/data/monsters';
 
 type Msg = Record<string, any>;
@@ -77,7 +78,7 @@ after(async () => {
 test('rejestracja, logowanie, ruch, czat, widoczność innych graczy', async () => {
   const a = new TestClient(port);
   await a.open();
-  a.send({ t: 'register', v: 2, name: 'Ala', pass: 'tajne1' });
+  a.send({ t: 'register', v: 3, name: 'Ala', pass: 'tajne1' });
   const welcome = await a.wait((m) => m.t === 'welcome');
   assert.equal(welcome.name, 'Ala');
   assert.equal(welcome.map.rows.length, welcome.map.h);
@@ -89,14 +90,14 @@ test('rejestracja, logowanie, ruch, czat, widoczność innych graczy', async () 
   // Druga rejestracja tej samej nazwy musi się nie udać.
   const dup = new TestClient(port);
   await dup.open();
-  dup.send({ t: 'register', v: 2, name: 'ala', pass: 'xxxx' });
+  dup.send({ t: 'register', v: 3, name: 'ala', pass: 'xxxx' });
   assert.match((await dup.wait((m) => m.t === 'auth_error')).text, /zajęta/);
   dup.close();
 
   // Drugi gracz widzi pierwszego.
   const b = new TestClient(port);
   await b.open();
-  b.send({ t: 'register', v: 2, name: 'Bartek', pass: 'tajne2' });
+  b.send({ t: 'register', v: 3, name: 'Bartek', pass: 'tajne2' });
   await b.wait((m) => m.t === 'welcome');
   await b.wait((m) => m.t === 'snap' && m.e.some((e: Msg) => e.n === 'Ala'));
 
@@ -128,9 +129,9 @@ test('rejestracja, logowanie, ruch, czat, widoczność innych graczy', async () 
   await new Promise((r) => setTimeout(r, 200));
   const a2 = new TestClient(port);
   await a2.open();
-  a2.send({ t: 'login', v: 2, name: 'Ala', pass: 'zle' });
+  a2.send({ t: 'login', v: 3, name: 'Ala', pass: 'zle' });
   await a2.wait((m) => m.t === 'auth_error');
-  a2.send({ t: 'login', v: 2, name: 'Ala', pass: 'tajne1' });
+  a2.send({ t: 'login', v: 3, name: 'Ala', pass: 'tajne1' });
   const pos2 = await a2.wait((m) => m.t === 'pos');
   assert.equal(pos2.y, pos.y + 1);
   a2.close();
@@ -140,14 +141,15 @@ test('rejestracja, logowanie, ruch, czat, widoczność innych graczy', async () 
 test('walka: zabicie potwora daje doświadczenie i loot, podniesienie lootu', async () => {
   const c = new TestClient(port);
   await c.open();
-  c.send({ t: 'register', v: 2, name: 'Wojownik', pass: 'haslo' });
+  c.send({ t: 'register', v: 3, name: 'Wojownik', pass: 'haslo' });
   await c.wait((m) => m.t === 'welcome');
   const p = [...world.players.values()].find((x) => x.name === 'Wojownik')!;
 
   // Teleportujemy gracza poza miasto i stawiamy obok niego szczura z 1 HP.
-  p.x = 30;
-  p.y = 48;
-  const rat = new Monster({ ...MONSTERS.rat, loot: [{ item: 'gold', chance: 1, min: 5, max: 5 }], armor: 0, defense: 0 }, 31, 48, 0);
+  const spot = zoneSpot(world, 'green');
+  p.x = spot.x;
+  p.y = spot.y;
+  const rat = new Monster({ ...MONSTERS.rat, loot: [{ item: 'gold', chance: 1, min: 5, max: 5 }], armor: 0, defense: 0 }, spot.x + 1, spot.y, 0);
   rat.hp = 1;
   world.monsters.set(rat.id, rat);
   c.send({ t: 'attack', id: rat.id });

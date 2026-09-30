@@ -3,7 +3,7 @@
  *
  * Każda specjalizacja ma poziom rosnący od sławy (fame) zdobywanej przez
  * zbieranie lub wytwarzanie. Poziom:
- *  - odblokowuje kolejne tiery (T2 od poz. 3, T3 od 6, T4 od 10),
+ *  - odblokowuje kolejne tiery (T2 od poz. 3, T3 od 6, T4 od 10 … T8 od 36),
  *  - zbieractwo: szansa na dodatkową sztukę i szybsze zbieranie,
  *  - rzemiosło: wyższa szansa na lepszą jakość przedmiotu.
  */
@@ -47,7 +47,7 @@ export const GATHER_SPEC: Record<ResourceKind, SpecId> = {
 };
 
 /** Wymagany poziom specjalizacji dla tieru (indeks = tier). */
-export const TIER_SPEC_REQ = [0, 1, 3, 6, 10];
+export const TIER_SPEC_REQ = [0, 1, 3, 6, 10, 15, 21, 28, 36];
 
 export interface SpecState {
   level: number;

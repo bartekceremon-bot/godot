@@ -59,5 +59,8 @@ export interface GameDatabase {
   loadMarketOrders(): MarketOrderRow[];
   insertMarketOrder(o: Omit<MarketOrderRow, 'id'>): number;
   updateMarketOrderAmount(id: number, amount: number): void;
+  /** Stan świata jako JSON pod kluczem (gildie, terytoria). */
+  loadWorldState(key: string): string | undefined;
+  saveWorldState(key: string, value: string): void;
   close(): void;
 }

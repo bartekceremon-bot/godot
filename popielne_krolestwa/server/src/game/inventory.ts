@@ -13,6 +13,12 @@ export interface ItemStack {
 
 export const BAG_SIZE = 20;
 export const MAX_STACK = 100;
+/** Złoto łączy się w większe stosy (sakiewka). */
+export const GOLD_STACK = 10000;
+
+export function stackLimit(itemId: string): number {
+  return itemId === 'gold' ? GOLD_STACK : MAX_STACK;
+}
 
 export type Equipment = Partial<Record<EquipSlot, ItemStack>>;
 
@@ -40,8 +46,8 @@ export class Inventory {
     if (!def) return 0;
     let n = 0;
     for (const s of this.bag) {
-      if (s === null) n += def.stackable ? MAX_STACK : 1;
-      else if (def.stackable && s.item === itemId && (s.q ?? 1) === q) n += MAX_STACK - s.count;
+      if (s === null) n += def.stackable ? stackLimit(itemId) : 1;
+      else if (def.stackable && s.item === itemId && (s.q ?? 1) === q) n += stackLimit(itemId) - s.count;
     }
     return n;
   }
@@ -56,8 +62,8 @@ export class Inventory {
     if (def.stackable) {
       for (const s of this.bag) {
         if (left <= 0) break;
-        if (s && s.item === itemId && (s.q ?? 1) === q && s.count < MAX_STACK) {
-          const n = Math.min(left, MAX_STACK - s.count);
+        if (s && s.item === itemId && (s.q ?? 1) === q && s.count < stackLimit(itemId)) {
+          const n = Math.min(left, stackLimit(itemId) - s.count);
           s.count += n;
           left -= n;
         }
@@ -65,7 +71,7 @@ export class Inventory {
     }
     for (let i = 0; i < this.bag.length && left > 0; i++) {
       if (this.bag[i] === null) {
-        const n = def.stackable ? Math.min(left, MAX_STACK) : 1;
+        const n = def.stackable ? Math.min(left, stackLimit(itemId)) : 1;
         this.bag[i] = q > 1 ? { item: itemId, count: n, q } : { item: itemId, count: n };
         left -= n;
       }
@@ -212,7 +218,7 @@ export function sanitizeStack(
   }
   const def = getItem(item);
   if (!def) return null;
-  const cap = anyCount ? maxCount : def.stackable ? maxCount : 1;
+  const cap = anyCount ? maxCount : def.stackable ? Math.max(maxCount, stackLimit(item)) : 1;
   const count = Math.max(1, Math.min(cap, Math.floor(Number(s.count) || 1)));
   return q > 1 ? { item, count, q } : { item, count };
 }

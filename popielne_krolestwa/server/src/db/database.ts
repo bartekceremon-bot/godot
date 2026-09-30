@@ -58,6 +58,8 @@ const MIGRATIONS: string[] = [
    CREATE INDEX market_orders_city_item ON market_orders (city, item);`,
   // ETAP 3: PvP – czaszki, niesprawiedliwe zabójstwa, błogosławieństwa.
   `ALTER TABLE characters ADD COLUMN pvp TEXT NOT NULL DEFAULT '{}';`,
+  // ETAP 4: stan świata – gildie i terytoria (JSON pod kluczem).
+  `CREATE TABLE world_state (key TEXT PRIMARY KEY, value TEXT NOT NULL);`,
 ];
 
 export class Database implements GameDatabase {
@@ -185,6 +187,19 @@ export class Database implements GameDatabase {
   updateMarketOrderAmount(id: number, amount: number) {
     if (amount <= 0) this.db.prepare('DELETE FROM market_orders WHERE id = ?').run(id);
     else this.db.prepare('UPDATE market_orders SET amount = ? WHERE id = ?').run(amount, id);
+  }
+
+  // --- Stan świata ----------------------------------------------------------------
+
+  loadWorldState(key: string): string | undefined {
+    const r = this.db.prepare('SELECT value FROM world_state WHERE key = ?').get(key) as { value: string } | undefined;
+    return r?.value;
+  }
+
+  saveWorldState(key: string, value: string) {
+    this.db
+      .prepare('INSERT INTO world_state (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value')
+      .run(key, value);
   }
 
   close() {
