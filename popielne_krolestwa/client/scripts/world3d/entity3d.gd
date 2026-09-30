@@ -15,6 +15,47 @@ const NPC_LOOKS := {
 	"npc_crafter": {"shirt": Color(0.3, 0.4, 0.7), "pants": Color(0.3, 0.3, 0.45), "hair": Color(0.75, 0.5, 0.2), "hair_style": 4, "robe": true, "apron": Color(0.7, 0.55, 0.35), "skin": 0},
 	"npc_refiner": {"shirt": Color(0.72, 0.42, 0.18), "pants": Color(0.3, 0.25, 0.2), "hair": Color(0.2, 0.15, 0.1), "hat": "cap", "hat_col": Color(0.25, 0.2, 0.18), "apron": Color(0.3, 0.22, 0.15), "skin": 3},
 	"npc_priest": {"shirt": Color(0.95, 0.93, 0.88), "pants": Color(0.9, 0.88, 0.82), "hair": Color(0.85, 0.8, 0.6), "hat": "hood", "hat_col": Color(0.96, 0.94, 0.88), "robe": true, "robe_trim": Color(0.95, 0.72, 0.25), "skin": 0},
+	"npc_stable": {"shirt": Color(0.55, 0.4, 0.25), "pants": Color(0.3, 0.25, 0.2), "hair": Color(0.5, 0.3, 0.15), "hat": "cap", "hat_col": Color(0.35, 0.25, 0.15), "beard": true, "apron": Color(0.4, 0.28, 0.16), "skin": 1},
+	"npc_guild": {"shirt": Color(0.3, 0.3, 0.35), "hair": Color(0.25, 0.2, 0.15), "beard": true, "cape": Color(0.6, 0.12, 0.12), "skin": 1,
+		"eq": ["", "plate_body_t4", "plate_legs_t3", "plate_feet_t3", "sword_t4", "shield_t4"]},
+}
+
+## Potwory humanoidalne: wygląd (skóra, ekwipunek, dodatki).
+const MONSTER_LOOKS := {
+	"bandit": {"skin": Color(0.85, 0.66, 0.5), "bandana": Color(0.6, 0.12, 0.1), "hair": Color(0.2, 0.15, 0.1), "beard": true,
+		"eq": ["", "leather_body_t3", "leather_legs_t2", "leather_feet_t2", "sword_t3", ""]},
+	"bandit_archer": {"skin": Color(0.9, 0.72, 0.56), "hair": Color(0.3, 0.2, 0.1), "hair_style": 1,
+		"eq": ["leather_head_t3", "leather_body_t2", "leather_legs_t2", "leather_feet_t2", "bow_t3", ""]},
+	"orc": {"skin": Color(0.36, 0.52, 0.24), "tusks": true, "hair": Color(0.1, 0.1, 0.08), "hair_style": 4,
+		"eq": ["", "leather_body_t5", "plate_legs_t4", "leather_feet_t4", "axe_t5", "shield_t4"]},
+	"orc_shaman": {"skin": Color(0.4, 0.56, 0.28), "tusks": true, "hair": Color(0.85, 0.85, 0.8), "hair_style": 1, "beard": true, "robe": true,
+		"shirt": Color(0.35, 0.22, 0.12), "robe_trim": Color(0.5, 0.9, 0.3), "held": "staff_t5", "eye_glow": Color(0.5, 1.0, 0.3)},
+	"mummy": {"skin": Color(0.84, 0.78, 0.62), "shirt": Color(0.84, 0.78, 0.62), "pants": Color(0.78, 0.72, 0.56), "boots": Color(0.7, 0.64, 0.5),
+		"hair_style": 2, "stripes": Color(0.6, 0.54, 0.4), "eye_glow": Color(0.3, 0.9, 1.0)},
+	"zombie": {"skin": Color(0.5, 0.58, 0.46), "shirt": Color(0.3, 0.32, 0.26), "pants": Color(0.25, 0.24, 0.2), "hair": Color(0.2, 0.22, 0.18),
+		"hair_style": 1, "eye_glow": Color(0.8, 1.0, 0.3)},
+	"lizard": {"skin": Color(0.32, 0.5, 0.3), "head_shape": "lizard", "hair_style": 2, "tail": Color(0.3, 0.46, 0.28), "eye_glow": Color(1.0, 0.85, 0.2),
+		"eq": ["", "leather_body_t4", "", "", "sword_t4", "shield_t3"]},
+	"troll": {"skin": Color(0.46, 0.52, 0.58), "tusks": true, "hair": Color(0.3, 0.3, 0.3), "hair_style": 2, "shirt": Color(0.4, 0.3, 0.2),
+		"held": "club_big_t5"},
+	"yeti": {"skin": Color(0.92, 0.94, 0.97), "shirt": Color(0.9, 0.92, 0.96), "pants": Color(0.88, 0.9, 0.95), "boots": Color(0.85, 0.88, 0.94),
+		"head_shape": "yeti", "hair_style": 2, "eye_glow": Color(0.4, 0.8, 1.0)},
+	"frost_king": {"skin": Color(0.86, 0.92, 1.0), "shirt": Color(0.82, 0.9, 1.0), "pants": Color(0.8, 0.88, 0.98), "boots": Color(0.75, 0.85, 0.95),
+		"head_shape": "yeti", "hair_style": 2, "eye_glow": Color(0.4, 0.9, 1.0), "crown": Color(0.6, 0.9, 1.0), "cape": Color(0.2, 0.35, 0.7), "held": "club_big_t7"},
+	"ash_knight": {"skin": Color(0.2, 0.18, 0.18), "hair_style": 2, "eye_glow": Color(1.0, 0.3, 0.1), "cape": Color(0.35, 0.08, 0.06),
+		"eq": ["plate_head_t4", "plate_body_t4", "plate_legs_t4", "plate_feet_t4", "greatsword_t7", ""]},
+	"demon": {"skin": Color(0.62, 0.14, 0.1), "shirt": Color(0.5, 0.1, 0.08), "pants": Color(0.2, 0.08, 0.06), "boots": Color(0.12, 0.06, 0.05),
+		"hair_style": 2, "horns": Color(0.15, 0.1, 0.08), "wings": Color(0.35, 0.08, 0.06), "tail": Color(0.5, 0.1, 0.08), "eye_glow": Color(1.0, 0.7, 0.1),
+		"held": "greatsword_t8"},
+	"ice_wraith": {"skin": Color(0.7, 0.85, 0.95), "shirt": Color(0.65, 0.82, 0.95), "float": true, "robe_glow": 0.35, "hat": "hood",
+		"hat_col": Color(0.6, 0.78, 0.92), "eye_glow": Color(0.6, 0.95, 1.0), "held": "staff_t7"},
+}
+
+## Skala modeli (duże potwory, bossowie).
+const LOOK_SCALE := {
+	"orc": 1.15, "orc_shaman": 1.05, "troll": 1.55, "yeti": 1.45, "frost_king": 2.4, "demon": 1.55, "ash_knight": 1.2, "treant": 1.5,
+	"golem": 1.45, "bear": 1.15, "basilisk": 1.15, "bog_mother": 2.6, "sand_worm": 1.5, "ash_dragon": 2.5, "lizard": 1.08, "spider": 1.2,
+	"scorpion": 1.2, "fire_elemental": 1.15, "ice_wraith": 1.1,
 }
 
 var id := 0
@@ -36,8 +77,18 @@ var gathering := false:
 		gathering = v
 		if model:
 			model.gathering = v
+			if rider:
+				rider.gathering = v
 var skull := ""
 var equipment: Array = []
+## Wierzchowiec (id przedmiotu), skrót gildii, boss, właściciel obelisku.
+var mount := ""
+var guild_tag := ""
+var boss := false
+var owner_tag := ""
+var capturer_tag := ""
+## Jeździec (gdy istota jedzie na wierzchowcu – `model` jest wtedy wierzchowcem).
+var rider: CharacterModel
 
 var model: CharacterModel
 var light: OmniLight3D
@@ -114,6 +165,11 @@ func apply(e: Dictionary, me: bool) -> void:
 	hp_pct = int(e.h)
 	equipment = e.get("eq", [])
 	skull = str(e.get("sk", ""))
+	mount = str(e.get("mt", ""))
+	guild_tag = str(e.get("gt", ""))
+	boss = int(e.get("b", 0)) == 1
+	owner_tag = str(e.get("o", ""))
+	capturer_tag = str(e.get("c", ""))
 	if not me:
 		var t := Vector2i(int(e.x), int(e.y))
 		if t != tile or _to == Vector3.ZERO:
@@ -198,7 +254,9 @@ func flash() -> void:
 
 
 func play_attack(kind_hint := "") -> void:
-	if model:
+	if rider:
+		rider.play_attack(kind_hint)
+	elif model:
 		model.play_attack(kind_hint)
 
 
@@ -221,7 +279,7 @@ func vanish(dead := false) -> void:
 # ============================================================================
 
 func _refresh_model() -> void:
-	var key := "%s|%s|%s" % [kind, str(look), ",".join(PackedStringArray(equipment.map(func(x): return str(x))))]
+	var key := "%s|%s|%s|%s|%s" % [kind, str(look), ",".join(PackedStringArray(equipment.map(func(x): return str(x)))), mount, owner_tag]
 	if kind == "r":
 		# Wyczerpane złoże zmniejsza się.
 		_node_scale = 0.35 if hp_pct <= 0 else 0.6 + 0.4 * hp_pct / 100.0
@@ -231,23 +289,47 @@ func _refresh_model() -> void:
 		return
 	_model_key = key
 	var old := model
+	rider = null
 	model = CharacterModel.new(material)
 	var s := str(look)
+	var sc := 1.15
 	if kind == "r":
 		model.build_node(s)
-		model.scale = Vector3.ONE * _node_scale
 		_shadow.visible = false
-		label_height = 1.2
-	elif s in ["rat", "boar", "wolf", "hound"]:
+		sc = _node_scale
+	elif kind == "t":
+		CreatureModels.obelisk(model, owner_tag)
+		_shadow.visible = false
+		sc = 1.0
+	elif CreatureModels.build(model, s):
+		pass
+	elif s in ["rat", "boar", "wolf", "hound", "snow_fox", "snow_wolf", "bear", "basilisk"]:
 		model.build_beast(s)
-		_shadow.scale = Vector3.ONE * (0.6 if s == "rat" else 1.2)
-		label_height = model.height + 0.35
+		_shadow.scale = Vector3.ONE * (0.6 if s in ["rat", "snow_fox"] else 1.2)
 	else:
 		model.build_humanoid(_appearance(s))
-		label_height = 1.45
-	if kind != "r":
-		model.scale = Vector3.ONE * 1.15
-		label_height *= 1.12
+	if kind != "r" and kind != "t":
+		sc *= float(LOOK_SCALE.get(s, 1.0))
+		if boss and not LOOK_SCALE.has(s):
+			sc *= 1.8
+	# Wierzchowiec: model = zwierzę, jeździec siedzi na siodle.
+	if mount != "" and kind == "p":
+		var human := model
+		model = CharacterModel.new(material)
+		if not CreatureModels.build(model, mount):
+			model.build_beast(mount)
+		human.riding = true
+		# Biodra jeźdźca (0,42 nad stopami) na siodle, nogi zgięte do przodu.
+		human.position = Vector3(0, model.riding_height - 0.46, -0.05)
+		model.add_child(human)
+		rider = human
+		label_height = (model.riding_height + 1.0) * sc
+		_shadow.scale = Vector3.ONE * 1.4
+	else:
+		label_height = model.height * sc + 0.32
+	if kind == "r":
+		label_height = 1.2
+	model.scale = Vector3.ONE * sc
 	if old:
 		model.rotation.y = old.rotation.y
 		old.queue_free()
@@ -258,9 +340,24 @@ func _refresh_model() -> void:
 func _appearance(s: String) -> Dictionary:
 	if s == "skeleton":
 		return {"skeleton": true, "skin": Color(0.88, 0.85, 0.76), "held": "sword_skeleton_t1"}
-	if NPC_LOOKS.has(s):
-		var a: Dictionary = NPC_LOOKS[s].duplicate()
+	if MONSTER_LOOKS.has(s):
+		return MONSTER_LOOKS[s].duplicate()
+	if s.begins_with("npc_"):
+		# Stroje NPC: w Szronogrodzie futrzane czapy i ciepłe barwy, w Złotopiasku turbany i jasne szaty.
+		var base := s.trim_suffix("_snow").trim_suffix("_desert")
+		var a: Dictionary = NPC_LOOKS.get(base, NPC_LOOKS["npc_trader"]).duplicate()
 		a.skin = CharacterModel.SKINS[int(a.get("skin", 0))]
+		if s.ends_with("_snow"):
+			a.hat = "scarf"
+			a.hat_col = Color(0.92, 0.9, 0.85)
+			a.shirt = (a.get("shirt", Color.GRAY) as Color).darkened(0.1).lerp(Color(0.25, 0.3, 0.5), 0.3)
+			a.beard = true
+		elif s.ends_with("_desert"):
+			a.hat = "scarf"
+			a.hat_col = Color(0.95, 0.9, 0.78)
+			a.skin = CharacterModel.SKINS[2]
+			a.shirt = (a.get("shirt", Color.GRAY) as Color).lerp(Color(0.9, 0.82, 0.62), 0.45)
+			a.robe = true
 		return a
 	var n := int(s) if s.is_valid_int() else absi(hash(s))
 	var eq := equipment if equipment.size() == 6 else ["", "", "", "", "", ""]

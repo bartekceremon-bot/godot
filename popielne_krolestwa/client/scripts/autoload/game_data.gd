@@ -17,9 +17,16 @@ var abilities: Dictionary = {}
 ## Strefy: wiersze znaków g/y/r
 var zones: PackedStringArray = []
 
-const ZONE_NAMES := {"g": "Strefa zielona", "y": "Strefa żółta", "r": "Strefa czerwona"}
-const ZONE_HINTS := {"g": "bezpieczna – bez PvP", "y": "PvP – po śmierci tracisz część plecaka", "r": "PEŁNE PvP – full loot!"}
-const ZONE_COLORS := {"g": Color(0.55, 0.95, 0.5), "y": Color(1.0, 0.85, 0.3), "r": Color(1.0, 0.35, 0.25)}
+## Krainy: wiersze znaków m/f/s/r/d/w/a.
+var biomes: PackedStringArray = []
+## Miasta [{id, name, biome, x0, y0, w, h, temple{x,y}}] i obeliski terytoriów [{id, name, x, y}].
+var cities: Array = []
+var territories: Array = []
+
+const ZONE_NAMES := {"g": "Strefa zielona", "y": "Strefa żółta", "r": "Strefa czerwona", "b": "Czarna Strefa"}
+const ZONE_HINTS := {"g": "bezpieczna – bez PvP", "y": "PvP – po śmierci tracisz część plecaka", "r": "PEŁNE PvP – full loot!", "b": "Popielisko – full loot, T8, terytoria gildii"}
+const ZONE_COLORS := {"g": Color(0.55, 0.95, 0.5), "y": Color(1.0, 0.85, 0.3), "r": Color(1.0, 0.35, 0.25), "b": Color(0.75, 0.45, 1.0)}
+const BIOME_NAMES := {"m": "Łąki Popielgrodu", "f": "Puszcza", "s": "Szronowe Pustkowia", "r": "Góry Pogorzelne", "d": "Złote Piaski", "w": "Moczary", "a": "Popielisko"}
 var my_id := 0
 var my_name := ""
 var map_w := 0
@@ -27,9 +34,9 @@ var map_h := 0
 var map_rows: PackedStringArray = []
 
 ## Kafelki, po których można chodzić (musi zgadzać się z map.ts na serwerze).
-const WALKABLE := ".,safx"
+const WALKABLE := ".,safxndopi=c"
 ## Kafelki strefy ochronnej.
-const PROTECTION := "fxDMKWP"
+const PROTECTION := "fxDMKWPU"
 
 const SKILL_LABELS := {
 	"sword": "Miecz",
@@ -77,6 +84,9 @@ func load_welcome(msg: Dictionary) -> void:
 			abilities[a.weapon] = [null, null, null]
 		abilities[a.weapon][int(a.slot) - 1] = a
 	zones = PackedStringArray(msg.get("zones", []))
+	biomes = PackedStringArray(msg.get("biomes", []))
+	cities = msg.get("cities", [])
+	territories = msg.get("territories", [])
 	map_w = int(msg.map.w)
 	map_h = int(msg.map.h)
 	map_rows = PackedStringArray(msg.map.rows)
@@ -97,6 +107,21 @@ func zone_at(x: int, y: int) -> String:
 	if y < 0 or y >= zones.size() or x < 0 or x >= zones[y].length():
 		return "r"
 	return zones[y][x]
+
+
+## Kraina kafelka: m (łąki), f (puszcza), s (śnieg), r (góry), d (pustynia), w (moczary), a (popiół).
+func biome_at(x: int, y: int) -> String:
+	if y < 0 or y >= biomes.size() or x < 0 or x >= biomes[y].length():
+		return "m"
+	return biomes[y][x]
+
+
+## Miasto, w którego murach leży kafelek (albo pusty słownik).
+func city_at(x: int, y: int) -> Dictionary:
+	for c in cities:
+		if x >= int(c.x0) and y >= int(c.y0) and x < int(c.x0) + int(c.w) and y < int(c.y0) + int(c.h):
+			return c
+	return {}
 
 
 ## Rodzaj broni z id przedmiotu ("sword_t2" -> "sword").

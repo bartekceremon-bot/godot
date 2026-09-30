@@ -313,7 +313,7 @@ export class World {
     // Posadzka świątyni ustawia miasto domowe (odrodzenie po śmierci).
     if (this.map.tileAt(nx, ny) === 'x') {
       const c = cityAt(nx, ny);
-      if (c && p.pvp.home !== c.id) {
+      if (c && (p.pvp.home ?? 'popielgrod') !== c.id) {
         p.pvp.home = c.id;
         this.sendSystem(p, `${c.name} jest teraz twoim domem – tu odrodzisz się po śmierci.`);
       }

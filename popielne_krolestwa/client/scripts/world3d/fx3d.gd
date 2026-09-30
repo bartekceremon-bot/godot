@@ -214,6 +214,10 @@ func spawn(f: Dictionary) -> void:
 			pillar(p, Color(0.4, 1.0, 0.5), 0.9, 0.45, 1.6)
 			burst(p + Vector3(0, 0.2, 0), Color(0.5, 1.0, 0.6), 18, 1.4, 1.0, 1.0)
 		"death":
+			if int(f.get("boss", 0)) == 1:
+				pillar(p, Color(1.0, 0.6, 0.2), 2.5, 1.2, 5.0)
+				ring(p, Color(1.0, 0.6, 0.2), 0.5, 6.0, 1.5, 0.12)
+				burst(p + Vector3(0, 1.0, 0), Color(1, 0.7, 0.3), 60, 5.0, -3.0, 1.6, 1.5)
 			burst(p + Vector3(0, 0.4, 0), Color(0.5, 0.05, 0.05), 20, 1.8, -6.0, 0.6)
 			burst(p + Vector3(0, 0.3, 0), Color(0.3, 0.3, 0.3), 14, 0.8, 1.0, 1.2, 2.0)
 			splat(p)
@@ -247,6 +251,13 @@ func spawn(f: Dictionary) -> void:
 		"ironskin":
 			pillar(p, Color(0.75, 0.82, 0.95), 1.0, 0.5, 1.5)
 			burst(p + Vector3(0, 0.6, 0), Color(0.75, 0.8, 0.9), 16, 1.2, 0.0, 0.8)
+		"bolt":
+			var col := Color.html(str(f.get("col", ""))) if str(f.get("col", "")) != "" else Color(0.6, 0.8, 1.0)
+			bolt(p, center(f.tx, f.ty), col)
+		"poison":
+			burst(p + Vector3(0, 0.4, 0), Color(0.45, 0.95, 0.25), 10, 0.8, 0.8, 0.8)
+		"aoe":
+			aoe(p, str(f.get("kind", "fire")), float(f.get("r", 3)))
 		"words":
 			overlay.float_text(head + Vector3(0, 0.35, 0), str(f.text), Color(1, 0.62, 0.22), 1.6, 12.0, 18)
 
@@ -254,3 +265,68 @@ func spawn(f: Dictionary) -> void:
 ## Znacznik miejsca dotknięcia.
 func tap_marker(tile: Vector2i) -> void:
 	ring(center(tile.x, tile.y), Color(1, 1, 1, 0.8), 0.5, 0.2, 0.35, 0.18, false)
+
+
+## Pocisk magiczny: świecąca kula lecąca łukiem z iskrami.
+func bolt(from: Vector3, to: Vector3, col: Color) -> void:
+	var mi := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 0.11
+	sm.height = 0.22
+	sm.radial_segments = 6
+	sm.rings = 3
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.albedo_color = col
+	m.emission_enabled = true
+	m.emission = col
+	m.emission_energy_multiplier = 2.5
+	sm.material = m
+	mi.mesh = sm
+	add_child(mi)
+	var a := from + Vector3(0, 0.8, 0)
+	var b := to + Vector3(0, 0.6, 0)
+	mi.position = a
+	var tw := create_tween()
+	tw.tween_method(_bolt_step.bind(mi, a, b), 0.0, 1.0, 0.3)
+	tw.tween_callback(_bolt_hit.bind(mi, b, col))
+
+
+func _bolt_step(k: float, mi: Node3D, a: Vector3, b: Vector3) -> void:
+	mi.position = a.lerp(b, k) + Vector3(0, sin(k * PI) * 0.4, 0)
+
+
+func _bolt_hit(mi: Node3D, b: Vector3, col: Color) -> void:
+	burst(b, col, 12, 2.0, 0.0, 0.4)
+	mi.queue_free()
+
+
+## Atak obszarowy bossa: fala ognia / mrozu / piasku / trucizny o danym promieniu.
+func aoe(p: Vector3, kind: String, r: float) -> void:
+	var col: Color = {"fire": Color(1.0, 0.45, 0.1), "frost": Color(0.55, 0.85, 1.0), "sand": Color(0.9, 0.75, 0.45), "poison": Color(0.45, 0.95, 0.25)}.get(kind, Color(1, 0.5, 0.2))
+	ring(p, col, 0.3, r + 0.5, 0.6, 0.25)
+	ring(p, col.lightened(0.3), 0.2, r, 0.9, 0.1)
+	if not Config.effects:
+		return
+	var pp := CPUParticles3D.new()
+	pp.position = p + Vector3(0, 0.2, 0)
+	pp.mesh = _dot_mesh
+	pp.one_shot = true
+	pp.explosiveness = 0.9
+	pp.amount = 60
+	pp.lifetime = 0.9
+	pp.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	pp.emission_sphere_radius = r * 0.7
+	pp.direction = Vector3.UP
+	pp.spread = 40
+	pp.initial_velocity_min = 1.0
+	pp.initial_velocity_max = 3.0
+	pp.gravity = Vector3(0, -2.0 if kind == "sand" else 1.0, 0)
+	pp.scale_amount_min = 1.0
+	pp.scale_amount_max = 2.2
+	var g := Gradient.new()
+	g.colors = PackedColorArray([col.lightened(0.4), col, Color(col, 0.0)])
+	pp.color_ramp = g
+	add_child(pp)
+	pp.emitting = true
+	get_tree().create_timer(1.3).timeout.connect(pp.queue_free)

@@ -5,7 +5,8 @@ const ICONS := ["wood", "stone", "ore", "fiber", "hide", "planks", "blocks", "ba
 	"sword", "axe", "club", "bow", "shield", "woodaxe", "pickaxe", "sickle",
 	"plate_head", "plate_body", "plate_legs", "plate_feet", "leather_head", "leather_body",
 	"leather_legs", "leather_feet", "cloth_head", "cloth_body", "cloth_legs", "cloth_feet",
-	"gold", "meat", "bone", "hp_potion", "mp_potion", "unknown"]
+	"gold", "meat", "bone", "hp_potion", "mp_potion", "mount_horse", "mount_elk", "mount_camel",
+	"mount_warwolf", "mount_drake", "unknown"]
 
 const TIER_COLORS := [Color.WHITE, Color("8a8a8a"), Color("4f9a3e"), Color("3f6fc0"), Color("9848b8"),
 	Color("c8a030"), Color("c05028"), Color("d8d8d8"), Color("202020")]
@@ -44,12 +45,14 @@ static func badge(c: ArtLib.Canvas, tier: int) -> void:
 
 static func draw(c: ArtLib.Canvas, kind: String, tier: int = 0) -> void:
 	# Metal i drewno zmieniają kolor z tierem (miedź, cyna, żelazo, tytan).
-	var metals := [Color("b8bcc4"), Color("c87a4a"), Color("c8ccd0"), Color("8a8e96"), Color("80c8d8")]
-	var steel: Color = metals[clampi(tier, 0, 4)]
+	var metals := [Color("b8bcc4"), Color("c87a4a"), Color("c8ccd0"), Color("8a8e96"), Color("80c8d8"),
+		Color("5ab8a0"), Color("9a4a58"), Color("a078d8"), Color("f09a3a")]
+	var steel: Color = metals[clampi(tier, 0, 8)]
 	var wood := Color("7a5230")
 	var leather := Color("8a5a34")
-	var cloths := [Color("c8c0b0"), Color("d8d0c0"), Color("8a7a50"), Color("e0e0e8"), Color("c84a2a")]
-	var cloth: Color = cloths[clampi(tier, 0, 4)]
+	var cloths := [Color("c8c0b0"), Color("d8d0c0"), Color("8a7a50"), Color("e0e0e8"), Color("c84a2a"),
+		Color("8ac0f0"), Color("e0a040"), Color("f8d868"), Color("b8f0e8")]
+	var cloth: Color = cloths[clampi(tier, 0, 8)]
 	match kind:
 		"wood":
 			c.rect(5, 12, 22, 10, Color("7a5230"))
@@ -148,6 +151,8 @@ static func draw(c: ArtLib.Canvas, kind: String, tier: int = 0) -> void:
 			for p in [Vector2(12, 20), Vector2(19, 21), Vector2(15, 15)]:
 				c.ellipse(p.x, p.y, 5, 4, Color("d4a82a"))
 				c.ellipse(p.x - 1, p.y - 1, 2, 1.5, Color("f8e080"))
+		"mount_horse", "mount_elk", "mount_camel", "mount_warwolf", "mount_drake":
+			_mount_icon(c, kind)
 		"meat":
 			c.ellipse(15, 16, 9, 7, Color("a83a2a"))
 			c.ellipse(13, 14, 4, 3, Color("d06050"))
@@ -244,3 +249,33 @@ static func draw(c: ArtLib.Canvas, kind: String, tier: int = 0) -> void:
 			c.rect(8, 8, 16, 16, Color.MAGENTA)
 
 
+
+
+## Głowa wierzchowca (profil).
+static func _mount_icon(c: ArtLib.Canvas, kind: String) -> void:
+	var col: Color = {"mount_horse": Color("8a5a34"), "mount_elk": Color("7a5a3a"), "mount_camel": Color("c8a060"),
+		"mount_warwolf": Color("7a7a82"), "mount_drake": Color("8a2a24")}[kind]
+	c.ellipse(15, 20, 7, 6, col)
+	c.rect(9, 18, 8, 10, col)
+	c.ellipse(22, 14, 6, 4, col)
+	c.ellipse(26, 16, 3, 3, col.darkened(0.2))
+	c.rect(19, 12, 2, 2, Color("101010"))
+	match kind:
+		"mount_horse":
+			c.rect(8, 10, 4, 12, Color("3a2414"))
+			c.rect(16, 8, 2, 4, col.darkened(0.3))
+		"mount_elk":
+			for i in 4:
+				c.rect(12 + i * 2, 4 + (i % 2), 1, 6, Color("e0d0a8"))
+			c.rect(11, 4, 10, 1, Color("e0d0a8"))
+		"mount_camel":
+			c.ellipse(9, 24, 5, 4, col.lightened(0.1))
+		"mount_warwolf":
+			c.rect(16, 7, 2, 5, col.darkened(0.3))
+			c.rect(20, 7, 2, 5, col.darkened(0.3))
+			c.rect(24, 17, 4, 1, Color("f0f0f0"))
+		"mount_drake":
+			c.rect(15, 6, 2, 6, Color("e0c080"))
+			c.rect(19, 5, 2, 6, Color("e0c080"))
+			c.rect(19, 12, 2, 2, Color("ffa020"))
+			c.rect(8, 14, 3, 10, Color("ff7a20"))

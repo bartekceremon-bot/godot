@@ -1,7 +1,8 @@
-# Protokół sieciowy – Popielne Królestwa (wersja 2, rozszerzona w ETAPIE 3)
+# Protokół sieciowy – Popielne Królestwa (wersja 3 – ETAP 4)
 
 Transport: **WebSocket**, każda wiadomość to obiekt **JSON** z polem `t` (typ).
-Serwer jest autorytatywny – klient wysyła wyłącznie intencje.
+Serwer jest autorytatywny – klient wysyła wyłącznie intencje. Klient i serwer muszą mieć tę samą
+wersję protokołu (`v` przy logowaniu) – w ETAPIE 4 podniesiona do **3** (nowy świat 224×224).
 
 ## Klient → serwer
 
@@ -13,11 +14,11 @@ Serwer jest autorytatywny – klient wysyła wyłącznie intencje.
 | `move` | `d` | Krok: 0=N 1=E 2=S 3=W 4=NE 5=SE 6=SW 7=NW. Za szybki / niemożliwy krok → `pos`. |
 | `attack` | `id` | Ustaw cel ataku (0 = przerwij). Atak automatyczny co 2 s. |
 | `cast` | `spell` | Rzuć czar (`heal`). |
-| `say` | `text` | Czat. Formuła czaru (`exura`) rzuca czar. Komendy: `/online`, `/pomoc`. |
+| `say` | `text` | Czat. Formuła czaru (`exura`) rzuca czar. Komendy: `/online`, `/pomoc`, `/dom`, `/gildia …`, `/g tekst` (czat gildii). |
 | `pickup` | `id` | Podnieś przedmiot z ziemi (max 1 pole od gracza). |
 | `equip` | `slot` | Załóż przedmiot ze slotu plecaka. |
 | `unequip` | `slot` | Zdejmij: `head`/`body`/`legs`/`feet`/`weapon`/`shield`. |
-| `use` | `slot` | Użyj przedmiotu z plecaka (mikstura, jedzenie). |
+| `use` | `slot` | Użyj przedmiotu z plecaka (mikstura, jedzenie; wierzchowiec = wsiądź/zsiądź). |
 | `drop` | `slot`, `count?` | Wyrzuć na ziemię. |
 | `who` | – | Lista graczy online (odpowiedź `online`). |
 | `gather` | `id` | Zbieraj ze złoża (stojąc obok). Ruch/atak przerywa. |
@@ -33,25 +34,27 @@ Serwer jest autorytatywny – klient wysyła wyłącznie intencje.
 | `market_cancel` | `id` | Anuluj zlecenie (zwrot do depozytu). |
 | `craft` | `recipe`, `count` | Rafinacja / rzemiosło przy stacji. |
 | `ability` | `slot` (1–3) | Umiejętność aktywna założonej broni (miecz/topór/buława/łuk – po 3 na broń). Celem jest aktualny cel ataku. |
+| `mount` | – | Wsiądź na pierwszego wierzchowca z plecaka / zsiądź (nie w trakcie walki). |
 
 ## Serwer → klient
 
 | `t` | Pola | Opis |
 |-----|------|------|
 | `auth_error` | `text` | Błąd logowania/rejestracji. |
-| `welcome` | `id`, `name`, `map{w,h,rows}`, `items[]`, `spells[]`, `recipes[]`, `stations`, `specs[]`, `tierSpecReq[]`, `qualities[]`, `abilities[]`, `zones[]` | Po zalogowaniu: mapa i definicje danych. `abilities`: `{id,name,weapon,slot,effect,mana,cooldownMs,range,power,durationMs?,…}`; `zones`: wiersze znaków `g`/`y`/`r` (zielona/żółta/czerwona). |
-| `pos` | `x`, `y`, `d` | Autorytatywna pozycja własnej postaci (start, korekta, teleport). |
-| `snap` | `e[]`, `g[]` | Stan widocznego obszaru – wysyłany tylko przy zmianie. `e`: istoty `{i,k,n,x,y,d,h,l,s,eq?,sk?}` – `sk` (gracze): czaszka `white`/`red`; `eq` (gracze): id założonych przedmiotów [głowa, tułów, nogi, stopy, broń, tarcza]; `k`: `p` gracz, `m` potwór, `n` NPC, `r` złoże (`h` = % pozostałych jednostek, `l` = `node_<rodzaj>_<tier>`); `g`: przedmioty na ziemi `{i,x,y,it,c,q}`. |
-| `stats` | `hp,mhp,mp,mmp,lvl,exp,expCur,expNext,step,target,skills{nazwa:[poziom,%]},cap,weight,specs[[id,poziom,%]],gather,skull,bless,pzLock` | `bless` = liczba błogosławieństw (0–5), `pzLock` = sekundy blokady wejścia do strefy ochronnej po walce PvP. Statystyki własnej postaci. |
-| `inv` | `bag[]`, `eq{}` | Plecak (20 slotów, `null` = pusty) i ekwipunek. Stos: `{item,count,q?}` (q = jakość 1–5). |
+| `welcome` | `id`, `name`, `map{w,h,rows}`, `items[]`, `spells[]`, `recipes[]`, `stations`, `specs[]`, `tierSpecReq[]`, `qualities[]`, `abilities[]`, `zones[]`, `biomes[]`, `cities[]`, `territories[]` | Po zalogowaniu: mapa i definicje danych. `zones`: wiersze znaków `g`/`y`/`r`/`b` (zielona/żółta/czerwona/czarna); `biomes`: wiersze znaków krain `m` łąki, `f` puszcza, `s` śniegi, `r` góry, `d` pustynia, `w` moczary, `a` Popielisko; `cities`: `{id,name,biome,x0,y0,w,h,temple{x,y}}`; `territories`: obeliski `{id,name,x,y}`. |
+| `pos` | `x`, `y`, `d` | Autorytatywna pozycja własnej postaci (start, korekta, teleport, odrodzenie). |
+| `snap` | `e[]`, `g[]` | Stan widocznego obszaru (±16×13 pól) – wysyłany tylko przy zmianie. `e`: istoty `{i,k,n,x,y,d,h,l,s,…}`. `k`: `p` gracz (`eq` – założone przedmioty [głowa, tułów, nogi, stopy, broń, tarcza], `sk` – czaszka, `mt` – wierzchowiec, `gt` – skrót gildii), `m` potwór (`b`=1 – boss świata), `n` NPC, `r` złoże (`h` = % jednostek, `l` = `node_<rodzaj>_<tier>`), `t` obelisk terytorium (`h` = postęp przejmowania %, `o` – skrót gildii właściciela, `c` – gildii przejmującej). `g`: przedmioty na ziemi `{i,x,y,it,c,q}`. |
+| `stats` | `hp,mhp,mp,mmp,lvl,exp,expCur,expNext,step,target,skills,cap,weight,specs,gather,skull,bless,pzLock,mount,guild,home` | Statystyki własnej postaci; `mount` – id wierzchowca, na którym jedzie gracz, `guild` – skrót gildii, `home` – miasto domowe. |
+| `inv` | `bag[]`, `eq{}` | Plecak (20 slotów, `null` = pusty) i ekwipunek. Stos: `{item,count,q?}` (q = jakość 1–5, złoto do 10 000 w stosie). |
 | `npc_dialog` | `id`, `name`, `text`, `keywords[]` | Odpowiedź NPC. |
-| `shop` | `npc`, `name`, `sells[{item,price}]`, `buys`, `buyRatio` | Okno sklepu NPC. |
+| `shop` | `npc`, `name`, `sells[{item,price}]`, `buys`, `buyRatio` | Okno sklepu NPC (także stajni). |
 | `depot` | `city`, `cityName`, `items[]` | Zawartość depozytu. |
 | `market` | `city`, `cityName`, `tax`, `sells[]`, `buys[]`, `mine[]` | Księga zleceń miasta (`{item,q,price,amount}`) i własne zlecenia. |
 | `craft_open` | `station`, `name`, `city` | Okno stacji rzemieślniczej (+ opis premii miasta). |
-| `fx` | `l[]` | Efekty: `num` (liczba obrażeń/leczenia, `c`=`dmg`/`heal`/`mana`), `miss`, `block`, `shot`, `heal`, `death`, `levelup`, `words`, `puff`, `gather` (`v`, `item`), `craft`, `stun`, `whirl`, `volley`, `frenzy`, `ironskin`. |
-| `chat` | `from`, `id`, `text`, `x`, `y` | Wiadomość czatu. |
-| `sys` | `text` | Komunikat systemowy. |
+| `guild` | `name`, `tag`, `members[{n,r,on}]`, `territories[]` | Informacje o gildii (po `/gildia`). |
+| `fx` | `l[]` | Efekty: `num` (liczba obrażeń/leczenia, `c`=`dmg`/`heal`/`mana`), `miss`, `block`, `shot` (`tx,ty`), `bolt` (pocisk magiczny, `tx,ty,col`), `aoe` (atak obszarowy, `kind`=`fire`/`frost`/`sand`/`poison`, `r`), `poison`, `heal`, `death` (`boss`=1), `levelup`, `words`, `puff`, `gather` (`v`, `item`), `craft`, `stun`, `whirl`, `volley`, `frenzy`, `ironskin`. |
+| `chat` | `from`, `id`, `text`, `x`, `y`, `ch?` | Wiadomość czatu (`ch`=`guild` – czat gildii). |
+| `sys` | `text` | Komunikat systemowy (także ogłoszenia bossów i terytoriów). |
 | `online` | `list[{n,l}]` | Gracze online. |
 | `died` | `by`, `lost`, `zone`, `items`, `bless` | Śmierć: zabójca, utracone doświadczenie, strefa, liczba utraconych przedmiotów (zostają w zwłokach 5 min), zużyte błogosławieństwa. |
 | `cd` | `id`, `ms` | Umiejętność użyta – czas odnowienia w ms. |

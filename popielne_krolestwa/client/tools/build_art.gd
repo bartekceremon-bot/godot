@@ -40,10 +40,10 @@ func _save(img: Image, path: String) -> void:
 
 func _items() -> void:
 	var names: Array = ArtItems.ICONS
-	var atlas := Image.create(5 * 32, names.size() * 32, false, Image.FORMAT_RGBA8)
+	var atlas := Image.create(9 * 32, names.size() * 32, false, Image.FORMAT_RGBA8)
 	var items := {}
 	for i in names.size():
-		for t in 5:
+		for t in 9:
 			atlas.blit_rect(ArtItems.icon(names[i], t), Rect2i(0, 0, 32, 32), Vector2i(t * 32, i * 32))
 			items["%s_%d" % [names[i], t]] = [t * 32, i * 32]
 	_save(atlas, "items/items.png")

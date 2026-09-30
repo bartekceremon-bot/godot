@@ -58,6 +58,8 @@ var craft: CraftPanel
 var specs: SpecsPanel
 var amount: AmountDialog
 var minimap: Minimap
+var world_map: WorldMapPanel
+var _mount_btn: Button
 var _time_label: Label
 
 
@@ -195,6 +197,11 @@ func _build_actions() -> void:
 	_mp_potion_btn = _action_button("0", "mp_potion", size)
 	_mp_potion_btn.pressed.connect(_use_item.bind("mp_potion"))
 	grid.add_child(_mp_potion_btn)
+	_mount_btn = _action_button("Jazda", "mount_horse", size)
+	_mount_btn.add_theme_font_size_override("font_size", 15)
+	_mount_btn.tooltip_text = "Wierzchowiec: wsiądź / zsiądź"
+	_mount_btn.pressed.connect(func(): Net.send({"t": "mount"}))
+	grid.add_child(_mount_btn)
 	_refresh_abilities()
 
 
@@ -299,7 +306,10 @@ func _build_windows() -> void:
 	market = MarketPanel.new()
 	craft = CraftPanel.new()
 	specs = SpecsPanel.new()
-	for w in [npc_dialog, shop, depot, market, craft, specs]:
+	world_map = WorldMapPanel.new()
+	world_map.game = game
+	minimap.opened.connect(func(): _toggle(world_map))
+	for w in [npc_dialog, shop, depot, market, craft, specs, world_map]:
 		w.set("hud", self)
 		_root.add_child(w)
 	for w in [shop, depot, market, craft]:
@@ -337,6 +347,12 @@ func _build_windows() -> void:
 		game.apply_effects()
 		set_fx_text.call())
 	box.add_child(fx_btn)
+	var guild := UiTheme.button("Gildia", "", Vector2(320, 60))
+	guild.pressed.connect(func(): Net.send({"t": "say", "text": "/gildia"}); _menu.hide())
+	box.add_child(guild)
+	var wmap := UiTheme.button("Mapa świata", "", Vector2(320, 60))
+	wmap.pressed.connect(func(): _toggle(world_map))
+	box.add_child(wmap)
 	var logout := UiTheme.button("Wyloguj", "", Vector2(320, 60))
 	logout.pressed.connect(func(): game.logout())
 	box.add_child(logout)
@@ -388,7 +404,7 @@ func _simple_window(title: String) -> PanelContainer:
 
 
 func _all_windows() -> Array:
-	return [_inventory, _character, _online, _menu, shop, depot, market, craft, specs]
+	return [_inventory, _character, _online, _menu, shop, depot, market, craft, specs, world_map]
 
 
 func _toggle(w: Control) -> void:
@@ -430,6 +446,9 @@ func update_stats(s: Dictionary) -> void:
 	_exp_bar.max_value = 100
 	_exp_bar.value = (float(s.exp) - float(s.expCur)) / span * 100.0
 	_character.set_stats(s)
+	var mounted := str(s.get("mount", "")) != ""
+	_mount_btn.text = "Zsiądź" if mounted else "Jazda"
+	_mount_btn.modulate = Color(1.0, 0.85, 0.45) if mounted else Color(1, 1, 1, 0.9)
 
 
 func update_inventory(msg: Dictionary) -> void:

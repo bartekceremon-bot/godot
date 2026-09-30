@@ -7,13 +7,13 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-**Stan: ETAP 3 – PvP, strefy ryzyka i umiejętności broni + nowa oprawa 3D low-poly** (wersja 0.5.0) (patrz [Plan etapów](#plan-etapów)).
+**Stan: ETAP 4 – wielki świat: trzy miasta, siedem krain, Czarna Strefa, T1–T8, bossowie świata, wierzchowce, gildie i terytoria** (wersja 0.6.0) (patrz [Plan etapów](#plan-etapów)).
 
 ---
 
 ## Spis treści
 
-1. [Co działa w ETAPIE 1](#co-działa-w-etapie-1), [ETAPIE 2](#co-doszło-w-etapie-2--ekonomia) i [ETAPIE 3](#co-doszło-w-etapie-3--pvp)
+1. [Co działa w ETAPIE 1](#co-działa-w-etapie-1), [ETAPIE 2](#co-doszło-w-etapie-2--ekonomia), [ETAPIE 3](#co-doszło-w-etapie-3--pvp) i [ETAPIE 4](#co-doszło-w-etapie-4--świat)
 2. [Struktura projektu](#struktura-projektu)
 3. [Szybki start – tryb „lokalny serwer” (komputer + telefon w tej samej sieci Wi-Fi)](#szybki-start--tryb-lokalny-serwer)
 4. [Serwer na VPS (Docker)](#serwer-na-vps-docker)
@@ -22,7 +22,7 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 7. [Podpisywanie kluczem release](#podpisywanie-kluczem-release)
 8. [Sterowanie](#sterowanie)
 9. [Testy](#testy)
-10. Decyzje podjęte w [ETAPIE 1](#decyzje-podjęte-w-etapie-1), [ETAPIE 2](#decyzje-podjęte-w-etapie-2) i [ETAPIE 3](#decyzje-podjęte-w-etapie-3)
+10. Decyzje podjęte w [ETAPIE 1](#decyzje-podjęte-w-etapie-1), [ETAPIE 2](#decyzje-podjęte-w-etapie-2), [ETAPIE 3](#decyzje-podjęte-w-etapie-3) i [ETAPIE 4](#decyzje-podjęte-w-etapie-4)
 11. [Plan etapów](#plan-etapów)
 12. [Grafika, dźwięk, licencje](#grafika-dźwięk-licencje)
 
@@ -105,6 +105,42 @@ skille rosnące od używania, runy/czary z formułami) połączone z gospodarką
 - Nowa NPC **Kapłanka Wiesława** (słowa: „błogosławieństwo”, „śmierć”, „strefy”, „czaszki”), ikony czaszek nad
   graczami, ekran śmierci z listą strat, efekty umiejętności.
 
+## Co doszło w ETAPIE 4 – świat
+
+- **Świat 224×224 pól** (dotąd 96×96) z siedmioma krainami, każda z własnym gruntem, roślinnością, pogodą i potworami:
+  - **Łąki Popielgrodu** (południe) – zielone pola, wioski z polami zboża, jeziora; miasto **Popielgród** (rafineria +25%).
+  - **Szronowe Pustkowia** (północny zachód) – śnieg, ośnieżone sosny, zamarznięte jeziora, śnieżyca;
+    miasto **Szronogród** (kuźnia: zwrot 25% i lepsza jakość).
+  - **Złote Piaski** (północny wschód) – wydmy, mesy z warstwowego piaskowca, oazy z palmami, kaktusy, pył;
+    miasto **Złotopiask** z kopułami (pracownia: zwrot 25% i lepsza jakość).
+  - **Puszcza** (zachód) – gęste, wielkie drzewa, paprocie, grzyby; **Góry Pogorzelne** (północ) – pasma z urwiskami
+    i śnieżnymi szczytami; **Moczary** (wschód) – mętne stawy, wierzby, trzciny, nocą świetliki.
+  - **Popielisko – Czarna Strefa** (środek) – popiół z żarzącymi się szczelinami, rzeki lawy, obsydianowe iglice,
+    **Świątynia Ognia** na wyspie otoczonej fosą lawy z czterema mostami.
+- **Drogi** łączą wszystkie miasta i świątynię Popieliska, **rzeki** z mostami, **wioski** (domy, pola w płotach, studnie),
+  **ruiny strażnic**, pasma gór wokół świata. Mapa świata: **dotknij minimapy**.
+- **Strefy**: zielona wokół miast (T1–T3), żółta (T4–T5), czerwona (T6–T7) pierścieniem wokół Popieliska i w dziczy,
+  **czarna** (T8) na Popielisku – full loot jak w czerwonej, plus terytoria gildii.
+- **Tiery T5–T8**: nowe surowce (dąb, krwisty buk…, runit, meteoryt, adamantyt, żaryt, bazalt, marmur, obsydian,
+  kamień żaru, niebokwiat…, skóry niedźwiedzia, yeti, bazyliszka, smocza), materiały, receptury i ekwipunek do T8.
+- **29 rodzajów potworów** w krainach: śnieżne lisy, skarabeusze, ropuchy, skorpiony (trucizna), olbrzymie pająki,
+  szronowe wilki, niedźwiedzie, rozbójnicy i ich łucznicy, orkowie i szamani (pociski), mumie, topielce, jaszczuroludzie,
+  trolle, yeti, drzewce, kamienne golemy, lodowe zjawy (spowalniające pociski), bazyliszki, żywiołaki ognia,
+  popielni rycerze, demony żaru.
+- **Bossowie świata** (ogłaszani wszystkim, odradzają się co 30–45 min, wielki łup na ziemi):
+  **Król Szronu** (mróz, przywołuje wilki), **Pustynny Czerw** (trzęsienie piasku), **Matka Moczarów** (trucizna,
+  przywołuje ropuchy) i **Żarogniew, Popielny Smok** w Świątyni Ognia (fale ognia, żywiołaki; szansa na drake'a).
+- **Wierzchowce** (przycisk **Jazda**): koń (+30%), łoś szronowy (+30%, udźwig +250), wielbłąd (+22%, udźwig +500),
+  wilk bojowy (+40%), popielny drake (+50%) – kupisz je u **stajennych** (każde miasto ma swoje zwierzęta),
+  zsiadasz, gdy walczysz lub oberwiesz.
+- **Gildie**: `/gildia załóż Nazwa TAG` (5000 zł, w mieście), `/gildia zaproś Imię`, `/gildia dołącz`, `/gildia opuść`,
+  `/gildia wyrzuć Imię`, czat `/g tekst`; skrót [TAG] nad głową, członkowie nie mogą się atakować.
+- **Terytoria**: sześć obelisków na Popielisku. Gildia utrzymująca się przy obelisku przez minutę przejmuje go
+  (kryształ zmienia kolor na barwę gildii); właściciele mają +25% doświadczenia w pobliżu.
+- **Świątynia domowa**: stań na posadzce świątyni dowolnego miasta, a tam się odrodzisz (`/dom`).
+- Każde miasto: 9 NPC (bankier, rynek, kupiec, kowal, rzemieślniczka, rafinator, kapłan, **stajenny**, **mistrz gildii**),
+  stroje zależne od miasta (futrzane czapy w Szronogrodzie, turbany w Złotopiasku), fontanna, domy.
+
 ## Oprawa graficzna – 3D low-poly (Godot 4.5)
 
 Od wersji 0.5.0 świat jest **trójwymiarowy** (styl low-poly, kamera z góry pod kątem jak w Albionie).
@@ -112,13 +148,13 @@ Serwer, protokół i mechaniki się nie zmieniły – świat 3D powstaje z tej s
 
 | Element | Jak zrobiony |
 |---------|--------------|
-| Teren | Siatki generowane w kodzie (`scripts/world3d/world_builder.gd`) w kawałkach 16×16: płaskie cieniowanie, łagodne przejścia kolorów, trawa zmienia się wraz ze strefą (zielona → złota → wypalona), bruk miasta, marmur świątyni ze świecącym kręgiem run, żarzące się szczeliny Popieliska, wzgórza i las poza mapą |
-| Woda | Shader `lowpoly_water.gdshader`: fale w wierzchołkach, fasetki, piana przy brzegu, połysk |
-| Obiekty | Drzewa (liściaste, iglaste, jesienne, wypalone – kołyszą się na wietrze), skały, mury z blankami i chorągwiami, wieże z dachami przy bramach i narożnikach, stragany, skrzynie, kowadło, stół, piec z ogniem |
-| Postacie | `character_model.gd`: modele z części animowane w kodzie (chód, oddech, cios, strzał z łuku, zbieranie, śmierć). **Wygląd zależy od ekwipunku**: hełm/zbroja/nogi/buty (płyta/skóra/płótno, kolor i materiał tieru), miecz/topór/buława/łuk, tarcza okrągła lub migdałowa z herbem. Każdy NPC ma własny strój |
-| Potwory i złoża | Szczur, dzik, wilk, płonący ogar (świecące oczy, żar), szkielet; złoża T1–T4 wyglądają inaczej (brzoza, kasztanowiec, sosna, cedr, żyły miedzi…tytanu, len…ognista pokrzywa) i maleją w miarę wydobycia |
+| Teren | Siatki generowane w kodzie (`scripts/world3d/world_builder.gd`) w kawałkach 16×16: płaskie cieniowanie, łagodne przejścia kolorów, grunt każdej krainy (łąka, puszcza, śnieg, wydmy, bagno, popiół) z odcieniem strefy, góry z urwiskami i śnieżnymi szczytami, mesy pustyni z warstw piaskowca, zamarznięte jeziora, bruk miast, marmur świątyń z kręgiem run, żarzące się szczeliny Popieliska |
+| Woda i lawa | Shader `lowpoly_water.gdshader`: fale, fasetki, piana przy brzegu, mętna woda moczarów; `lowpoly_lava.gdshader`: płynąca, świecąca lawa ze skorupą |
+| Obiekty | `world_props.gd`: drzewa każdej krainy (dęby, brzozy, sosny, ośnieżone świerki, palmy, kaktusy, wierzby, wypalone – kołyszą się na wietrze), domy w trzech stylach (szachulec z dachówką, chata z bali pod śniegiem, gliniany dom z kopułą) ze świecącymi oknami, mosty, płoty, pola zboża, studnie, fontanny, ruiny, obeliski, kryształy obsydianu, mury i wieże w stylu miasta, stragany, stacje rzemiosła |
+| Postacie | `character_model.gd`: modele z części animowane w kodzie (chód, oddech, cios, strzał z łuku, zbieranie, śmierć, jazda wierzchem). **Wygląd zależy od ekwipunku**: hełm/zbroja/nogi/buty (płyta/skóra/płótno, kolor i materiał tieru T1–T8), miecz/topór/buława/łuk, tarcza okrągła lub migdałowa z herbem. Każdy NPC ma własny strój zależny od miasta |
+| Potwory i złoża | 29 potworów i 4 bossów (`creature_models.gd`: pająki, skorpiony, ropuchy, czerw, smok, żywiołaki, drzewce, golemy; humanoidy z kłami, rogami, skrzydłami, ogonami, świecącymi oczami); wierzchowce z siodłami; złoża T1–T8 wyglądają inaczej i maleją w miarę wydobycia |
 | Światło | Słońce z cieniami, **cykl dnia i nocy** (zachód słońca, księżyc), pochodnie i kosze ogniowe z migoczącym światłem, gracz niesie światło nocą, poświata (glow) ognia i żaru |
-| Atmosfera | Mgła w kolorze strefy (błękitna / złota / czerwono-dymna), opadający popiół, w czerwonej strefie unoszący się żar |
+| Atmosfera | Mgła w kolorze krainy i strefy, pogoda: śnieżyca w śniegach, pył na pustyni, świetliki nocą w moczarach i puszczy, popiół i żar na Popielisku |
 | Efekty | Krew i iskry przy trafieniu, lecące strzały, słup światła przy awansie i leczeniu, fale umiejętności, gwiazdki ogłuszenia, znacznik dotknięcia |
 | Interfejs | Imiona, paski życia i liczby obrażeń jako ostra nakładka 2D; HUD, okna i minimapa w stylu pixel-art (9-patch); ekran logowania ze scenką 3D (ognisko o zmierzchu) |
 | Kamera | Płynne podążanie, wstrząs przy trafieniu, **przybliżanie** dwoma palcami / kółkiem myszy |
@@ -150,9 +186,9 @@ popielne_krolestwa/
 │   │   ├── game/map.ts      # generator mapy + linia wzroku
 │   │   ├── game/entities.ts # gracz, potwór, przedmiot na ziemi
 │   │   ├── game/inventory.ts, combat.ts, progression.ts, specs.ts
-│   │   ├── game/systems/    # zbieractwo, ekonomia (NPC, sklep, depozyt, rynek, rzemiosło)
+│   │   ├── game/systems/    # zbieractwo, ekonomia, PvP, umiejętności, gildie, terytoria
 │   │   ├── game/economy/    # księga zleceń rynku, magazyn depozytów
-│   │   ├── game/data/       # przedmioty T1–T4, receptury, NPC i miasta, złoża, potwory, czary
+│   │   ├── game/data/       # miasta (szablon), przedmioty T1–T8, receptury, NPC, złoża, potwory i bossowie, czary
 │   │   └── tools/bot.ts     # boty testowe
 │   ├── test/                # testy jednostkowe i integracyjne
 │   └── Dockerfile
@@ -163,9 +199,10 @@ popielne_krolestwa/
 │   ├── assets/              # grafiki interfejsu PNG, atlas_index.json
 │   ├── scripts/autoload/    # Config, Net, GameData, Sprites (ikony), Sfx (dźwięk)
 │   ├── scripts/game/        # scena gry: kamera, słońce, dzień/noc, sterowanie, pakiety
-│   ├── scripts/world3d/     # świat 3D: generator terenu, modele postaci, ogień, efekty, loot, nakładka
+│   ├── scripts/world3d/     # świat 3D: generator krain (kawałki), obiekty krajobrazu, modele postaci,
+│   │                        # stworzeń i bossów, ogień, efekty, loot, nakładka 2D, scenka logowania
 │   ├── scripts/ui/          # logowanie, HUD, joystick, plecak, postać, NPC, sklep, depozyt,
-│   │                        # rynek, rzemiosło, specjalizacje, okno ilości/ceny
+│   │                        # rynek, rzemiosło, specjalizacje, minimapa, mapa świata, okno ilości/ceny
 │   ├── scripts/debug/       # automatyczny test klienta
 │   └── tools/               # build_art.gd + art/ (generator ikon i interfejsu)
 └── tools/                   # build_apk.sh (APK debug/release), build_assets.sh (grafiki)
@@ -360,6 +397,9 @@ w `client/export_presets.cfg`. Google Play wymaga formatu AAB – to wymaga eksp
 |-------|---------|----------|
 | Ruch | joystick (lewy dół) lub dotknij pola | strzałki / WASD, kliknięcie |
 | Przybliżenie kamery | dwa palce (szczypanie) | kółko myszy |
+| Mapa świata | dotknij minimapy (albo Menu → Mapa świata) | kliknięcie minimapy |
+| Wierzchowiec | przycisk **Jazda** (wierzchowiec w plecaku) | – |
+| Gildia | Menu → Gildia, komendy `/gildia …`, czat `/g tekst` | – |
 | Atak | dotknij potwora (ponownie – przerwij) lub **Atak** (najbliższy / następny) | kliknięcie |
 | Leczenie | przycisk **exura** lub wpisz `exura` w czat | – |
 | Mikstury | przyciski z czerwoną / niebieską miksturą | – |
@@ -393,7 +433,8 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 # scenariusz ETAPU 2 (domyślny): NPC, sklep, zbieranie, rafinacja, rynek, depozyt, specjalizacje
 # scenariusz ETAPU 1: dodaj --scenario=etap1
 # scenariusz ETAPU 3: dodaj --scenario=etap3 (kapłanka, strefy, umiejętność, okno postaci)
-# przegląd świata 3D: --scenario=widoki (jezioro, Popielisko, krawędź, brama, rynek); ekran logowania: --scenario=login
+# przegląd krain 3D: --scenario=widoki (Szronogród, Złotopiask, Świątynia Ognia, moczary, puszcza, góry, obelisk, wioska)
+# modele stworzeń, bossów i wierzchowców: --scenario=bestiariusz; ekran logowania: --scenario=login
 # pora dnia na zrzutach: --day / --dusk / --night
 ```
 
@@ -486,12 +527,38 @@ godot --path client -- --autotest=ws://127.0.0.1:7171,Tester,haslo1 --shots=/tmp
 5. **Imiona i paski życia w 2D nad 3D** – czytelne w każdej skali ekranu.
 6. **Trawa i mgła zmieniają kolor wraz ze strefą** – od razu widać, że wchodzisz w niebezpieczny teren.
 
+## Decyzje podjęte w ETAPIE 4
+
+1. **Mapa 224×224 zamiast 192×192** – przy mniejszej mapie strefy od miast do Popieliska byłyby zbyt ciasne (miasta
+   leżałyby niemal przy czarnej strefie). Świat jest nadal generowany deterministycznie z ziarna – każdy start serwera
+   daje ten sam świat.
+2. **Układ stref**: pierścienie wokół Popieliska (czarna < 30 pól od środka, czerwona < 48, żółta < 58) połączone
+   z odległością od miast (zielona do 38 pól, żółta do 64) – wygrywa groźniejsza. Dzięki temu każda kraina ma strefy
+   od zielonej po czerwoną, a dzikie krańce świata są niebezpieczne.
+3. **Trzy miasta z jednego szablonu 31×25** (NPC, domy, fontanna, świątynia, stacje) – spójna obsługa; wygląd
+   (mury, dachy, bruk, stroje NPC) zależy od krainy. Premie: Popielgród – rafineria, Szronogród – kuźnia,
+   Złotopiask – pracownia; różne podatki rynku (3%, 4%, 2%).
+4. **Czarna Strefa działa jak czerwona** (full loot, bez czaszek) + terytoria i T8; kara za śmierć jak w czerwonej.
+5. **Bossowie** stoją w najdalszych czerwonych zakątkach swoich krain, smok w Świątyni Ognia; łup leży na ziemi
+   5 minut (walka o łup, jak w Albionie). Czas odrodzenia można skrócić zmienną `BOSS_RESPAWN_SCALE` (testy).
+6. **Wierzchowiec trzymany w plecaku** i przełączany przyciskiem (bez nowego slotu ekwipunku) – prościej na telefonie;
+   zsiadanie przy walce i trafieniu, nie można wsiąść 5 s po walce.
+7. **Gildie przez komendy czatu** (+ mistrz gildii w każdym mieście) i zapis gildii/terytoriów w nowej tabeli
+   `world_state` (migracja 4) – bez rozbudowanych okien w tym etapie.
+8. **Złoto łączy się w stosy do 10 000** (i waży 0,01 oz) – przy cenach T5–T8 i założeniu gildii 100 sztuk w stosie
+   to za mało.
+9. **Świątynia domowa** zapisywana w stanie postaci; postacie z poprzedniego świata (inna mapa) są przy pierwszym
+   logowaniu przenoszone do świątyni (znacznik wersji mapy).
+10. **Wydajność**: siatka zajętości pól dla potworów i „usypianie” potworów dalej niż 22 pola od graczy
+    (serwer: ~1 ms na tick przy 20 graczach i ~560 potworach); klient buduje i zwalnia kawałki świata wokół gracza.
+11. **Protokół w wersji 3** – nowy świat wymaga aktualizacji klienta i serwera jednocześnie.
+
 ## Plan etapów
 
 - [x] **ETAP 1** – grywalne MVP.
 - [x] **ETAP 2** – ekonomia: zbieractwo, crafting, tiery T1–T4, rynek miejski, NPC handlarze, depozyt.
 - [x] **ETAP 3** – PvP: strefy żółta i czerwona, full loot, czaszki, kara za śmierć, błogosławieństwa, umiejętności broni.
-- [ ] **ETAP 4** – gildie, Czarna Strefa (Popielisko), terytoria, bossowie świata, wierzchowce.
+- [x] **ETAP 4** – wielki świat (3 miasta, 7 krain), Czarna Strefa, T5–T8, gildie, terytoria, bossowie świata, wierzchowce.
 - [ ] **ETAP 5** – balans, tutorial, ustawienia grafiki, optymalizacja baterii, ikona i ekran startowy.
 
 ## Grafika, dźwięk, licencje

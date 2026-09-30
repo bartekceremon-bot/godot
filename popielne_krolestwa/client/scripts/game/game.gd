@@ -20,7 +20,10 @@ const DIRS: Array[Vector2i] = [
 	Vector2i(1, -1), Vector2i(1, 1), Vector2i(-1, 1), Vector2i(-1, -1),
 ]
 ## Nastrój stref: kolor mgły/powietrza.
-const ZONE_FOG := {"g": Color(0.66, 0.74, 0.8), "y": Color(0.8, 0.72, 0.55), "r": Color(0.46, 0.3, 0.26)}
+const ZONE_FOG := {"g": Color(0.66, 0.74, 0.8), "y": Color(0.8, 0.72, 0.55), "r": Color(0.46, 0.3, 0.26), "b": Color(0.3, 0.16, 0.14)}
+## Kolor powietrza krain (mgła w oddali).
+const BIOME_FOG := {"m": Color(0.66, 0.74, 0.8), "f": Color(0.5, 0.62, 0.6), "s": Color(0.82, 0.88, 0.95), "r": Color(0.62, 0.66, 0.72),
+	"d": Color(0.9, 0.8, 0.62), "w": Color(0.48, 0.55, 0.42), "a": Color(0.34, 0.2, 0.18)}
 
 var hud: Hud
 var world: WorldBuilder
@@ -31,9 +34,12 @@ var camera: Camera3D
 var sun: DirectionalLight3D
 var env: Environment
 var creatures: Node3D
-var _fires: Array = []
 var _ash: CPUParticles3D
 var _embers: CPUParticles3D
+var _snow: CPUParticles3D
+var _dust: CPUParticles3D
+var _fireflies: CPUParticles3D
+var _biome := ""
 var _shake := 0.0
 var _zoom := 1.0
 ## 0 = dzień, 1 = pełna noc.
@@ -145,6 +151,19 @@ func _setup_scene() -> void:
 	_ash = _make_weather(Color(0.6, 0.58, 0.57), 60, -0.5, 0.03)
 	_embers = _make_weather(Color(1.0, 0.45, 0.12), 30, 0.6, 0.03)
 	_embers.amount = 30
+	_snow = _make_weather(Color(1.0, 1.0, 1.0), 160, -1.0, 0.035)
+	_snow.gravity = Vector3(0.15, -0.35, 0.05)
+	_dust = _make_weather(Color(0.92, 0.8, 0.58), 70, 0.0, 0.025)
+	_dust.direction = Vector3(1, 0.05, 0.2)
+	_dust.initial_velocity_min = 1.2
+	_dust.initial_velocity_max = 2.4
+	_dust.gravity = Vector3.ZERO
+	_fireflies = _make_weather(Color(0.75, 1.0, 0.4), 40, 0.1, 0.03)
+	_fireflies.gravity = Vector3.ZERO
+	_fireflies.initial_velocity_min = 0.05
+	_fireflies.initial_velocity_max = 0.25
+	_fireflies.spread = 180
+	_fireflies.emission_box_extents = Vector3(10, 1.0, 8)
 
 
 ## Opadający popiół i unoszący się żar wokół kamery.
@@ -191,13 +210,8 @@ func _build_map() -> void:
 		for x in GameData.map_w:
 			if not GameData.WALKABLE.contains(row[x]):
 				_astar.set_point_solid(Vector2i(x, y), true)
-	world.build(Vector2i(48, 46))
-	for spot in world.fire_spots:
-		var f := Fire3D.new()
-		f.kind = spot.kind
-		f.position = spot.pos
-		world.add_child(f)
-		_fires.append(f)
+	var start: Dictionary = GameData.cities[0].temple if not GameData.cities.is_empty() else {"x": 48, "y": 46}
+	world.build(Vector2i(int(start.x), int(start.y)))
 
 
 ## Włącza/wyłącza efekty (cząsteczki, cienie, poświata) – ustawienie w menu.
@@ -205,8 +219,7 @@ func apply_effects() -> void:
 	var on := Config.effects
 	sun.shadow_enabled = on
 	env.glow_enabled = on
-	for f in _fires:
-		f.effects = on
+	world.set_effects(on)
 	_update_weather()
 
 
@@ -289,7 +302,7 @@ func _on_snapshot(msg: Dictionary) -> void:
 		view.apply(e, id == GameData.my_id)
 	var now := Time.get_ticks_msec()
 	for id in entities.keys():
-		if not seen.has(id) and id != GameData.my_id:
+		if not seen.has(id) and id != GameData.my_id and id > 0:
 			var e: Entity3D = entities[id]
 			var died: bool = now - int(_recent_deaths.get(e.tile, -100000)) < 1500
 			e.vanish(died)
@@ -321,7 +334,7 @@ func _fx_animate(f: Dictionary) -> void:
 					if e.kind == "m" and _dist(e.tile, my_pos) <= 1:
 						e.face_tile(my_pos)
 						e.play_attack()
-		"shot":
+		"shot", "bolt":
 			var src := t
 			var dst := Vector2i(int(f.tx), int(f.ty))
 			for id in entities:
@@ -342,6 +355,13 @@ var _zone := ""
 ## Wejście do innej strefy: duży komunikat na środku ekranu.
 func _update_zone() -> void:
 	var z := GameData.zone_at(my_pos.x, my_pos.y)
+	var b := GameData.biome_at(my_pos.x, my_pos.y)
+	if b != _biome:
+		var first_b := _biome == ""
+		_biome = b
+		if not first_b:
+			hud.add_chat("[color=#d8c890]— %s —[/color]" % GameData.BIOME_NAMES.get(b, ""))
+		_update_weather()
 	if z == _zone:
 		return
 	var first := _zone == ""
@@ -352,12 +372,20 @@ func _update_zone() -> void:
 
 func _update_weather() -> void:
 	var on := Config.effects
-	var red := _zone == "r"
-	_ash.emitting = on
-	_ash.visible = on
-	_ash.amount = 110 if red else 40
-	_embers.emitting = on and red
-	_embers.visible = on and red
+	var b := _biome
+	var danger := _zone == "r" or _zone == "b" or b == "a"
+	_set_particles(_ash, on and (danger or b == "a"), 110 if (_zone == "b" or b == "a") else 50)
+	_set_particles(_embers, on and (_zone == "b" or b == "a"), 30)
+	_set_particles(_snow, on and b == "s", 160)
+	_set_particles(_dust, on and b == "d", 70)
+	_set_particles(_fireflies, on and (b == "w" or b == "f") and night > 0.4, 40)
+
+
+func _set_particles(p: CPUParticles3D, active: bool, amount: int) -> void:
+	p.emitting = active
+	p.visible = active
+	if active and p.amount != amount:
+		p.amount = amount
 
 
 func _update_minimap() -> void:
@@ -667,8 +695,17 @@ func _update_camera(delta: float) -> void:
 	world.focus = me.tile
 	_ash.position = me.position + Vector3(0, 4.0, 0)
 	_embers.position = me.position + Vector3(0, 0.5, 0)
+	_snow.position = me.position + Vector3(0, 5.0, 0)
+	_dust.position = me.position + Vector3(-4.0, 0.6, 0)
+	_fireflies.position = me.position + Vector3(0, 0.8, 0)
 	# Mgła dopasowana do strefy (płynnie).
-	var want_fog: Color = ZONE_FOG.get(_zone if _zone != "" else "g", ZONE_FOG["g"])
+	var want_fog: Color = BIOME_FOG.get(_biome, BIOME_FOG["m"])
+	if _zone == "y":
+		want_fog = want_fog.lerp(ZONE_FOG["y"], 0.2)
+	elif _zone == "r":
+		want_fog = want_fog.lerp(ZONE_FOG["r"], 0.35)
+	elif _zone == "b":
+		want_fog = ZONE_FOG["b"]
 	_fog_col = _fog_col.lerp(want_fog, minf(1.0, delta * 1.5))
 
 
@@ -795,13 +832,13 @@ func _update_day_night(_delta: float) -> void:
 	var fog := _fog_col.lerp(Color(0.85, 0.5, 0.35), dusk * 0.5).lerp(Color(0.05, 0.07, 0.14), deep)
 	env.fog_light_color = fog
 	env.background_color = fog
-	env.fog_depth_begin = lerpf(14.0, 10.0, deep) if _zone != "r" else lerpf(10.0, 8.0, deep)
+	env.fog_depth_begin = lerpf(14.0, 10.0, deep) if not (_zone in ["r", "b"] or _biome == "s") else lerpf(10.0, 8.0, deep)
 	if absf(n - _last_night) > 0.01 or not _night_ready:
 		_night_ready = true
 		_last_night = n
-		for f in _fires:
-			f.night = n
+		world.set_night(n)
 		hud.set_time_of_day(n)
+		_update_weather()
 	if me:
 		me.light.visible = n > 0.3 and Config.effects
 		me.light.light_energy = 0.9 * n

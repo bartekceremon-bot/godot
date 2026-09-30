@@ -5,10 +5,14 @@ extends Node3D
 ##
 ## Rodzaje: humanoid (gracze, NPC, szkielet), beast (szczur, dzik, wilk, ogar), node (złoża surowców).
 
-const TIER_METAL := [Color(0.62, 0.62, 0.64), Color(0.62, 0.62, 0.64), Color(0.74, 0.52, 0.3), Color(0.56, 0.67, 0.82), Color(0.3, 0.26, 0.38)]
-const TIER_LEATHER := [Color(0.56, 0.37, 0.2), Color(0.56, 0.37, 0.2), Color(0.42, 0.3, 0.17), Color(0.3, 0.24, 0.22), Color(0.16, 0.13, 0.14)]
-const TIER_CLOTH := [Color(0.84, 0.78, 0.62), Color(0.84, 0.78, 0.62), Color(0.28, 0.52, 0.33), Color(0.24, 0.36, 0.68), Color(0.44, 0.18, 0.52)]
-const TIER_TRIM := [Color(0.5, 0.4, 0.3), Color(0.5, 0.4, 0.3), Color(0.35, 0.62, 0.3), Color(0.35, 0.52, 0.95), Color(0.95, 0.72, 0.25)]
+const TIER_METAL := [Color(0.62, 0.62, 0.64), Color(0.62, 0.62, 0.64), Color(0.74, 0.52, 0.3), Color(0.56, 0.67, 0.82), Color(0.3, 0.26, 0.38),
+	Color(0.38, 0.7, 0.62), Color(0.55, 0.28, 0.32), Color(0.6, 0.48, 0.84), Color(0.95, 0.6, 0.25)]
+const TIER_LEATHER := [Color(0.56, 0.37, 0.2), Color(0.56, 0.37, 0.2), Color(0.42, 0.3, 0.17), Color(0.3, 0.24, 0.22), Color(0.16, 0.13, 0.14),
+	Color(0.36, 0.22, 0.12), Color(0.52, 0.54, 0.6), Color(0.3, 0.42, 0.24), Color(0.48, 0.12, 0.1)]
+const TIER_CLOTH := [Color(0.84, 0.78, 0.62), Color(0.84, 0.78, 0.62), Color(0.28, 0.52, 0.33), Color(0.24, 0.36, 0.68), Color(0.44, 0.18, 0.52),
+	Color(0.45, 0.62, 0.9), Color(0.85, 0.6, 0.2), Color(0.95, 0.85, 0.4), Color(0.7, 0.95, 0.92)]
+const TIER_TRIM := [Color(0.5, 0.4, 0.3), Color(0.5, 0.4, 0.3), Color(0.35, 0.62, 0.3), Color(0.35, 0.52, 0.95), Color(0.95, 0.72, 0.25),
+	Color(0.2, 0.8, 0.7), Color(0.85, 0.15, 0.2), Color(0.7, 0.4, 1.0), Color(1.0, 0.5, 0.1)]
 const SKINS := [Color(0.96, 0.8, 0.66), Color(0.9, 0.7, 0.54), Color(0.78, 0.56, 0.4), Color(0.55, 0.38, 0.26)]
 const HAIRS := [Color(0.3, 0.2, 0.12), Color(0.12, 0.1, 0.09), Color(0.82, 0.62, 0.3), Color(0.6, 0.25, 0.12), Color(0.85, 0.85, 0.82)]
 const SHIRTS := [Color(0.62, 0.22, 0.18), Color(0.25, 0.4, 0.6), Color(0.3, 0.5, 0.3), Color(0.55, 0.45, 0.25), Color(0.45, 0.3, 0.55), Color(0.7, 0.55, 0.3), Color(0.3, 0.3, 0.32), Color(0.2, 0.45, 0.45)]
@@ -30,6 +34,11 @@ var _gather_t := -1.0
 var gathering := false
 var _idle_t := 0.0
 var _dead := false
+## Lewitacja (zjawy) i wysokość siodła wierzchowca.
+var float_mode := false
+var riding_height := 0.0
+## Jeździec na wierzchowcu: nogi rozkraczone, bez kroków.
+var riding := false
 
 
 func _init(mat: ShaderMaterial = null) -> void:
@@ -264,8 +273,12 @@ func build_humanoid(app: Dictionary) -> void:
 			hk.cone(Vector3(0, 0.32, -0.06), 0.13, 0.2, 5, cc)
 			_cut_face(hk, skin, hair)
 	var head := _part("head", torso, Vector3(0, 0.37, 0), hk)
-	if head:
-		pass
+	_head_extras(head, app, skin)
+	_body_extras(torso, root, app)
+	if app.get("float", false):
+		# Lewitujące zjawy: bez nóg, długa szata.
+		parts["leg_l"].visible = false
+		parts["leg_r"].visible = false
 
 	# --- Ręce ---
 	for side in [-1, 1]:
@@ -306,8 +319,10 @@ func _cut_face(hk: MeshKit, skin: Color, hair: Color) -> void:
 func _build_weapon(id: String) -> void:
 	var it := split_item(id)
 	var base: String = it[0]
-	var t: int = clampi(it[1], 1, 4)
+	var t: int = clampi(it[1], 1, 8)
 	var k := MeshKit.new(51)
+	if t >= 8:
+		k.glow = 0.25
 	var metal: Color = TIER_METAL[t].lightened(0.1)
 	var grip := Color(0.3, 0.2, 0.12)
 	var trim: Color = TIER_TRIM[t]
@@ -361,6 +376,26 @@ func _build_weapon(id: String) -> void:
 			k.box(Vector3(0, -0.05, 0), Vector3(0.035, 0.4, 0.035), grip)
 			k.metal = 1.0
 			k.box(Vector3(0, 0.33, 0), Vector3(0.07, 0.08, 0.16), IRON())
+		"staff":
+			k.box(Vector3(0, -0.2, 0), Vector3(0.035, 0.85, 0.035), Color(0.35, 0.24, 0.14))
+			k.glow = 1.0
+			k.blob(Vector3(0, 0.7, 0), Vector3(0.07, 0.07, 0.07), trim if t > 1 else Color(0.5, 1.0, 0.4), 2, 6, 0.0)
+			k.glow = 0.0
+		"club_big":
+			k.box(Vector3(0, -0.05, 0), Vector3(0.06, 0.3, 0.06), grip)
+			k.jitter = 0.05
+			k.cyl(Vector3(0, 0.22, 0), 0.07, 0.13, 0.45, 6, Color(0.42, 0.3, 0.2))
+			k.jitter = 0.0
+			for i in 4:
+				k.cone(Vector3(0.1 * cos(i * 1.6), 0.45 + i * 0.05, 0.1 * sin(i * 1.6)), 0.03, 0.08, 4, Color(0.8, 0.8, 0.75))
+		"greatsword":
+			k.box(Vector3(0, -0.08, 0), Vector3(0.04, 0.2, 0.04), grip)
+			k.metal = 1.0
+			k.box(Vector3(0, 0.1, 0), Vector3(0.28, 0.05, 0.06), Color(0.2, 0.15, 0.15))
+			k.box(Vector3(0, 0.14, 0), Vector3(0.09, 0.8, 0.025), Color(0.3, 0.26, 0.28), Vector2(0.5, 1.0))
+			k.glow = 0.8
+			k.box(Vector3(0, 0.2, 0.014), Vector3(0.02, 0.65, 0.005), Color(1.0, 0.35, 0.1))
+			k.glow = 0.0
 		_:
 			return
 	var holder := Node3D.new()
@@ -440,7 +475,78 @@ func build_beast(look: String) -> void:
 	var eye_glow := 0.0
 	var tail := "thin"
 	var cracks := false
+	var ear_col := Color(0.9, 0.62, 0.62)
+	var extra := ""
 	match look:
+		"snow_fox":
+			fur = Color(0.93, 0.95, 0.97)
+			belly = Color(1, 1, 1)
+			L = 0.5
+			W = 0.2
+			H = 0.17
+			leg = 0.14
+			head = Vector3(0.16, 0.14, 0.18)
+			ear = "pointy"
+			tail = "bushy"
+		"snow_wolf":
+			fur = Color(0.84, 0.87, 0.92)
+			belly = Color(0.96, 0.97, 1.0)
+			L = 0.76
+			W = 0.3
+			H = 0.3
+			leg = 0.32
+			head = Vector3(0.25, 0.23, 0.25)
+			ear = "pointy"
+			tail = "bushy"
+			eye = Color(0.5, 0.85, 1.0)
+			eye_glow = 0.8
+		"bear":
+			fur = Color(0.4, 0.27, 0.17)
+			belly = Color(0.48, 0.34, 0.22)
+			L = 0.92
+			W = 0.52
+			H = 0.46
+			leg = 0.28
+			head = Vector3(0.32, 0.3, 0.3)
+			ear_col = fur.darkened(0.1)
+			tail = "stub"
+		"basilisk":
+			fur = Color(0.3, 0.42, 0.22)
+			belly = Color(0.62, 0.56, 0.3)
+			L = 1.15
+			W = 0.46
+			H = 0.3
+			leg = 0.17
+			head = Vector3(0.32, 0.22, 0.42)
+			ear = "none"
+			tail = "thick"
+			eye = Color(1.0, 0.85, 0.1)
+			eye_glow = 1.0
+			extra = "spikes"
+		"mount_horse", "mount_elk", "mount_camel":
+			fur = {"mount_horse": Color(0.45, 0.28, 0.16), "mount_elk": Color(0.42, 0.3, 0.2), "mount_camel": Color(0.8, 0.64, 0.4)}[look]
+			belly = fur.lightened(0.12)
+			L = 0.95
+			W = 0.32
+			H = 0.36
+			leg = 0.56 if look != "mount_camel" else 0.62
+			head = Vector3(0.18, 0.2, 0.36)
+			ear = "pointy"
+			tail = "flowing" if look == "mount_horse" else "stub"
+			extra = look
+		"mount_warwolf":
+			fur = Color(0.3, 0.3, 0.33)
+			belly = Color(0.5, 0.5, 0.52)
+			L = 0.95
+			W = 0.36
+			H = 0.36
+			leg = 0.46
+			head = Vector3(0.3, 0.27, 0.3)
+			ear = "pointy"
+			tail = "bushy"
+			eye = Color(1.0, 0.8, 0.2)
+			eye_glow = 0.6
+			extra = look
 		"rat":
 			fur = Color(0.46, 0.4, 0.37)
 			belly = Color(0.7, 0.62, 0.58)
@@ -489,6 +595,23 @@ func build_beast(look: String) -> void:
 		bk.box(Vector3(0, H / 2.0 - 0.02, -0.05), Vector3(0.08, 0.08, L * 0.8), fur.darkened(0.3))
 	if look == "wolf" or look == "hound":
 		bk.box(Vector3(0, -H / 2.0, L * 0.3), Vector3(W * 1.15, H * 1.15, L * 0.3), fur.lightened(0.05))
+	if extra == "spikes":
+		for i in 5:
+			bk.cone(Vector3(0, H / 2.0 - 0.02, L / 2.5 - i * L / 6.0), 0.06, 0.14, 4, fur.darkened(0.35))
+	if extra.begins_with("mount_"):
+		# Siodło z czaprakiem.
+		bk.box(Vector3(0, H / 2.0 - 0.03, 0.02), Vector3(W * 1.08, 0.05, 0.36), Color(0.55, 0.12, 0.1))
+		bk.box(Vector3(0, H / 2.0, 0.02), Vector3(W * 0.8, 0.07, 0.26), Color(0.32, 0.2, 0.12))
+		bk.metal = 1.0
+		for side in [-1, 1]:
+			bk.box(Vector3(side * W * 0.56, -0.05, 0.02), Vector3(0.02, 0.18, 0.02), Color(0.7, 0.62, 0.4))
+		bk.metal = 0.0
+		if extra == "mount_camel":
+			bk.blob(Vector3(0, H / 2.0 + 0.06, -0.22), Vector3(0.15, 0.14, 0.18), fur, 3, 6, 0.1)
+		if extra == "mount_warwolf":
+			bk.metal = 0.9
+			bk.box(Vector3(0, H / 2.0 - 0.06, L * 0.3), Vector3(W * 1.1, 0.12, 0.2), Color(0.45, 0.45, 0.5))
+			bk.metal = 0.0
 	if cracks:
 		bk.glow = 1.0
 		for i in 4:
@@ -514,9 +637,19 @@ func build_beast(look: String) -> void:
 	for side in [-1, 1]:
 		hk.box(Vector3(side * head.x * 0.3, head.y * 0.12, head.z / 2.0 + 0.002), Vector3(0.035, 0.035, 0.01), eye)
 	hk.glow = 0.0
+	if extra == "mount_elk":
+		for side in [-1, 1]:
+			for i in 3:
+				hk.xf = Transform3D(Basis(Vector3(0, 0, 1), -side * (0.5 + i * 0.3)), Vector3(side * 0.07, head.y / 2.0, -0.05))
+				hk.cone(Vector3.ZERO, 0.025, 0.28 - i * 0.05, 4, Color(0.88, 0.8, 0.62))
+			hk.xf = Transform3D.IDENTITY
+	if extra == "mount_horse":
+		hk.box(Vector3(0, head.y / 2.0 - 0.02, -0.08), Vector3(0.05, 0.1, 0.2), Color(0.18, 0.12, 0.08))
 	for side in [-1, 1]:
+		if ear == "none":
+			continue
 		if ear == "round":
-			hk.blob(Vector3(side * head.x * 0.42, head.y / 2.0 + 0.02, -0.02), Vector3(0.045, 0.045, 0.02), Color(0.9, 0.62, 0.62), 2, 6, 0.0)
+			hk.blob(Vector3(side * head.x * 0.42, head.y / 2.0 + 0.02, -0.02), Vector3(0.045, 0.045, 0.02) * (2.0 if look == "bear" else 1.0), ear_col, 2, 6, 0.0)
 		else:
 			hk.cone(Vector3(side * head.x * 0.3, head.y / 2.0 - 0.01, -head.z * 0.2), head.x * 0.2, head.y * 0.55, 4, fur.darkened(0.1))
 	var head_node := _part("head", body, Vector3(0, H * 0.25, L / 2.0 + head.z * 0.35), hk)
@@ -546,9 +679,25 @@ func build_beast(look: String) -> void:
 			tk.box(Vector3(0, -0.05, -0.15), Vector3(0.09, 0.09, 0.3), fur, Vector2(0.5, 0.5))
 			tk.glow = 1.0
 			tk.cone(Vector3(0, 0.0, -0.3), 0.07, 0.2, 5, Color(1.0, 0.45, 0.1))
+		"thick":
+			for j in 4:
+				tk.box(Vector3(0, -0.04 - j * 0.02, -0.12 - j * 0.2), Vector3(0.22 - j * 0.045, 0.16 - j * 0.03, 0.22), fur.darkened(0.05 * j))
+		"flowing":
+			tk.box(Vector3(0, -0.12, -0.1), Vector3(0.08, 0.3, 0.1), Color(0.18, 0.12, 0.08), Vector2(1.4, 0.6))
 	var tail_node := _part("tail", body, Vector3(0, H * 0.2, -L / 2.0), tk)
 	tail_node.rotation.x = -0.5 if tail == "bushy" or tail == "flame" else 0.1
 	height = leg + H + head.y
+	riding_height = leg + H + 0.05
+	if extra == "mount_horse" or extra == "mount_camel" or extra == "mount_elk":
+		# Długa szyja: głowa wyżej i dalej.
+		head_node.position += Vector3(0, 0.2 if extra != "mount_camel" else 0.3, 0.05)
+		head_node.rotation.x = -0.2
+		var nk := MeshKit.new(95)
+		nk.box(Vector3(0, -0.1, 0), Vector3(W * 0.55, 0.36 if extra != "mount_camel" else 0.46, W * 0.6), fur)
+		if extra == "mount_horse":
+			nk.box(Vector3(0, -0.05, -0.08), Vector3(0.06, 0.36, 0.08), Color(0.18, 0.12, 0.08))
+		var neck := _part("neck", body, Vector3(0, H * 0.3, L / 2.0 - 0.02), nk)
+		neck.rotation.x = 0.5
 	if look == "hound":
 		var p := CPUParticles3D.new()
 		p.amount = 12
@@ -712,19 +861,41 @@ func _process(delta: float) -> void:
 			play_attack("melee")
 	else:
 		_gather_t = -1.0 if not gathering else _gather_t
-	if type == "humanoid":
-		_animate_humanoid(delta)
-	else:
-		_animate_beast(delta)
+	match type:
+		"humanoid":
+			_animate_humanoid(delta)
+			if parts.has("wing_l"):
+				_flap(0.25, 3.0)
+			if float_mode:
+				parts["root"].position.y = 0.18 + sin(_idle_t * 2.0) * 0.06
+		"beast":
+			_animate_beast(delta)
+			if parts.has("wing_l"):
+				_flap(0.5, 4.0 if moving else 2.0)
+			if riding_height > 0.0:
+				pass
+		_:
+			CreatureModels.animate(self, delta)
+
+
+## Machanie skrzydłami.
+func _flap(amp: float, speed: float) -> void:
+	var a := sin(_idle_t * speed) * amp
+	parts["wing_l"].rotation.z = 0.3 + a
+	parts["wing_r"].rotation.z = -0.3 - a
 
 
 func _animate_humanoid(_delta: float) -> void:
 	var s := sin(_phase)
-	var walk_amp := 0.65 if moving else 0.0
+	var walk_amp := 0.65 if moving and not riding else 0.0
 	var root: Node3D = parts["root"]
 	root.position.y = absf(sin(_phase)) * 0.045 if moving else 0.0
 	parts["leg_l"].rotation.x = s * walk_amp
 	parts["leg_r"].rotation.x = -s * walk_amp
+	if riding:
+		root.position.y = 0.0
+		parts["leg_l"].rotation = Vector3(-1.2, 0, -0.35)
+		parts["leg_r"].rotation = Vector3(-1.2, 0, 0.35)
 	var torso: Node3D = parts["torso"]
 	var breathe := sin(_idle_t * 2.2) * 0.012
 	torso.scale.y = 1.0 + breathe
@@ -781,3 +952,87 @@ func _animate_beast(_delta: float) -> void:
 		var k := _attack_t / 0.45
 		body.position.z = sin(k * PI) * 0.22
 		head.rotation.x = 0.1 + sin(k * PI) * 0.5
+
+
+# ============================================================================
+# Dodatki humanoidów (potwory, NPC)
+# ============================================================================
+
+## Kły, rogi, świecące oczy, pysk jaszczura, twarz yeti, korona.
+func _head_extras(head: Node3D, app: Dictionary, skin: Color) -> void:
+	var k := MeshKit.new(33)
+	if app.get("tusks", false):
+		for side in [-1, 1]:
+			k.cone(Vector3(side * 0.07, -0.02, 0.14), 0.025, 0.09, 4, Color(0.95, 0.92, 0.8))
+	if app.has("horns"):
+		var hc: Color = app.horns
+		for side in [-1, 1]:
+			k.xf = Transform3D(Basis(Vector3(0, 0, 1), -side * 0.6), Vector3(side * 0.12, 0.26, 0))
+			k.cone(Vector3.ZERO, 0.05, 0.22, 5, hc)
+		k.xf = Transform3D.IDENTITY
+	match str(app.get("head_shape", "")):
+		"lizard":
+			k.box(Vector3(0, -0.02, 0.2), Vector3(0.2, 0.14, 0.18), skin.darkened(0.05), Vector2(0.8, 0.85))
+			k.box(Vector3(0, 0.12, 0.05), Vector3(0.05, 0.1, 0.3), skin.darkened(0.25))
+			for i in 3:
+				k.cone(Vector3(0, 0.26 - i * 0.04, -0.02 - i * 0.08), 0.04, 0.1, 4, skin.darkened(0.3))
+		"yeti":
+			k.box(Vector3(0, 0.0, 0.14), Vector3(0.2, 0.2, 0.02), Color(0.45, 0.62, 0.8))
+			k.box(Vector3(0, 0.2, 0.0), Vector3(0.34, 0.1, 0.32), skin.lightened(0.05))
+		"skull":
+			pass
+	if app.has("eye_glow"):
+		k.glow = 1.0
+		for side in [-1, 1]:
+			k.box(Vector3(side * 0.065, 0.12, 0.146), Vector3(0.05, 0.04, 0.012), app.eye_glow)
+		k.glow = 0.0
+	if app.has("crown"):
+		k.glow = 0.7
+		k.metal = 0.8
+		for i in 7:
+			var a := i * TAU / 7.0
+			k.cone(Vector3(cos(a) * 0.14, 0.28, sin(a) * 0.14), 0.035, 0.2 + (i % 2) * 0.1, 4, app.crown)
+		k.glow = 0.0
+		k.metal = 0.0
+	if app.has("bandana"):
+		k.box(Vector3(0, 0.2, 0), Vector3(0.32, 0.08, 0.3), app.bandana)
+		k.box(Vector3(0, -0.02, 0.13), Vector3(0.3, 0.1, 0.04), app.bandana)
+	if not k.is_empty():
+		_attach_mesh(head, k)
+
+
+## Skrzydła, ogon, szata zjawy, bandaże mumii, płaszcz.
+func _body_extras(torso: Node3D, root: Node3D, app: Dictionary) -> void:
+	if app.has("wings"):
+		var wc: Color = app.wings
+		for side in [-1, 1]:
+			var wk := MeshKit.new(34 + side)
+			var o := Vector3.ZERO
+			wk.blade(o, Vector3(side * 0.9, 0.35, -0.1), Vector3(side * 0.7, -0.35, -0.05), wc)
+			wk.blade(o, Vector3(side * 0.7, -0.35, -0.05), Vector3(side * 0.3, -0.45, 0), wc.darkened(0.15))
+			wk.box(Vector3(side * 0.45, 0.14, -0.05), Vector3(0.9, 0.04, 0.04), wc.darkened(0.4))
+			_part("wing_l" if side < 0 else "wing_r", torso, Vector3(side * 0.1, 0.28, -0.12), wk)
+	if app.has("tail"):
+		var tk := MeshKit.new(36)
+		var tc: Color = app.tail
+		for i in 4:
+			tk.box(Vector3(0, -0.02 * i, -0.08 - i * 0.14), Vector3(0.12 - i * 0.022, 0.1 - i * 0.018, 0.16), tc)
+		var tail := _part("tail", root, Vector3(0, 0.38, -0.08), tk)
+		tail.rotation.x = 0.35
+	if app.get("float", false):
+		float_mode = true
+		var rk := MeshKit.new(37)
+		var rc: Color = app.get("shirt", Color(0.7, 0.85, 0.95))
+		rk.glow = float(app.get("robe_glow", 0.0))
+		rk.box(Vector3(0, -0.45, 0), Vector3(0.36, 0.48, 0.26), rc, Vector2(0.9, 0.85))
+		rk.cone(Vector3(0, -0.6, 0), 0.22, 0.2, 6, rc.darkened(0.1))
+		_attach_mesh(torso, rk)
+	if app.has("stripes"):
+		var sk := MeshKit.new(38)
+		for i in 4:
+			sk.box(Vector3(0, 0.05 + i * 0.08, 0), Vector3(0.335, 0.015, 0.21), app.stripes)
+		_attach_mesh(torso, sk)
+	if app.has("cape"):
+		var ck := MeshKit.new(39)
+		ck.box(Vector3(0, -0.28, -0.12), Vector3(0.34, 0.62, 0.02), app.cape, Vector2(1.2, 1.0))
+		_attach_mesh(torso, ck)
