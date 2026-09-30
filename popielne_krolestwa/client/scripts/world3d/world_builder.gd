@@ -19,7 +19,15 @@ const LOAD_RADIUS := 2
 const UNLOAD_RADIUS := 4
 const FRAME_BUDGET_MS := 5
 
-const MAT_GROUND := preload("res://shaders/lowpoly_ground.gdshader")
+const MAT_GROUND := preload("res://shaders/terrain.gdshader")
+const TEX_ALBEDO := preload("res://assets/textures/terrain_albedo.png")
+const TEX_NORMAL := preload("res://assets/textures/terrain_normal.png")
+## Średnie kolory warstw (assets/textures/terrain_means.txt), siła barwienia kolorem krainy i szorstkość.
+const LAYER_MEAN := [Vector3(0.265, 0.415, 0.134), Vector3(0.19, 0.163, 0.086), Vector3(0.394, 0.297, 0.199), Vector3(0.836, 0.711, 0.501),
+	Vector3(0.854, 0.887, 0.942), Vector3(0.466, 0.449, 0.41), Vector3(0.49, 0.47, 0.436), Vector3(0.796, 0.761, 0.687), Vector3(0.26, 0.221, 0.132),
+	Vector3(0.236, 0.216, 0.206), Vector3(0.104, 0.081, 0.14), Vector3(0.692, 0.824, 0.917), Vector3(0.458, 0.429, 0.379), Vector3(0.442, 0.368, 0.175)]
+const LAYER_TINT := [1.0, 0.7, 0.6, 0.8, 0.4, 0.85, 0.12, 0.1, 0.6, 0.7, 0.2, 0.3, 0.4, 0.2]
+const LAYER_ROUGH := [0.95, 0.95, 0.95, 0.9, 0.6, 0.85, 0.8, 0.55, 0.45, 0.95, 0.25, 0.15, 0.8, 0.95]
 const MAT_OBJECT := preload("res://shaders/lowpoly_object.gdshader")
 const MAT_FOLIAGE := preload("res://shaders/lowpoly_foliage.gdshader")
 const MAT_WATER := preload("res://shaders/lowpoly_water.gdshader")
@@ -84,11 +92,24 @@ var effects := true
 ## Cały świat w niskiej rozdzielczości (horyzont).
 var far: FarWorld
 var _mask_dirty := true
+## Drzewa i trawa zbierane podczas budowy kawałka (potem MultiMesh).
+var _cur_trees := {}
+var _cur_grass: Array = []
 
 
 func _init() -> void:
 	mat_ground.shader = MAT_GROUND
+	mat_ground.set_shader_parameter("albedo_tex", TEX_ALBEDO)
+	mat_ground.set_shader_parameter("normal_tex", TEX_NORMAL)
+	mat_ground.set_shader_parameter("layer_mean", PackedVector3Array(LAYER_MEAN))
+	mat_ground.set_shader_parameter("layer_tint", PackedFloat32Array(LAYER_TINT))
+	mat_ground.set_shader_parameter("layer_rough", PackedFloat32Array(LAYER_ROUGH))
 	mat_object.shader = MAT_OBJECT
+	mat_object.set_shader_parameter("textured", true)
+	for pair in [["tex_stone", "stone_wall"], ["tex_stone_n", "stone_wall_n"], ["tex_roof", "roof_tiles"], ["tex_roof_n", "roof_tiles_n"],
+			["tex_wood", "wood"], ["tex_wood_n", "wood_n"], ["tex_plaster", "plaster"]]:
+		mat_object.set_shader_parameter(pair[0], load("res://assets/textures/%s.png" % pair[1]))
+	mat_object.set_shader_parameter("terrain_array", TEX_ALBEDO)
 	mat_foliage.shader = MAT_FOLIAGE
 	mat_water.shader = MAT_WATER
 	mat_lava.shader = MAT_LAVA
@@ -488,12 +509,21 @@ func _build_chunk(c: Vector2i) -> void:
 func _start_chunk(c: Vector2i) -> Dictionary:
 	return {
 		"c": c, "row": c.y * CHUNK,
-		"ground": MeshKit.new(c.x * 7919 + c.y * 104729),
+		"ground": _ground_kit(c),
+		"corners": {},
+		"trees": {},
+		"grass": [],
 		"objects": MeshKit.new(c.x * 31 + c.y * 17 + 5),
 		"foliage": MeshKit.new(c.x * 13 + c.y * 71 + 9),
 		"water": MeshKit.new(3),
 		"lava": MeshKit.new(4),
 	}
+
+
+func _ground_kit(c: Vector2i) -> MeshKit:
+	var k := MeshKit.new(c.x * 7919 + c.y * 104729)
+	k.ground = true
+	return k
 
 
 ## Buduje jeden rząd kafelków kawałka; zwraca true, gdy kawałek gotowy.
@@ -505,10 +535,12 @@ func _step_chunk(job: Dictionary) -> bool:
 	job.row = ty + 1
 	if ty < -BORDER or ty >= h + BORDER:
 		return false
+	_cur_trees = job.trees
+	_cur_grass = job.grass
 	for tx in range(c.x * CHUNK, (c.x + 1) * CHUNK):
 		if tx < -BORDER or tx >= w + BORDER:
 			continue
-		_ground_tile(job.ground, tx, ty)
+		_ground_tile(job.ground, tx, ty, job.corners)
 		_tile_details(job.objects, job.foliage, job.ground, tx, ty)
 		if _near(tx, ty, "~") or (_near(tx, ty, "=") and not _near(tx, ty, "l") and biome(tx, ty) != "a"):
 			_water_tile(job.water, tx, ty)
@@ -526,6 +558,11 @@ func _finish_chunk(job: Dictionary) -> void:
 	_add_mesh(node, job.foliage, mat_foliage, true)
 	_add_mesh(node, job.water, mat_water, false)
 	_add_mesh(node, job.lava, mat_lava, false)
+	for key in job.trees:
+		var parts: PackedStringArray = key.split(":")
+		_add_multimesh(node, TreeModels.mesh(parts[0], int(parts[1])), job.trees[key], true)
+	if not job.grass.is_empty():
+		_add_multimesh(node, TreeModels.grass_mesh(), job.grass, false)
 	for spot in _fire_spots.get(c, []):
 		var f := Fire3D.new()
 		f.kind = spot.kind
@@ -548,6 +585,24 @@ func _add_mesh(parent: Node3D, kit: MeshKit, mat: Material, shadows: bool) -> vo
 	parent.add_child(mi)
 
 
+func _add_multimesh(parent: Node3D, mesh: Mesh, list: Array, shadows: bool) -> void:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_custom_data = true
+	# Bez kolorów instancji tryb zgodności zeruje kolory wierzchołków.
+	mm.use_colors = true
+	mm.mesh = mesh
+	mm.instance_count = list.size()
+	for i in list.size():
+		mm.set_instance_transform(i, list[i][0])
+		mm.set_instance_custom_data(i, list[i][1])
+		mm.set_instance_color(i, Color.WHITE)
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(mmi)
+
+
 func _near(x: int, y: int, ch: String) -> bool:
 	for dy in range(-1, 2):
 		for dx in range(-1, 2):
@@ -556,29 +611,114 @@ func _near(x: int, y: int, ch: String) -> bool:
 	return false
 
 
-func _ground_tile(k: MeshKit, x: int, y: int) -> void:
+## Warstwy tekstur terenu (kolejność = tools/textures/gen_textures.py: LAYERS).
+enum { L_GRASS, L_FOREST, L_DIRT, L_SAND, L_SNOW, L_ROCK, L_COBBLE, L_SLAB, L_MUD, L_ASH, L_OBSIDIAN, L_ICE, L_PEBBLES, L_FIELD }
+## Pierwszeństwo warstwy w narożniku (droga i bruk „wygrywają” z trawą).
+const LAYER_PRIO := [1, 2, 6, 4, 3, 3, 8, 9, 5, 4, 6, 6, 5, 7]
+const BIOME_LAYER := {"m": L_GRASS, "f": L_FOREST, "s": L_SNOW, "r": L_GRASS, "d": L_SAND, "w": L_MUD, "a": L_ASH}
+
+
+func _tile_layer(x: int, y: int) -> int:
+	var c := tile(x, y)
+	match c:
+		"n":
+			return L_SNOW
+		"d", "s":
+			return L_SAND
+		"a":
+			return L_ASH
+		"o", "l":
+			return L_OBSIDIAN
+		"i":
+			return L_ICE
+		",":
+			return L_ASH if biome(x, y) == "a" else L_DIRT
+		"p":
+			return L_PEBBLES
+		"c":
+			return L_FIELD
+		"x":
+			return L_SLAB
+		"f", "D", "M", "K", "W", "P", "#", "H", "U":
+			return L_COBBLE
+		"~", "=":
+			return L_MUD if biome(x, y) == "w" else L_PEBBLES
+		"^", "B":
+			return L_ROCK
+	return BIOME_LAYER.get(biome(x, y), L_GRASS)
+
+
+func _snow_line(b: String, border: bool) -> float:
+	if b == "s":
+		return 1.2
+	if b == "r" or border:
+		return 2.5
+	return 99.0
+
+
+## Narożnik terenu: [warstwa, kolor, normalna] – liczone raz na kawałek (pamięć podręczna w zadaniu).
+func _corner_info(cache: Dictionary, cx: int, cy: int) -> Array:
+	var key := Vector2i(cx, cy)
+	if cache.has(key):
+		return cache[key]
+	var hh := height_at_corner(cx, cy)
+	var best := -1
+	var ground_best := -1
+	var col := Color(0, 0, 0)
+	var mount := false
+	var b := biome(cx, cy)
+	var border := false
+	for d in [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)]:
+		var x: int = cx + d.x
+		var y: int = cy + d.y
+		var l := _tile_layer(x, y)
+		col += _tile_color(x, y)
+		if l == L_ROCK:
+			mount = true
+			if tile(x, y) == "B":
+				border = true
+		elif ground_best < 0 or LAYER_PRIO[l] > LAYER_PRIO[ground_best]:
+			ground_best = l
+		if best < 0 or LAYER_PRIO[l] > LAYER_PRIO[best]:
+			best = l
+	col /= 4.0
+	if mount:
+		if hh < 0.3 and ground_best >= 0:
+			best = ground_best
+		elif hh > _snow_line(b, border):
+			best = L_SNOW
+			col = SNOW
+		else:
+			best = L_ROCK
+			var rock: Color = ROCK_COL.get(b, ROCK_COL["m"])
+			if b == "d":
+				var bands := [Color(0.8, 0.52, 0.33), Color(0.86, 0.62, 0.4), Color(0.72, 0.44, 0.3)]
+				col = bands[int(hh * 3.0) % 3]
+			else:
+				col = rock.lerp(rock.darkened(0.15), _rand(cx, cy, 31))
+	var n := Vector3(height_at_corner(cx - 1, cy) - height_at_corner(cx + 1, cy), 2.0, height_at_corner(cx, cy - 1) - height_at_corner(cx, cy + 1)).normalized()
+	var info := [best, col, n]
+	cache[key] = info
+	return info
+
+
+func _ground_tile(k: MeshKit, x: int, y: int, cache: Dictionary) -> void:
 	var p00 := _corner_pos(x, y)
 	var p10 := _corner_pos(x + 1, y)
 	var p01 := _corner_pos(x, y + 1)
 	var p11 := _corner_pos(x + 1, y + 1)
 	var c := tile(x, y)
-	var own := _tile_color(x, y)
-	var crisp := c in ["f", "x", ",", "#", "D", "M", "K", "W", "P", "H", "U", "=", "c", "o", "i"]
-	var mountain := _mountain(c)
-	k.jitter = 0.035 if crisp else 0.045
-	var col_a := own
-	var col_b := own
-	if not crisp and not mountain:
-		col_a = own.lerp(_blend_neighbors(x, y, -1), 0.35)
-		col_b = own.lerp(_blend_neighbors(x, y, 1), 0.35)
+	var i00 := _corner_info(cache, x, y)
+	var i10 := _corner_info(cache, x + 1, y)
+	var i01 := _corner_info(cache, x, y + 1)
+	var i11 := _corner_info(cache, x + 1, y + 1)
 	var flip := _hash(x, y, 7) % 2 == 0
-	var tris: Array = [[p00, p10, p11, col_a], [p00, p11, p01, col_b]] if flip else [[p00, p10, p01, col_a], [p10, p11, p01, col_b]]
+	var tris: Array = [[p00, p10, p11, i00, i10, i11], [p00, p11, p01, i00, i11, i01]] if flip else [[p00, p10, p01, i00, i10, i01], [p10, p11, p01, i10, i11, i01]]
 	for t in tris:
-		var col: Color = t[3]
-		if mountain:
-			col = _mountain_color(x, y, t[0], t[1], t[2])
-		k.tri(t[0], t[1], t[2], col, Vector3.UP)
-	k.jitter = 0.0
+		var ia: Array = t[3]
+		var ib: Array = t[4]
+		var ic: Array = t[5]
+		k.tri_ground([t[0], t[1], t[2]], [ia[2], ib[2], ic[2]], [ia[1], ib[1], ic[1]], Vector3(ia[0], ib[0], ic[0]))
 	if c == "a" and _rand(x, y, 11) < 0.3:
 		_ember_crack(k, x, y)
 	elif c == "i" and _rand(x, y, 12) < 0.35:
@@ -702,26 +842,17 @@ func _tile_details(obj: MeshKit, fol: MeshKit, gnd: MeshKit, x: int, y: int) -> 
 			_rock(obj, center, x, y)
 		"#":
 			_wall(obj, x, y)
-		"f":
-			_cobbles(gnd, x, y)
-		"x":
-			_temple_slab(gnd, x, y)
 		",":
 			_road_pebbles(gnd, x, y)
 		"D":
-			_cobbles(gnd, x, y)
 			_chest(obj, center, x, y)
 		"M":
-			_cobbles(gnd, x, y)
 			_stall(obj, center, x, y)
 		"K":
-			_cobbles(gnd, x, y)
 			_anvil(obj, center)
 		"W":
-			_cobbles(gnd, x, y)
 			_workbench(obj, center)
 		"P":
-			_cobbles(gnd, x, y)
 			_furnace(obj, center)
 		"H":
 			if _houses.has(Vector2i(x, y)):
@@ -774,56 +905,67 @@ func _offset(x: int, y: int, amount: float) -> Vector3:
 	return Vector3(_rand(x, y, 5) - 0.5, 0, _rand(x, y, 6) - 0.5) * amount * 2.0
 
 
-## Drzewo dopasowane do krainy i strefy.
-func _tree(k: MeshKit, base: Vector3, x: int, y: int, scale_mul := 1.0) -> void:
+## Drzewo na kafelku: [rodzaj, wariant, barwa liści (a = siła), skala, obrót].
+func tree_spec(x: int, y: int, scale_mul := 1.0) -> Array:
 	var r := _rand(x, y, 8)
 	var b := biome(x, y)
 	var z := zone(x, y)
 	var ash_near := _near(x, y, "a") and b != "a"
 	var s := (0.85 + _rand(x, y, 9) * 0.45) * scale_mul
 	if b == "f":
-		s *= 1.25
-	var yaw := _rand(x, y, 10) * TAU
-	k.xf = Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * s), base)
-	k.sway_base = base.y
-	k.sway_height = 2.4 * s
-	k.jitter = 0.04
-	k.glow = 0.0
-	var leaf := _leaf_color(b, z, r)
+		s *= 1.1
+	var kind := "oak"
 	match b:
 		"a":
-			WorldProps.dead_tree(k, r < 0.4)
+			kind = "dead"
 		"d":
-			if _near(x, y, "~") or _near(x, y, "s") or r < 0.35:
-				WorldProps.palm(k, r)
-			else:
-				k.sway_height = 0.0
-				WorldProps.cactus(k, r)
+			kind = "palm" if _near(x, y, "~") or _near(x, y, "s") or r < 0.35 else "cactus"
 		"s":
-			WorldProps.pine(k, Color(0.15, 0.32, 0.24), true, 1.0 + r * 0.3)
+			kind = "pine_snow"
 		"w":
-			if r < 0.55:
-				WorldProps.willow(k, r)
-			else:
-				WorldProps.dead_tree(k, false, Color(0.3, 0.26, 0.2))
+			kind = "willow" if r < 0.55 else "dead"
 		"r":
-			WorldProps.pine(k, Color(0.16, 0.34, 0.22), z == "r" and r < 0.3, 1.1)
+			kind = "pine"
 		"f":
-			if r < 0.5:
-				WorldProps.pine(k, Color(0.12, 0.3, 0.18), false, 1.3)
-			else:
-				WorldProps.oak(k, leaf, 1.0 + r * 0.3)
+			kind = "pine" if r < 0.5 else "oak"
 		_:
 			if ash_near:
-				WorldProps.dead_tree(k, true)
+				kind = "dead"
 			elif r < 0.3:
-				WorldProps.pine(k, Color(0.16, 0.36, 0.2).lerp(Color(0.3, 0.3, 0.16), 0.5 if z == "r" else 0.0))
+				kind = "pine"
 			elif r < 0.45:
-				WorldProps.birch(k, leaf)
-			else:
-				WorldProps.oak(k, leaf)
-	k.reset()
-	k.jitter = 0.0
+				kind = "birch"
+	var v := _rand(x, y, 16)
+	var tint := Color(0.3, 0.55, 0.2).lerp(Color(0.45, 0.6, 0.2), v)
+	tint.a = 0.15
+	if kind == "pine" or kind == "pine_snow":
+		tint = Color(0.3, 0.3, 0.15, 0.35) if z == "r" else Color(0, 0, 0, 0)
+	elif z == "y":
+		tint = Color(0.95, 0.62, 0.18).lerp(Color(0.9, 0.4, 0.12), v)
+		tint.a = 0.8
+	elif z == "r":
+		tint = Color(0.55, 0.32, 0.15).lerp(Color(0.45, 0.25, 0.14), v)
+		tint.a = 0.75
+	return [kind, _hash(x, y, 3) % TreeModels.VARIANTS, tint, s, _rand(x, y, 10) * TAU]
+
+
+## Drzewo dopasowane do krainy i strefy (instancja MultiMesh w bieżącym kawałku).
+func _tree(_k: MeshKit, base: Vector3, x: int, y: int, scale_mul := 1.0) -> void:
+	var spec := tree_spec(x, y, scale_mul)
+	var key := "%s:%d" % [spec[0], spec[1]]
+	if not _cur_trees.has(key):
+		_cur_trees[key] = []
+	var xf := Transform3D(Basis(Vector3.UP, spec[4]).scaled(Vector3.ONE * float(spec[3])), base)
+	_cur_trees[key].append([xf, spec[2]])
+
+
+## Kępy trawy na kafelku (instancje MultiMesh w bieżącym kawałku).
+func _grass(center: Vector3, x: int, y: int, count: int, col: Color) -> void:
+	for i in count:
+		var p := center + Vector3(_rand(x, y, 130 + i) - 0.5, 0, _rand(x, y, 140 + i) - 0.5) * 0.9
+		var s := 0.7 + _rand(x, y, 150 + i) * 0.6
+		var xf := Transform3D(Basis(Vector3.UP, _rand(x, y, 160 + i) * TAU).scaled(Vector3(s, s * (0.8 + _rand(x, y, 170 + i) * 0.5), s)), p)
+		_cur_grass.append([xf, col])
 
 
 func _leaf_color(b: String, z: String, v: float) -> Color:
@@ -844,6 +986,7 @@ func _rock(k: MeshKit, base: Vector3, x: int, y: int, size := 1.0) -> void:
 		col = Color(0.72, 0.52, 0.36)
 	k.reset()
 	k.jitter = 0.05
+	k.tex = 6
 	var s := (0.8 + _rand(x, y, 12) * 0.4) * size
 	k.place(base, _rand(x, y, 13) * TAU, s)
 	var top: Color = col.lightened(0.12)
@@ -873,16 +1016,12 @@ func _ground_decor(fol: MeshKit, obj: MeshKit, center: Vector3, x: int, y: int) 
 			if b == "w" and _near(x, y, "~") and r < 0.35:
 				WorldProps.reeds(fol, center + _offset(x, y, 0.25), r)
 				return
+			if b != "w" and r < 0.75:
+				var gcol := gc.lightened(0.05)
+				gcol.a = 0.85
+				_grass(center, x, y, 2 if r < 0.4 else 1, gcol)
 			if r < (0.4 if b == "f" else 0.3):
-				fol.sway_base = center.y
-				fol.sway_height = 0.35
-				for i in 4:
-					var p := center + Vector3(_rand(x, y, 30 + i) - 0.5, 0, _rand(x, y, 40 + i) - 0.5) * 0.8
-					var a := _rand(x, y, 50 + i) * TAU
-					var dir := Vector3(cos(a), 0, sin(a)) * 0.06
-					var hgt := 0.16 + _rand(x, y, 60 + i) * 0.16
-					fol.blade(p - dir, p + dir, p + Vector3(dir.z, hgt, -dir.x) + Vector3(0, hgt * 0.5, 0), gc.lightened(0.08))
-				fol.sway_height = 0.0
+				pass
 			elif b == "f" and r > 0.9:
 				WorldProps.fern(fol, center + _offset(x, y, 0.25), r)
 			elif b == "f" and r > 0.86:
@@ -1052,6 +1191,7 @@ func _wall(k: MeshKit, x: int, y: int) -> void:
 	var cz := y + 0.5
 	k.reset()
 	k.jitter = 0.03
+	k.tex = 2
 	if corner or gate_side:
 		_tower(k, Vector3(cx, 0, cz), x, y, b)
 		k.jitter = 0.0
@@ -1090,6 +1230,7 @@ func _wall(k: MeshKit, x: int, y: int) -> void:
 		else:
 			return
 		var z := cz + outer * (sz / 2.0 + 0.012)
+		k.tex = 0
 		var banner: Color = {"d": Color(0.15, 0.45, 0.55), "s": Color(0.2, 0.25, 0.55)}.get(b, Color(0.62, 0.12, 0.1))
 		k.jitter = 0.0
 		k.quad(Vector3(cx - 0.2, 1.2, z), Vector3(cx + 0.2, 1.2, z), Vector3(cx + 0.2, 0.55, z), Vector3(cx - 0.2, 0.55, z), banner, Vector3(0, 0, outer))
@@ -1111,15 +1252,19 @@ func _tower(k: MeshKit, base: Vector3, x: int, y: int, b: String) -> void:
 	var roof: Color = cols[1].lerp(cols[1].darkened(0.15), _rand(x, y, 110))
 	if b == "d":
 		# Kopuła pustynnej wieży.
+		k.tex = 0
 		k.metal = 0.3
 		k.blob(base + Vector3(0, 2.05, 0), Vector3(0.5, 0.55, 0.5), roof, 3, 8, 0.0)
 		k.metal = 1.0
 		k.cone(base + Vector3(0, 2.55, 0), 0.05, 0.3, 4, GOLD)
 		k.metal = 0.0
 	else:
+		k.tex = 3
 		k.cone(base + Vector3(0, 2.1, 0), 0.52, 0.95, 8, roof, 0.2)
 		if b == "s":
+			k.tex = 7
 			k.cone(base + Vector3(0, 2.62, 0), 0.25, 0.43, 8, SNOW, 0.2)
+	k.tex = 2
 
 
 # --- Stacje miasta --------------------------------------------------------------

@@ -41,7 +41,7 @@ func build(wb: WorldBuilder) -> void:
 ## Maska załadowanych kawałków: obraz, w którym piksel (cx - origin_chunk, cy - origin_chunk) = 1.
 func set_mask(img: Image, origin: Vector2, span: Vector2) -> void:
 	var tex := ImageTexture.create_from_image(img)
-	for m in [mat, mat_trees]:
+	for m in [mat, mat_trees] + TreeModels.far_materials():
 		m.set_shader_parameter("chunk_mask", tex)
 		m.set_shader_parameter("mask_origin", origin)
 		m.set_shader_parameter("mask_span", span)
@@ -270,91 +270,32 @@ func _build_blocks() -> MeshKit:
 # Las (MultiMesh – po jednej siatce na rodzaj drzewa)
 # ============================================================================
 
-func _tree_kind(x: int, y: int) -> String:
-	var b := _wb.biome(x, y)
-	var z := _wb.zone(x, y)
-	var r := _wb._rand(x, y, 8)
-	match b:
-		"a":
-			return "dead"
-		"d":
-			return "palm" if r < 0.5 else "cactus"
-		"s":
-			return "pine_snow"
-		"w":
-			return "willow" if r < 0.55 else "dead"
-		"r", "f":
-			return "pine" if r < 0.5 or b == "r" else ("oak_red" if z == "r" else "oak")
-	if z == "y":
-		return "oak_autumn" if r > 0.3 else "pine"
-	if z == "r":
-		return "oak_red" if r > 0.3 else "dead"
-	return "pine" if r < 0.3 else "oak"
-
-
-func _tree_mesh(kind: String) -> ArrayMesh:
-	var k := MeshKit.new(3)
-	var trunk := Color(0.32, 0.22, 0.14)
-	match kind:
-		"pine", "pine_snow":
-			k.cyl(Vector3.ZERO, 0.1, 0.08, 0.5, 4, trunk, false)
-			k.cone(Vector3(0, 0.4, 0), 0.7, 1.3, 5, Color(0.13, 0.31, 0.2))
-			k.cone(Vector3(0, 1.1, 0), 0.5, 1.2, 5, Color(0.16, 0.36, 0.22), 0.6)
-			if kind == "pine_snow":
-				k.cone(Vector3(0, 1.75, 0), 0.3, 0.6, 5, WorldBuilder.SNOW, 0.6)
-		"oak", "oak_autumn", "oak_red":
-			var leaf := Color(0.27, 0.5, 0.2)
-			if kind == "oak_autumn":
-				leaf = Color(0.85, 0.52, 0.15)
-			elif kind == "oak_red":
-				leaf = Color(0.52, 0.28, 0.15)
-			k.cyl(Vector3.ZERO, 0.12, 0.08, 0.8, 4, trunk, false)
-			k.rng.seed = 5
-			k.blob(Vector3(0, 1.25, 0), Vector3(0.75, 0.6, 0.75), leaf, 2, 5, 0.12, leaf.lightened(0.1))
-		"palm":
-			k.cyl(Vector3.ZERO, 0.08, 0.06, 1.8, 4, Color(0.5, 0.38, 0.24), false)
-			for i in 5:
-				var a := TAU * i / 5.0
-				var d := Vector3(cos(a), 0, sin(a))
-				k.blade(Vector3(0, 1.8, 0), Vector3(0, 1.8, 0) + d * 1.0 + Vector3(0, -0.4, 0) + d.cross(Vector3.UP) * 0.25, Vector3(0, 1.8, 0) + d * 1.0 + Vector3(0, -0.4, 0) - d.cross(Vector3.UP) * 0.25, Color(0.3, 0.5, 0.18))
-		"cactus":
-			k.cyl(Vector3.ZERO, 0.16, 0.14, 1.3, 5, Color(0.3, 0.5, 0.25))
-			k.cyl(Vector3(0.28, 0.5, 0), 0.08, 0.08, 0.5, 4, Color(0.3, 0.5, 0.25))
-		"willow":
-			k.cyl(Vector3.ZERO, 0.12, 0.08, 0.9, 4, trunk, false)
-			k.rng.seed = 7
-			k.blob(Vector3(0, 1.3, 0), Vector3(0.85, 0.55, 0.85), Color(0.36, 0.48, 0.22), 2, 6, 0.1)
-			k.cyl(Vector3(0, 0.55, 0), 0.8, 0.85, 0.7, 6, Color(0.3, 0.42, 0.2), false)
-		_:
-			k.cyl(Vector3.ZERO, 0.1, 0.05, 1.5, 4, Color(0.16, 0.13, 0.12), false)
-			k.cyl(Vector3(0, 0.8, 0), 0.04, 0.02, 0.7, 3, Color(0.16, 0.13, 0.12), false, null, 0.7)
-	return k.commit()
-
-
 func _build_trees() -> void:
 	var by_kind := {}
 	for y in _wb.h:
 		for x in _wb.w:
 			if _wb.tile(x, y) != "T":
 				continue
-			var kind := _tree_kind(x, y)
-			if not by_kind.has(kind):
-				by_kind[kind] = []
-			var s := 0.9 + _wb._rand(x, y, 9) * 0.5
-			if _wb.biome(x, y) == "f":
-				s *= 1.25
+			var spec := _wb.tree_spec(x, y)
+			var key := "%s:%d" % [spec[0], spec[1]]
+			if not by_kind.has(key):
+				by_kind[key] = []
 			var pos := Vector3(x + 0.5, _wb.ground_y(x, y) - 0.05, y + 0.5)
-			by_kind[kind].append(Transform3D(Basis(Vector3.UP, _wb._rand(x, y, 10) * TAU).scaled(Vector3.ONE * s), pos))
-	for kind in by_kind:
-		var list: Array = by_kind[kind]
+			by_kind[key].append([Transform3D(Basis(Vector3.UP, spec[4]).scaled(Vector3.ONE * float(spec[3])), pos), spec[2]])
+	for key in by_kind:
+		var parts: PackedStringArray = key.split(":")
+		var list: Array = by_kind[key]
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.mesh = _tree_mesh(kind)
+		mm.use_custom_data = true
+		mm.use_colors = true
+		mm.mesh = TreeModels.mesh(parts[0], int(parts[1]), true)
 		mm.instance_count = list.size()
 		for i in list.size():
-			mm.set_instance_transform(i, list[i])
+			mm.set_instance_transform(i, list[i][0])
+			mm.set_instance_custom_data(i, list[i][1])
+			mm.set_instance_color(i, Color.WHITE)
 		var mmi := MultiMeshInstance3D.new()
 		mmi.multimesh = mm
-		mmi.material_override = mat_trees
 		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(mmi)

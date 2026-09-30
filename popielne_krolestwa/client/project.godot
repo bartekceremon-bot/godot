@@ -38,6 +38,13 @@ theme/default_font_multichannel_signed_distance_field=true
 
 pointing/emulate_touch_from_mouse=true
 
+[shader_globals]
+
+player_pos={
+"type": "vec3",
+"value": Vector3(0, 0, 0)
+}
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

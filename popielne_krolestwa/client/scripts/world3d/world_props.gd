@@ -138,30 +138,39 @@ static func house(k: MeshKit, x0: int, y0: int, x1: int, y1: int, door: int, sty
 		"snow":
 			# Chata z bali: warstwy pni w dwóch odcieniach.
 			var logs := int(tall / 0.2)
+			k.tex = 4
 			for i in logs:
 				var c := Color(0.5, 0.34, 0.2).lerp(Color(0.42, 0.28, 0.16), float(i % 2))
 				k.box(Vector3(cx, i * 0.2, cz), Vector3(wx - (0.03 if i % 2 else 0.0), 0.2, wz - (0.0 if i % 2 else 0.03)), c)
 			for corner in [Vector3(ax, 0, az), Vector3(bx, 0, az), Vector3(ax, 0, bz), Vector3(bx, 0, bz)]:
 				k.box(corner, Vector3(0.14, tall + 0.05, 0.14), Color(0.36, 0.24, 0.14))
+			k.tex = 0
 		"desert":
 			var adobe := Color(0.86, 0.7, 0.5).lerp(Color(0.9, 0.78, 0.6), r)
+			k.tex = 5
 			k.box(Vector3(cx, 0, cz), Vector3(wx, tall, wz), adobe, Vector2(0.98, 0.98), adobe.lightened(0.05))
+			k.tex = 4
 			# Belki wystające ze ścian i niski murek na dachu.
 			for i in int(wx / 0.6):
 				k.box(Vector3(ax + 0.3 + i * 0.6, tall - 0.25, az - 0.08), Vector3(0.08, 0.08, 0.16), WOOD_DARK)
+			k.tex = 5
 			var par := 0.12
 			k.box(Vector3(cx, tall, az + 0.05), Vector3(wx, par, 0.1), adobe.darkened(0.05))
 			k.box(Vector3(cx, tall, bz - 0.05), Vector3(wx, par, 0.1), adobe.darkened(0.05))
 			k.box(Vector3(ax + 0.05, tall, cz), Vector3(0.1, par, wz), adobe.darkened(0.05))
 			k.box(Vector3(bx - 0.05, tall, cz), Vector3(0.1, par, wz), adobe.darkened(0.05))
 			# Kopułka na większych domach.
+			k.tex = 0
 			if wx * wz > 11.0:
 				k.blob(Vector3(cx, tall, cz), Vector3(0.6, 0.55, 0.6), Color(0.3, 0.62, 0.66) if r > 0.5 else Color(0.92, 0.88, 0.8), 3, 8, 0.0)
 		_:
 			# Szachulec: jasny tynk, ciemne belki.
 			var plaster := Color(0.93, 0.89, 0.8).lerp(Color(0.88, 0.8, 0.66), r)
+			k.tex = 5
 			k.box(Vector3(cx, 0, cz), Vector3(wx, tall, wz), plaster)
+			k.tex = 2
 			k.box(Vector3(cx, 0, cz), Vector3(wx + 0.04, 0.25, wz + 0.04), STONE.darkened(0.1))
+			k.tex = 4
 			k.box(Vector3(cx, tall * 0.55, cz), Vector3(wx + 0.03, 0.07, wz + 0.03), WOOD_DARK)
 			k.box(Vector3(cx, tall - 0.07, cz), Vector3(wx + 0.03, 0.07, wz + 0.03), WOOD_DARK)
 			for corner in [Vector3(ax, 0, az), Vector3(bx, 0, az), Vector3(ax, 0, bz), Vector3(bx, 0, bz)]:
@@ -171,6 +180,7 @@ static func house(k: MeshKit, x0: int, y0: int, x1: int, y1: int, door: int, sty
 				for i in int(wx):
 					var x0b := ax + i + 0.15
 					k.quad(Vector3(x0b, 0.3, s), Vector3(x0b + 0.07, 0.3, s), Vector3(x0b + 0.77, tall * 0.55, s), Vector3(x0b + 0.7, tall * 0.55, s), WOOD_DARK, Vector3(0, 0, sign(s - cz)))
+			k.tex = 0
 	k.jitter = 0.0
 	_door_and_windows(k, ax, az, bx, bz, tall, door, style)
 	if style != "desert":
@@ -229,6 +239,7 @@ static func _pitched_roof(k: MeshKit, ax: float, az: float, bx: float, bz: float
 		col = [Color(0.62, 0.25, 0.17), Color(0.34, 0.36, 0.42), Color(0.5, 0.32, 0.2)][int(r * 2.99)]
 	var under := col.darkened(0.35) if style != "snow" else Color(0.4, 0.26, 0.15)
 	var y0 := tall
+	var roof_tex := 7 if style == "snow" else 3
 	if along_x:
 		var zc := (az + bz) / 2.0
 		var a := Vector3(ax - o, y0 - 0.12, az - o)
@@ -237,15 +248,20 @@ static func _pitched_roof(k: MeshKit, ax: float, az: float, bx: float, bz: float
 		var d := Vector3(ax - o, y0 + rh, zc)
 		var e := Vector3(ax - o, y0 - 0.12, bz + o)
 		var f := Vector3(bx + o, y0 - 0.12, bz + o)
+		k.tex = roof_tex
 		k.quad(a, b, c, d, col, Vector3(0, 1, -1))
 		k.quad(e, d, c, f, col.darkened(0.08), Vector3(0, 1, 1))
+		k.tex = 4
 		k.quad(a, d, c, b, under, Vector3(0, -1, 0.3))
 		k.quad(e, f, c, d, under, Vector3(0, -1, -0.3))
+		k.tex = 5 if style != "snow" else 4
 		# Szczyty ścian.
 		var wc := Color(0.9, 0.86, 0.76) if style != "snow" else Color(0.45, 0.3, 0.18)
 		k.tri(Vector3(ax, y0, az), Vector3(ax, y0 + rh - 0.1, zc), Vector3(ax, y0, bz), wc, Vector3(-1, 0, 0))
 		k.tri(Vector3(bx, y0, az), Vector3(bx, y0 + rh - 0.1, zc), Vector3(bx, y0, bz), wc, Vector3(1, 0, 0))
+		k.tex = roof_tex
 		k.box(Vector3((ax + bx) / 2.0, y0 + rh - 0.05, zc), Vector3(bx - ax + 2 * o, 0.07, 0.1), col.darkened(0.2))
+		k.tex = 2
 		if style != "desert":
 			k.box(Vector3(ax + (bx - ax) * 0.72, y0 + rh * 0.4, zc - span * 0.18), Vector3(0.22, rh * 0.8, 0.22), STONE.darkened(0.2))
 	else:
@@ -256,15 +272,21 @@ static func _pitched_roof(k: MeshKit, ax: float, az: float, bx: float, bz: float
 		var d := Vector3(xc, y0 + rh, az - o)
 		var e := Vector3(bx + o, y0 - 0.12, az - o)
 		var f := Vector3(bx + o, y0 - 0.12, bz + o)
+		k.tex = roof_tex
 		k.quad(a, b, c, d, col, Vector3(-1, 1, 0))
 		k.quad(e, d, c, f, col.darkened(0.08), Vector3(1, 1, 0))
+		k.tex = 4
 		k.quad(a, d, c, b, under, Vector3(0.3, -1, 0))
 		k.quad(e, f, c, d, under, Vector3(-0.3, -1, 0))
+		k.tex = 5 if style != "snow" else 4
 		var wc := Color(0.9, 0.86, 0.76) if style != "snow" else Color(0.45, 0.3, 0.18)
 		k.tri(Vector3(ax, y0, az), Vector3(xc, y0 + rh - 0.1, az), Vector3(bx, y0, az), wc, Vector3(0, 0, -1))
 		k.tri(Vector3(ax, y0, bz), Vector3(xc, y0 + rh - 0.1, bz), Vector3(bx, y0, bz), wc, Vector3(0, 0, 1))
+		k.tex = roof_tex
 		k.box(Vector3(xc, y0 + rh - 0.05, (az + bz) / 2.0), Vector3(0.1, 0.07, bz - az + 2 * o), col.darkened(0.2))
+		k.tex = 2
 		k.box(Vector3(xc + span * 0.18, y0 + rh * 0.4, az + (bz - az) * 0.3), Vector3(0.22, rh * 0.8, 0.22), STONE.darkened(0.2))
+	k.tex = 0
 
 
 # ============================================================================

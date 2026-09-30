@@ -13,12 +13,18 @@ var verts := PackedVector3Array()
 var norms := PackedVector3Array()
 var cols := PackedColorArray()
 var uvs := PackedVector2Array()
+## Teren z teksturami: CUSTOM0 = warstwy trzech narożników trójkąta, UV2 = współrzędne barycentryczne.
+var ground := false
+var custom0 := PackedFloat32Array()
+var uv2s := PackedVector2Array()
 
 ## Transformacja stosowana do dodawanych punktów.
 var xf := Transform3D.IDENTITY
 ## Kanały UV dla kolejnych trójkątów.
 var metal := 0.0
 var glow := 0.0
+## Tekstura obiektu (lowpoly_object): 0 = brak, 2 kamień, 3 dachówka, 4 drewno, 5 tynk, 6 skała, 7 śnieg.
+var tex := 0
 ## Kołysanie roślin: jeśli sway_height > 0, UV.x = wysokość punktu nad sway_base / sway_height.
 var sway_base := 0.0
 var sway_height := 0.0
@@ -61,10 +67,16 @@ func tri(a: Vector3, b: Vector3, c: Vector3, col: Color, hint := Vector3.ZERO) -
 		verts.append(p)
 		norms.append(n)
 		cols.append(cc)
-		var ux := metal
+		var ux := metal if tex == 0 else float(tex)
 		if sway_height > 0.0:
 			ux = clampf((p.y - sway_base) / sway_height, 0.0, 1.0)
 		uvs.append(Vector2(ux, glow))
+	if ground:
+		# Zwykły trójkąt w siatce terenu = „naklejka” w jednolitym kolorze (UV.x = 1).
+		for i in 3:
+			uvs[uvs.size() - 3 + i].x = 1.0
+			custom0.append_array(PackedFloat32Array([0, 0, 0, 0]))
+		uv2s.append_array(PackedVector2Array([Vector2(1, 0), Vector2(0, 1), Vector2(0, 0)]))
 
 
 ## Trójkąt z osobnym kolorem w każdym wierzchołku (płynne przejścia, np. daleki teren).
@@ -87,6 +99,25 @@ func tri_colors(a: Vector3, b: Vector3, c: Vector3, ca: Color, cb: Color, cc: Co
 		norms.append(n)
 		cols.append([ca, cb, cc][i])
 		uvs.append(Vector2(metal, glow))
+
+
+## Trójkąt terenu: pozycje, gładkie normalne, kolory i warstwy tekstur w każdym narożniku.
+func tri_ground(p: Array, n: Array, c: Array, layers: Vector3) -> void:
+	var fn: Vector3 = (p[2] - p[0]).cross(p[1] - p[0])
+	var order := [0, 1, 2]
+	var lay := layers
+	if fn.y < 0.0:
+		order = [0, 2, 1]
+		lay = Vector3(layers.x, layers.z, layers.y)
+	var bary := [Vector2(1, 0), Vector2(0, 1), Vector2(0, 0)]
+	for k in 3:
+		var i: int = order[k]
+		verts.append(p[i])
+		norms.append(n[i])
+		cols.append(c[i])
+		uvs.append(Vector2(0.0, glow))
+		uv2s.append(bary[k])
+		custom0.append_array(PackedFloat32Array([lay.x, lay.y, lay.z, 0.0]))
 
 
 ## Czworokąt a-b-c-d (kolejno po obwodzie).
@@ -198,7 +229,12 @@ func commit(mesh: ArrayMesh = null) -> ArrayMesh:
 	arr[Mesh.ARRAY_NORMAL] = norms
 	arr[Mesh.ARRAY_COLOR] = cols
 	arr[Mesh.ARRAY_TEX_UV] = uvs
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	var flags := 0
+	if ground:
+		arr[Mesh.ARRAY_TEX_UV2] = uv2s
+		arr[Mesh.ARRAY_CUSTOM0] = custom0
+		flags = Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, flags)
 	return mesh
 
 
@@ -209,6 +245,7 @@ func place(pos: Vector3, yaw := 0.0, scale := 1.0) -> void:
 
 func reset() -> void:
 	xf = Transform3D.IDENTITY
+	tex = 0
 	metal = 0.0
 	glow = 0.0
 	sway_height = 0.0

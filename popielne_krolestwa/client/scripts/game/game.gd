@@ -730,6 +730,7 @@ func _update_camera(delta: float) -> void:
 		_shake -= delta
 		camera.position += Vector3(randf_range(-1, 1), randf_range(-1, 1), 0) * 0.08 * (_shake / 0.25)
 	world.focus = me.tile
+	RenderingServer.global_shader_parameter_set("player_pos", me.position)
 	_ash.position = me.position + Vector3(0, 4.0, 0)
 	_embers.position = me.position + Vector3(0, 0.5, 0)
 	_snow.position = me.position + Vector3(0, 5.0, 0)

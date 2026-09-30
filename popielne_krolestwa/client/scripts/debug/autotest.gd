@@ -180,7 +180,14 @@ func _scenario_views(game: Node) -> Array:
 		["04_moczary", Vector2i(185, 150)], ["05_puszcza", Vector2i(35, 140)], ["06_gory", Vector2i(112, 40)], ["07_obelisk", Vector2i(130, 124)],
 		["08_popielgrod_brama", Vector2i(112, 214)], ["09_wioska", Vector2i(-1, -1)]]
 	var steps: Array = []
+	# --only=04,05 – tylko wybrane ujęcia (szybsze testy).
+	var only := ""
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--only="):
+			only = a.substr(7)
 	for s in spots:
+		if only != "" and not only.split(",").has(str(s[0]).substr(0, 2)):
+			continue
 		steps.append(func():
 			var t: Vector2i = s[1]
 			if t.x < 0:
