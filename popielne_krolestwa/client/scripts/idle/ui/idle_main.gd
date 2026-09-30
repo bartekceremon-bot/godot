@@ -41,10 +41,22 @@ func _ready() -> void:
 		if a.begins_with("--autotest="):
 			open_classic.call_deferred()
 			return
-	theme = UiTheme.get_theme()
+	theme = IdleUI.theme()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	var bg := ColorRect.new()
-	bg.color = Color(0.035, 0.03, 0.035)
+	var bg := TextureRect.new()
+	var g := Gradient.new()
+	g.set_color(0, Color(0.13, 0.05, 0.03))
+	g.set_color(1, Color(0.02, 0.015, 0.02))
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill = GradientTexture2D.FILL_RADIAL
+	gt.fill_from = Vector2(0.5, 0.35)
+	gt.fill_to = Vector2(1.2, 1.0)
+	gt.width = 128
+	gt.height = 128
+	bg.texture = gt
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	column = Control.new()
@@ -80,42 +92,13 @@ func _layout() -> void:
 # --- Menu główne ------------------------------------------------------------------
 
 func _show_menu() -> void:
-	_menu_screen = Control.new()
-	_menu_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
-	column.add_child(_menu_screen)
-	var splash := TextureRect.new()
-	splash.texture = load("res://assets/splash.png")
-	splash.set_anchors_preset(Control.PRESET_FULL_RECT)
-	splash.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	splash.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	splash.modulate = Color(0.55, 0.5, 0.5)
-	_menu_screen.add_child(splash)
-	var v := IdleUI.vbox(18)
-	v.set_anchors_preset(Control.PRESET_CENTER)
-	v.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	v.grow_vertical = Control.GROW_DIRECTION_BOTH
-	v.custom_minimum_size = Vector2(minf(620.0, column.size.x - 40.0), 0)
-	_menu_screen.add_child(v)
-	var t := IdleUI.title("POPIELNE KRÓLESTWA", 46)
-	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(t)
-	var sub := IdleUI.label("Łowy w Popiele  •  RPG idle", 24, Color(1.0, 0.7, 0.4))
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(sub)
-	var desc := IdleUI.label("Klikaj, zabijaj potwory Popielnych Królestw, zbieraj łup i ulepszaj bohatera. Twoja drużyna walczy dalej, nawet gdy nie grasz.", 20, Color(0.85, 0.82, 0.75), true)
-	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(desc)
-	v.add_child(IdleUI.spacer(20))
-	var has := gm.save.has_save()
-	var play := IdleUI.button("Kontynuuj" if has else "Rozpocznij przygodę", Vector2(0, 96), 30)
-	play.pressed.connect(_start_game)
-	v.add_child(play)
-	var mmo := IdleUI.button("Klasyczne MMO (wymaga serwera)", Vector2(0, 72), 20)
-	mmo.pressed.connect(open_classic)
-	v.add_child(mmo)
-	var ver := IdleUI.label("v%s" % ProjectSettings.get_setting("application/config/version"), 16, IdleUI.DIM)
-	ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(ver)
+	var menu := IdleMenuScreen.new()
+	_menu_screen = menu
+	add_child(menu)
+	move_child(menu, 2)
+	menu.setup(gm)
+	menu.play_pressed.connect(_start_game)
+	menu.classic_pressed.connect(open_classic)
 
 
 func _start_game() -> void:
@@ -123,7 +106,10 @@ func _start_game() -> void:
 		return
 	_started = true
 	gm.start()
-	_menu_screen.queue_free()
+	if _menu_screen.has_method("leave"):
+		_menu_screen.leave()
+	else:
+		_menu_screen.queue_free()
 	_build_game()
 	if not gm.offline_report.is_empty():
 		_show_offline(gm.offline_report)
@@ -159,10 +145,12 @@ func _build_game() -> void:
 	combat.open_tab.connect(show_tab)
 	_panel_host = PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.045, 0.045, 0.055)
-	sb.border_color = Color(0.55, 0.42, 0.22)
-	sb.border_width_top = 3
-	sb.set_content_margin_all(10)
+	sb.bg_color = Color(0.03, 0.026, 0.034, 0.97)
+	sb.border_color = Color(1.0, 0.55, 0.2, 0.7)
+	sb.border_width_top = 2
+	sb.shadow_color = Color(1.0, 0.45, 0.1, 0.25)
+	sb.shadow_size = 10
+	sb.set_content_margin_all(12)
 	_panel_host.add_theme_stylebox_override("panel", sb)
 	_panel_host.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_root_box.add_child(_panel_host)
@@ -178,9 +166,11 @@ func _build_game() -> void:
 func _build_topbar() -> Control:
 	var p := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.05, 0.065)
-	sb.border_color = Color(0.6, 0.45, 0.22)
-	sb.border_width_bottom = 3
+	sb.bg_color = Color(0.025, 0.022, 0.03, 0.96)
+	sb.border_color = Color(1.0, 0.55, 0.2, 0.75)
+	sb.border_width_bottom = 2
+	sb.shadow_color = Color(1.0, 0.45, 0.1, 0.3)
+	sb.shadow_size = 10
 	sb.content_margin_left = 12
 	sb.content_margin_right = 12
 	sb.content_margin_top = 10
@@ -237,11 +227,23 @@ func _build_topbar() -> Control:
 func _build_nav() -> Control:
 	var p := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.048, 0.055)
-	sb.border_color = Color(0.6, 0.45, 0.22)
-	sb.border_width_top = 3
-	sb.set_content_margin_all(6)
+	sb.bg_color = Color(0.025, 0.022, 0.03, 0.97)
+	sb.border_color = Color(1.0, 0.55, 0.2, 0.75)
+	sb.border_width_top = 2
+	sb.shadow_color = Color(1.0, 0.45, 0.1, 0.3)
+	sb.shadow_size = 10
+	sb.set_content_margin_all(8)
 	p.add_theme_stylebox_override("panel", sb)
+	# Zakładki: przezroczyste, aktywna – żarzące się szkło.
+	var tab_n := IdleUI.glass(Color(1, 1, 1, 0.02), Color(1, 1, 1, 0.0), 14, 0, Color(0, 0, 0, 0), 0)
+	var tab_on := IdleUI.glass(Color(0.3, 0.12, 0.04, 0.85), IdleUI.EMBER, 14, 2, Color(1.0, 0.45, 0.1, 0.5), 12)
+	for st in [tab_n, tab_on]:
+		st.content_margin_top = 6
+		st.content_margin_bottom = 4
+	var tab_font := FontVariation.new()
+	tab_font.base_font = load("res://assets/fonts/Exo2-SemiBold.ttf")
+	tab_font.opentype_features = {0x6B65726E: 0}
+	tab_font.spacing_glyph = 1
 	var h := IdleUI.hbox(6)
 	p.add_child(h)
 	for n in NAV:
@@ -256,6 +258,12 @@ func _build_nav() -> Control:
 		b.text = str(n[1])
 		b.add_theme_font_size_override("font_size", 14)
 		b.add_theme_constant_override("icon_max_width", 56)
+		b.add_theme_font_override("font", tab_font)
+		b.add_theme_stylebox_override("normal", tab_n)
+		b.add_theme_stylebox_override("hover", tab_n)
+		b.add_theme_stylebox_override("pressed", tab_on)
+		b.add_theme_stylebox_override("hover_pressed", tab_on)
+		b.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.55))
 		var id := str(n[0])
 		b.pressed.connect(func():
 			Sfx.play("click")
@@ -264,7 +272,9 @@ func _build_nav() -> Control:
 		_nav_btns[id] = b
 		var badge := UiTheme.label("", 16, Color.WHITE)
 		var bs := StyleBoxFlat.new()
-		bs.bg_color = Color(0.8, 0.12, 0.1)
+		bs.bg_color = Color(0.9, 0.15, 0.08)
+		bs.shadow_color = Color(1.0, 0.2, 0.1, 0.6)
+		bs.shadow_size = 6
 		bs.set_corner_radius_all(12)
 		bs.content_margin_left = 7
 		bs.content_margin_right = 7

@@ -8,16 +8,87 @@ const ASH_COL := Color(0.82, 0.78, 0.92)
 const DIM := Color(0.62, 0.58, 0.52)
 const GOOD := Color(0.55, 1.0, 0.55)
 const BAD := Color(1.0, 0.45, 0.4)
+## Paleta „kuźni przyszłości”: obsydianowe szkło, żar, chłodny błękit.
+const EMBER := Color(1.0, 0.52, 0.18)
+const GLASS := Color(0.055, 0.05, 0.065, 0.84)
+const CYAN := Color(0.4, 0.88, 1.0)
+
+static var _theme: Theme = null
+static var _ui_font: Font = null
 
 
-static func card(bg := Color(0.06, 0.065, 0.085, 0.94), border := Color(0.45, 0.35, 0.2, 0.9)) -> PanelContainer:
-	var p := PanelContainer.new()
+## Czcionka interfejsu: Exo 2 (OFL), grubość 600.
+static func ui_font(weight := 600) -> Font:
+	var f := FontVariation.new()
+	f.base_font = load("res://assets/fonts/Exo2-SemiBold.ttf")
+	return f
+
+
+## Szklany panel: półprzezroczyste tło, cienka świecąca krawędź, poświata (cień w kolorze).
+static func glass(bg := GLASS, border := Color(1.0, 0.62, 0.3, 0.3), radius := 16, bw := 2, glow := Color(0, 0, 0, 0.45), glow_size := 8) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg
 	sb.border_color = border
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
+	sb.set_border_width_all(bw)
+	sb.set_corner_radius_all(radius)
+	sb.shadow_color = glow
+	sb.shadow_size = glow_size
+	sb.anti_aliasing = true
 	sb.set_content_margin_all(12)
+	return sb
+
+
+## Motyw wersji idle: szkło, żarzące się krawędzie, Exo 2 i Cinzel.
+static func theme() -> Theme:
+	if _theme:
+		return _theme
+	var t: Theme = UiTheme.get_theme().duplicate()
+	_ui_font = ui_font(600)
+	t.default_font = _ui_font
+	t.default_font_size = 22
+	var normal := glass(Color(0.075, 0.065, 0.085, 0.86), Color(1.0, 0.62, 0.3, 0.38), 14, 2, Color(0, 0, 0, 0.5), 6)
+	normal.set_content_margin_all(10)
+	var hover := normal.duplicate()
+	hover.border_color = Color(1.0, 0.7, 0.4, 0.75)
+	var pressed := glass(Color(0.32, 0.13, 0.04, 0.94), EMBER, 14, 2, Color(1.0, 0.45, 0.1, 0.55), 14)
+	pressed.set_content_margin_all(10)
+	var disabled := glass(Color(0.05, 0.05, 0.06, 0.62), Color(0.45, 0.4, 0.35, 0.22), 14, 2, Color(0, 0, 0, 0.3), 4)
+	disabled.set_content_margin_all(10)
+	for cls in ["Button", "OptionButton", "CheckButton"]:
+		t.set_stylebox("normal", cls, normal)
+		t.set_stylebox("hover", cls, hover)
+		t.set_stylebox("pressed", cls, pressed)
+		t.set_stylebox("hover_pressed", cls, pressed)
+		t.set_stylebox("disabled", cls, disabled)
+		t.set_stylebox("focus", cls, StyleBoxEmpty.new())
+	t.set_color("font_color", "Button", Color(0.96, 0.93, 0.86))
+	t.set_color("font_pressed_color", "Button", Color(1.0, 0.95, 0.8))
+	t.set_color("font_hover_color", "Button", Color(1.0, 0.9, 0.7))
+	t.set_color("font_disabled_color", "Button", Color(0.55, 0.5, 0.46))
+	t.set_stylebox("panel", "PanelContainer", glass())
+	t.set_stylebox("panel", "Panel", glass())
+	var grab := StyleBoxFlat.new()
+	grab.bg_color = Color(1.0, 0.6, 0.25, 0.55)
+	grab.set_corner_radius_all(4)
+	grab.content_margin_left = 5
+	grab.content_margin_right = 5
+	t.set_stylebox("grabber", "VScrollBar", grab)
+	t.set_stylebox("grabber_highlight", "VScrollBar", grab)
+	t.set_stylebox("grabber_pressed", "VScrollBar", grab)
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(1, 1, 1, 0.04)
+	track.set_corner_radius_all(4)
+	track.content_margin_left = 5
+	track.content_margin_right = 5
+	t.set_stylebox("scroll", "VScrollBar", track)
+	_theme = t
+	return t
+
+
+static func card(bg := Color(0.065, 0.058, 0.078, 0.86), border := Color(1.0, 0.65, 0.35, 0.22)) -> PanelContainer:
+	var p := PanelContainer.new()
+	var sb := glass(bg, border, 16, 2, Color(0, 0, 0, 0.45), 8)
+	sb.set_content_margin_all(14)
 	p.add_theme_stylebox_override("panel", sb)
 	return p
 
@@ -102,14 +173,13 @@ static func item_button(tex: Texture2D, rarity := 0, count_text := "", size := 8
 	b.expand_icon = true
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-	var col: Color = IdleDB.RARITY_COLORS[clampi(rarity, 0, 5)] if rarity > 0 else Color(0.35, 0.3, 0.22)
+	var col: Color = IdleDB.RARITY_COLORS[clampi(rarity, 0, 5)] if rarity > 0 else Color(1.0, 0.65, 0.35, 0.3)
 	for state in ["normal", "hover", "pressed", "disabled"]:
-		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.04, 0.045, 0.06, 0.96) if state != "pressed" else Color(0.1, 0.09, 0.08, 0.96)
-		sb.border_color = col
-		sb.set_border_width_all(3 if rarity > 1 else 2)
-		sb.set_corner_radius_all(8)
-		sb.set_content_margin_all(6)
+		var bg := Color(0.05, 0.045, 0.06, 0.9) if state != "pressed" else Color(0.18, 0.1, 0.06, 0.95)
+		# Rzadkie przedmioty świecą w swoim kolorze.
+		var glow := Color(col, 0.45) if rarity >= 3 else Color(0, 0, 0, 0.45)
+		var sb := glass(bg, col, 14, 3 if rarity > 1 else 2, glow, 10 if rarity >= 3 else 5)
+		sb.set_content_margin_all(7)
 		b.add_theme_stylebox_override(state, sb)
 	if count_text != "":
 		b.text = count_text
@@ -129,16 +199,21 @@ static func bar(fill: Color, height := 26, bg := Color(0.03, 0.03, 0.04, 0.9)) -
 	pb.show_percentage = false
 	pb.max_value = 1.0
 	pb.step = 0.0
+	# Neonowy pasek: jasna górna krawędź i poświata w kolorze wypełnienia.
 	var f := StyleBoxFlat.new()
 	f.bg_color = fill
 	f.set_corner_radius_all(height / 2)
-	f.border_color = fill.lightened(0.3)
-	f.border_width_top = 2
+	f.border_color = fill.lightened(0.45)
+	f.border_width_top = maxi(1, height / 8)
+	f.shadow_color = Color(fill, 0.55)
+	f.shadow_size = maxi(3, height / 3)
+	f.anti_aliasing = true
 	var b := StyleBoxFlat.new()
-	b.bg_color = bg
+	b.bg_color = Color(0.02, 0.02, 0.03, 0.78)
 	b.set_corner_radius_all(height / 2)
-	b.border_color = Color(0.5, 0.38, 0.2, 0.9)
-	b.set_border_width_all(2)
+	b.border_color = Color(1.0, 0.7, 0.4, 0.22)
+	b.set_border_width_all(1)
+	b.anti_aliasing = true
 	pb.add_theme_stylebox_override("fill", f)
 	pb.add_theme_stylebox_override("background", b)
 	return pb

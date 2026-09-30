@@ -20,7 +20,8 @@ func _ready() -> void:
 	g.save.path = "user://autotest_idle.save"
 	g.save.delete_save()
 	_steps = [
-		func(): await _shot("00_menu"); ui._start_game(); return 1.0,
+		func(): return 4.0,
+		func(): print("idle-autotest: menu ", ui._menu_screen.size, " vp ", ui._menu_screen.view.get_viewport().size); await _shot("00_menu"); ui._start_game(); return 1.0,
 		func(): await _shot("01_start"); _press("Do boju!"); return 0.5,
 		func(): await _expect_no_modal("Do boju!"); return 0.3,
 		func(): ui._open_menu(); return 0.5,

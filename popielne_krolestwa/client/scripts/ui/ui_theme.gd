@@ -6,7 +6,14 @@ const BG := Color(0.06, 0.065, 0.08, 0.94)
 const BORDER := Color(0.78, 0.58, 0.28)
 const ACCENT := Color(0.96, 0.8, 0.48)
 const TEXT := Color(0.93, 0.91, 0.86)
-const TITLE_FONT := preload("res://assets/fonts/DejaVuSerif-Bold.ttf")
+## Czcionka tytułów: Cinzel (OFL) w grubości 700.
+static var TITLE_FONT: Font = _title_font()
+
+
+static func _title_font() -> Font:
+	var f := FontVariation.new()
+	f.base_font = load("res://assets/fonts/Cinzel-Bold.ttf")
+	return f
 
 static var _theme: Theme = null
 

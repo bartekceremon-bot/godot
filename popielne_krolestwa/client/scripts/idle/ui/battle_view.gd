@@ -27,6 +27,11 @@ var _cam_base := Vector3.ZERO
 var _cam_target := Vector3.ZERO
 var _shake := 0.0
 var _t := 0.0
+## Ekran tytułowy: kamera powoli okrąża scenę.
+var orbit := false
+var orbit_focus := Vector3(0.3, 1.3, 0.2)
+var orbit_radius := 8.5
+var orbit_height := 2.6
 
 
 func _ready() -> void:
@@ -45,6 +50,12 @@ func _ready() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_density = 0.012
+	# Poświata (bloom) świecących elementów: żar, oczy, czary.
+	env.glow_enabled = true
+	env.glow_intensity = 0.9
+	env.glow_bloom = 0.08
+	env.glow_hdr_threshold = 0.85
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	env.fog_sky_affect = 0.3
 	_env.environment = env
 	add_child(_env)
@@ -73,6 +84,12 @@ func _process(delta: float) -> void:
 	var off := Vector3.ZERO
 	if _shake > 0.0:
 		off = Vector3(randf_range(-1, 1), randf_range(-1, 1), 0) * _shake * 0.12
+	if orbit:
+		var a := -0.9 + sin(_t * 0.07) * 0.75
+		var p := orbit_focus + Vector3(sin(a) * orbit_radius, orbit_height + sin(_t * 0.23) * 0.3, cos(a) * orbit_radius)
+		camera.position = camera.position.lerp(p, minf(1.0, delta * 1.5))
+		camera.look_at(orbit_focus, Vector3.UP)
+		return
 	# Lekkie „oddychanie” kamery.
 	camera.position = camera.position.lerp(_cam_base + Vector3(sin(_t * 0.3) * 0.08, 0, 0), minf(1.0, delta * 3.0)) + off
 	camera.look_at(_cam_target, Vector3.UP)
