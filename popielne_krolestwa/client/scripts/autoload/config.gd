@@ -14,6 +14,8 @@ var sound_enabled := true
 var show_fps := false
 ## Efekty graficzne (cząsteczki, światła, winieta) – można wyłączyć na słabszych telefonach.
 var effects := true
+## Przybliżenie kamery (0.45 = widok bohatera nisko nad ziemią, 1.5 = widok z góry).
+var cam_zoom := 0.55
 
 
 func _ready() -> void:
@@ -32,6 +34,7 @@ func load_settings() -> void:
 	sound_enabled = cfg.get_value("audio", "enabled", sound_enabled)
 	show_fps = cfg.get_value("video", "show_fps", show_fps)
 	effects = cfg.get_value("video", "effects", effects)
+	cam_zoom = cfg.get_value("video", "cam_zoom", cam_zoom)
 
 
 func save_settings() -> void:
@@ -41,6 +44,7 @@ func save_settings() -> void:
 	cfg.set_value("audio", "enabled", sound_enabled)
 	cfg.set_value("video", "show_fps", show_fps)
 	cfg.set_value("video", "effects", effects)
+	cfg.set_value("video", "cam_zoom", cam_zoom)
 	cfg.save(PATH)
 
 

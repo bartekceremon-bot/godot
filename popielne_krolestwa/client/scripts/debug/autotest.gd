@@ -187,7 +187,7 @@ func _scenario_views(game: Node) -> Array:
 				t = _find_tile("c")
 			game.me.snap_to(t)
 			game.camera.position = Vector3.ZERO
-			return 6.0)
+			return 12.0)
 		steps.append(func(): await _shot(s[0]); return 0.1)
 	return steps
 

@@ -67,6 +67,28 @@ func tri(a: Vector3, b: Vector3, c: Vector3, col: Color, hint := Vector3.ZERO) -
 		uvs.append(Vector2(ux, glow))
 
 
+## Trójkąt z osobnym kolorem w każdym wierzchołku (płynne przejścia, np. daleki teren).
+## Wierzchołki podawane w przestrzeni świata, przednia ściana skierowana w górę (hint = UP).
+func tri_colors(a: Vector3, b: Vector3, c: Vector3, ca: Color, cb: Color, cc: Color) -> void:
+	var n := (c - a).cross(b - a)
+	if n.length_squared() < 1e-12:
+		return
+	n = n.normalized()
+	if n.y < 0.0:
+		var t := b
+		b = c
+		c = t
+		var tc := cb
+		cb = cc
+		cc = tc
+		n = -n
+	for i in 3:
+		verts.append([a, b, c][i])
+		norms.append(n)
+		cols.append([ca, cb, cc][i])
+		uvs.append(Vector2(metal, glow))
+
+
 ## Czworokąt a-b-c-d (kolejno po obwodzie).
 func quad(a: Vector3, b: Vector3, c: Vector3, d: Vector3, col: Color, hint := Vector3.ZERO) -> void:
 	if hint == Vector3.ZERO:

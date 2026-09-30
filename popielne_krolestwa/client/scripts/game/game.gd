@@ -10,10 +10,18 @@ const Hud := preload("res://scripts/ui/hud.gd")
 ## Cykl dnia i nocy (sekundy czasu rzeczywistego) – wspólny dla wszystkich graczy.
 const DAY_CYCLE := 1440.0
 const TAP_MAX_MOVE := 24.0
-## Kamera: przesunięcie względem postaci (widok z góry pod kątem, jak w Albionie).
-const CAM_OFFSET := Vector3(0.0, 9.2, 6.4)
-const ZOOM_MIN := 0.6
+## Kamera: przybliżenie steruje jednocześnie odległością i kątem – przy zbliżeniu kamera schodzi
+## nisko za plecy bohatera (widać horyzont i niebo), przy oddaleniu patrzy z góry jak w Albionie.
+const ZOOM_MIN := 0.45
 const ZOOM_MAX := 1.5
+const CAM_PITCH := Vector2(10.0, 58.0)
+const CAM_DIST := Vector2(7.6, 14.5)
+const CAM_FOV := Vector2(56.0, 40.0)
+const SKY_SHADER := preload("res://shaders/sky_world.gdshader")
+## Barwy nieba: [zenit, horyzont] w dzień, o zmierzchu i w nocy.
+const SKY_DAY := [Color(0.2, 0.42, 0.8), Color(0.64, 0.78, 0.92)]
+const SKY_DUSK := [Color(0.24, 0.26, 0.5), Color(1.0, 0.58, 0.36)]
+const SKY_NIGHT := [Color(0.015, 0.025, 0.07), Color(0.07, 0.09, 0.17)]
 ## Kody kierunków z protokołu: N, E, S, W, NE, SE, SW, NW.
 const DIRS: Array[Vector2i] = [
 	Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0),
@@ -41,7 +49,8 @@ var _dust: CPUParticles3D
 var _fireflies: CPUParticles3D
 var _biome := ""
 var _shake := 0.0
-var _zoom := 1.0
+var _zoom := 0.55
+var sky_mat := ShaderMaterial.new()
 ## 0 = dzień, 1 = pełna noc.
 var night := 0.0
 var _night_ready := false
@@ -88,8 +97,12 @@ func _ready() -> void:
 ## Środowisko, słońce, kamera, warstwy świata.
 func _setup_scene() -> void:
 	env = Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = ZONE_FOG["g"]
+	sky_mat.shader = SKY_SHADER
+	var sky := Sky.new()
+	sky.sky_material = sky_mat
+	env.sky = sky
+	env.background_mode = Environment.BG_SKY
+	env.fog_sky_affect = 0.12
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.62, 0.66, 0.78)
 	env.ambient_light_energy = 0.42
@@ -99,8 +112,9 @@ func _setup_scene() -> void:
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_DEPTH
 	env.fog_light_color = ZONE_FOG["g"]
-	env.fog_depth_begin = 14.0
-	env.fog_depth_end = 34.0
+	env.fog_depth_begin = 30.0
+	env.fog_depth_end = 300.0
+	env.fog_depth_curve = 1.6
 	env.fog_density = 1.0
 	env.glow_enabled = true
 	env.glow_intensity = 0.45
@@ -121,12 +135,13 @@ func _setup_scene() -> void:
 	sun.shadow_normal_bias = 1.2
 	sun.shadow_blur = 1.5
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-	sun.directional_shadow_max_distance = 30.0
+	sun.directional_shadow_max_distance = 42.0
 	add_child(sun)
 	camera = Camera3D.new()
-	camera.fov = 40.0
-	camera.near = 0.5
-	camera.far = 80.0
+	_zoom = clampf(Config.cam_zoom, ZOOM_MIN, ZOOM_MAX)
+	camera.fov = 45.0
+	camera.near = 0.3
+	camera.far = 560.0
 	add_child(camera)
 	camera.make_current()
 	world = WorldBuilder.new()
@@ -530,6 +545,21 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _set_zoom(z: float) -> void:
 	_zoom = clampf(z, ZOOM_MIN, ZOOM_MAX)
+	Config.cam_zoom = _zoom
+
+
+var _zoom_saved := 0.0
+
+
+## Parametry kamery dla bieżącego przybliżenia: [przesunięcie, punkt patrzenia względem postaci, fov].
+func _cam_params() -> Array:
+	var t := clampf((_zoom - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN), 0.0, 1.0)
+	var pitch := deg_to_rad(lerpf(CAM_PITCH.x, CAM_PITCH.y, t))
+	var dist := lerpf(CAM_DIST.x, CAM_DIST.y, t)
+	var offset := Vector3(0.0, sin(pitch) * dist, cos(pitch) * dist)
+	# Nisko – patrz nad głowę i przed siebie (bohater w dolnej części ekranu, widać horyzont).
+	var look := Vector3(0.0, lerpf(1.7, 0.5, t), -lerpf(3.5, 0.0, t))
+	return [offset, look, lerpf(CAM_FOV.x, CAM_FOV.y, t)]
 
 
 ## Kafelek pod punktem ekranu: najpierw istoty (ich sylwetki), potem teren.
@@ -683,12 +713,19 @@ func _process(delta: float) -> void:
 
 
 func _update_camera(delta: float) -> void:
-	var focus := me.position + Vector3(0, 0.5, 0)
-	var want := focus + CAM_OFFSET * _zoom
+	var cp := _cam_params()
+	var focus := me.position
+	var look: Vector3 = focus + cp[1]
+	var want: Vector3 = look + cp[0]
 	if camera.position == Vector3.ZERO:
 		camera.position = want
 	camera.position = camera.position.lerp(want, minf(1.0, delta * 10.0))
-	camera.look_at(camera.position - CAM_OFFSET, Vector3.UP)
+	camera.look_at(camera.position - cp[0], Vector3.UP)
+	camera.fov = lerpf(camera.fov, cp[2], minf(1.0, delta * 8.0))
+	# Zapis przybliżenia co jakiś czas (bez zapisu przy każdym ruchu kółkiem).
+	if absf(_zoom - _zoom_saved) > 0.01:
+		_zoom_saved = _zoom
+		Config.save_settings()
 	if _shake > 0.0:
 		_shake -= delta
 		camera.position += Vector3(randf_range(-1, 1), randf_range(-1, 1), 0) * 0.08 * (_shake / 0.25)
@@ -829,10 +866,30 @@ func _update_day_night(_delta: float) -> void:
 	sun.rotation_degrees = Vector3(lerpf(-52.0, -28.0, dusk * (1.0 - deep)), -38.0 + dusk * 25.0, 0)
 	env.ambient_light_color = Color(0.62, 0.66, 0.78).lerp(Color(0.7, 0.6, 0.6), dusk).lerp(Color(0.22, 0.27, 0.5), deep)
 	env.ambient_light_energy = lerpf(0.42, 0.4, deep)
-	var fog := _fog_col.lerp(Color(0.85, 0.5, 0.35), dusk * 0.5).lerp(Color(0.05, 0.07, 0.14), deep)
+	# Niebo: gradient pory dnia zabarwiony powietrzem krainy/strefy; mgła = barwa horyzontu.
+	var zen: Color = SKY_DAY[0].lerp(SKY_DUSK[0], dusk).lerp(SKY_NIGHT[0], deep)
+	var hor: Color = SKY_DAY[1].lerp(SKY_DUSK[1], dusk).lerp(SKY_NIGHT[1], deep)
+	var tint := _fog_col
+	var hostile := 0.0
+	if _zone == "r":
+		hostile = 0.35
+	elif _zone == "b" or _biome == "a":
+		hostile = 0.75
+	hor = hor.lerp(tint, 0.2 * (1.0 - deep) + hostile * 0.4)
+	zen = zen.lerp(Color(0.3, 0.2, 0.2).lerp(SKY_NIGHT[0], deep), hostile)
+	sky_mat.set_shader_parameter("zenith_color", zen)
+	sky_mat.set_shader_parameter("horizon_color", hor)
+	sky_mat.set_shader_parameter("ground_color", hor.darkened(0.35))
+	sky_mat.set_shader_parameter("sun_color", sun_col)
+	sky_mat.set_shader_parameter("night", deep)
+	sky_mat.set_shader_parameter("cloud_color", Color(1, 1, 1).lerp(Color(1.0, 0.72, 0.55), dusk).lerp(Color(0.16, 0.18, 0.26), deep).lerp(Color(0.45, 0.36, 0.34), hostile))
+	sky_mat.set_shader_parameter("cloud_shade", Color(0.62, 0.66, 0.76).lerp(Color(0.55, 0.36, 0.4), dusk).lerp(Color(0.05, 0.06, 0.1), deep).lerp(Color(0.2, 0.14, 0.13), hostile))
+	sky_mat.set_shader_parameter("cloud_cover", lerpf(0.42, 0.8, hostile))
+	var fog := hor
 	env.fog_light_color = fog
-	env.background_color = fog
-	env.fog_depth_begin = lerpf(14.0, 10.0, deep) if not (_zone in ["r", "b"] or _biome == "s") else lerpf(10.0, 8.0, deep)
+	var near_fog := _zone in ["r", "b"] or _biome == "s" or _biome == "w" or _biome == "a"
+	env.fog_depth_begin = lerpf(30.0, 14.0, deep) if not near_fog else lerpf(18.0, 10.0, deep)
+	env.fog_depth_end = lerpf(300.0, 160.0, deep) if not near_fog else 140.0
 	if absf(n - _last_night) > 0.01 or not _night_ready:
 		_night_ready = true
 		_last_night = n

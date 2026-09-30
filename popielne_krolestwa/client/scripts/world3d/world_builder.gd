@@ -81,6 +81,9 @@ var focus := Vector2i(112, 190)
 ## Pora dnia (0..1) przekazywana nowym ogniskom.
 var night := 0.0
 var effects := true
+## Cały świat w niskiej rozdzielczości (horyzont).
+var far: FarWorld
+var _mask_dirty := true
 
 
 func _init() -> void:
@@ -105,6 +108,10 @@ func build(start: Vector2i) -> void:
 	_compute_heights()
 	_find_houses()
 	_find_fire_spots()
+	far = FarWorld.new()
+	far.name = "FarWorld"
+	add_child(far)
+	far.build(self)
 	# Najbliższe kawałki od razu (reszta w _process).
 	var fc := _chunk_of(start)
 	for dy in range(-1, 2):
@@ -157,6 +164,25 @@ func _update_streaming() -> void:
 		if maxi(absi(d.x), absi(d.y)) > UNLOAD_RADIUS:
 			_chunks[c].queue_free()
 			_chunks.erase(c)
+			_mask_dirty = true
+	if _mask_dirty:
+		_mask_dirty = false
+		_update_hole()
+
+
+## Maska kawałków dla dalekiego świata (tam, gdzie jest pełny świat, daleki jest wycinany).
+func _update_hole() -> void:
+	if far == null:
+		return
+	var c0 := _chunk_of(Vector2i(-BORDER, -BORDER))
+	var c1 := _chunk_of(Vector2i(w + BORDER - 1, h + BORDER - 1))
+	var n := c1 - c0 + Vector2i.ONE
+	var img := Image.create(n.x, n.y, false, Image.FORMAT_R8)
+	for c in _chunks:
+		var p: Vector2i = c - c0
+		if p.x >= 0 and p.y >= 0 and p.x < n.x and p.y < n.y:
+			img.set_pixel(p.x, p.y, Color(1, 1, 1))
+	far.set_mask(img, Vector2(c0 * CHUNK), Vector2(n * CHUNK))
 
 
 func is_complete() -> bool:
@@ -509,6 +535,7 @@ func _finish_chunk(job: Dictionary) -> void:
 		f.effects = effects
 	add_child(node)
 	_chunks[c] = node
+	_update_hole()
 
 
 func _add_mesh(parent: Node3D, kit: MeshKit, mat: Material, shadows: bool) -> void:
