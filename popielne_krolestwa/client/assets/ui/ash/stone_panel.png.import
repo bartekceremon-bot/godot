@@ -2,28 +2,28 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cj5i1dty68efo"
-path="res://.godot/imported/items.png-c4408c4fe152b33a0c65216daba38a2d.ctex"
+uid="uid://ca1vj2eo0jjbm"
+path="res://.godot/imported/stone_panel.png-bafb45a43c297449b94f321fc97f370b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/items/items.png"
-dest_files=["res://.godot/imported/items.png-c4408c4fe152b33a0c65216daba38a2d.ctex"]
+source_file="res://assets/ui/ash/stone_panel.png"
+dest_files=["res://.godot/imported/stone_panel.png-bafb45a43c297449b94f321fc97f370b.ctex"]
 
 [params]
 
 compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.72
+compress/lossy_quality=0.9
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

@@ -4,9 +4,17 @@ extends Node3D
 ## pogoda), bohater w ekwipunku, najemnicy za nim i przeciwnik – modele Entity3D z gry MMO.
 ## Efekty czarów z Fx3D. Pozycje na „kafelkach” jak w MMO, żeby efekty trafiały w cel.
 
-const HERO_TILE := Vector2i(-2, 0)
+const HERO_TILE := Vector2i(-1, 0)
 const ENEMY_TILE := Vector2i(1, 0)
-const MERC_TILES := [Vector2i(-3, -1), Vector2i(-2, -2), Vector2i(-4, -2)]
+## Najemnicy po bokach, między bohaterem a przeciwnikiem (kamera patrzy zza pleców bohatera):
+## kafel (do efektów) i dokładne położenie w świecie.
+const MERC_TILES := [Vector2i(0, 2), Vector2i(0, 0), Vector2i(1, 2)]
+const MERC_POS := [Vector3(-0.2, 0, 2.0), Vector3(0.4, 0, -1.0), Vector3(0.4, 0, 2.7)]
+## Bohater stoi na lewo od osi kamery (w lewym dolnym rogu ekranu).
+const HERO_POS := Vector3(0.1, 0, -0.3)
+## Wysokość przeciwnika w świecie (zwykły / elita / boss) – każdy potwór, od szczura po smoka,
+## wypełnia środek ekranu i jest wyraźnie większy od bohatera (stały kadr kamery).
+const ENEMY_HEIGHT := [2.6, 3.0, 3.6]
 const SKY_SHADER := preload("res://shaders/sky_world.gdshader")
 
 var fx: Fx3D
@@ -20,6 +28,9 @@ var _sky_mat: ShaderMaterial
 var _diorama: Node3D
 var _obj_mat: ShaderMaterial
 var _weather: CPUParticles3D
+var _embers: CPUParticles3D
+var _rim: OmniLight3D
+var _enemy_h := 3.0
 var _region_id := ""
 var _hero_key := ""
 var _merc_key := ""
@@ -66,16 +77,25 @@ func _ready() -> void:
 	_sun.directional_shadow_max_distance = 22.0
 	add_child(_sun)
 	camera = Camera3D.new()
-	camera.fov = 48.0
+	camera.fov = 38.0
 	camera.current = true
 	add_child(camera)
 	fx = Fx3D.new()
 	add_child(fx)
 	_diorama = Node3D.new()
 	add_child(_diorama)
-	_cam_target = Vector3(0.1, 0.85, 0.5)
-	_cam_base = Vector3(-0.15, 1.9, 5.6)
-	_place_camera(1.0)
+	# Żar za przeciwnikiem: pomarańczowe podświetlenie konturu i unoszące się iskry (każdy region).
+	_rim = OmniLight3D.new()
+	_rim.light_color = Color(1.0, 0.45, 0.15)
+	_rim.light_energy = 2.2
+	_rim.omni_range = 7.0
+	_rim.position = Vector3(3.6, 1.6, 0.2)
+	add_child(_rim)
+	_embers = _particles(Color(1.0, 0.5, 0.15, 0.95), Vector3(0.3, 0.7, 0), 50, 4.5, 0.028, 1.0)
+	_embers.position = Vector3(0.5, 0.0, 0.5)
+	add_child(_embers)
+	_place_camera(ENEMY_HEIGHT[0])
+	camera.position = _cam_base
 
 
 func _process(delta: float) -> void:
@@ -91,7 +111,8 @@ func _process(delta: float) -> void:
 		camera.look_at(orbit_focus, Vector3.UP)
 		return
 	# Lekkie „oddychanie” kamery.
-	camera.position = camera.position.lerp(_cam_base + Vector3(sin(_t * 0.3) * 0.08, 0, 0), minf(1.0, delta * 3.0)) + off
+	camera.position = camera.position.lerp(_cam_base + Vector3(0, sin(_t * 0.4) * 0.03, sin(_t * 0.3) * 0.08), minf(1.0, delta * 3.0)) + off
+	_rim.light_energy = 2.0 + sin(_t * 3.1) * 0.25 + sin(_t * 7.3) * 0.12
 	camera.look_at(_cam_target, Vector3.UP)
 
 
@@ -99,11 +120,13 @@ func shake(amount: float) -> void:
 	_shake = clampf(maxf(_shake, amount), 0.0, 1.2)
 
 
-## Kamera odsuwa się dla dużych przeciwników (bossowie).
+## Kamera zza pleców bohatera (bohater w lewym dolnym rogu, przeciwnik na środku);
+## odsuwa się i unosi dla dużych przeciwników (bossowie).
 func _place_camera(enemy_height: float) -> void:
-	var k := clampf(enemy_height / 1.6, 1.0, 2.6)
-	_cam_base = Vector3(-0.6 + (k - 1.0) * 0.3, 1.5 + 0.7 * k, 5.6 + 1.8 * k)
-	_cam_target = Vector3(-0.35 + (k - 1.0) * 0.3, 0.5 + 0.4 * k, 0.0)
+	var h := clampf(enemy_height, 1.5, 9.0)
+	var chest := Vector3(1.5, h * 0.22, 0.5)
+	_cam_target = chest
+	_cam_base = chest + Vector3(-1.0, 0.26, 0.33).normalized() * h * 3.9
 
 
 # --- Region -----------------------------------------------------------------------
@@ -124,10 +147,16 @@ func set_region(reg: Dictionary) -> void:
 	_sky_mat.set_shader_parameter("cloud_color", Color(0.5, 0.4, 0.38) if hostile else Color(1, 1, 1))
 	_sky_mat.set_shader_parameter("cloud_shade", Color(0.2, 0.14, 0.13) if hostile else Color(0.62, 0.66, 0.76))
 	var env := _env.environment
-	env.fog_light_color = hor
-	env.fog_density = 0.03 if str(reg.weather) == "mist" else (0.02 if hostile else 0.012)
-	_sun.light_color = Color(1.0, 0.7, 0.5) if hostile else Color(1.0, 0.96, 0.88)
-	_sun.light_energy = 0.9 if hostile else 1.25
+	# Popielny klimat walki: przygaszone, szarawe światło i gęstsza mgła w każdej krainie.
+	env.fog_light_color = hor.lerp(Color(0.42, 0.4, 0.4), 0.5).darkened(0.4)
+	env.fog_density = 0.045 if str(reg.weather) == "mist" else (0.035 if hostile else 0.024)
+	env.tonemap_exposure = 0.9
+	env.ambient_light_energy = 0.6
+	env.adjustment_enabled = true
+	env.adjustment_saturation = 0.72
+	env.adjustment_contrast = 1.12
+	_sun.light_color = Color(1.0, 0.7, 0.5) if hostile else Color(1.0, 0.9, 0.8)
+	_sun.light_energy = 0.85 if hostile else 1.0
 	_build_diorama(reg)
 
 
@@ -165,6 +194,8 @@ func _build_diorama(reg: Dictionary) -> void:
 		var pos := Vector3(cos(a) * d + 0.5, 0, sin(a) * d * 0.9 + 0.5)
 		if i >= 16:
 			pos = Vector3((1.0 if i % 2 == 0 else -1.0) * rng.randf_range(4.5, 7.5), 0, rng.randf_range(-1.0, 3.0))
+		if _blocks_view(pos):
+			continue
 		k.place(pos, rng.randf() * TAU, rng.randf_range(0.9, 1.5))
 		_prop(k, str(props[i % props.size()]), rng)
 		k.reset()
@@ -186,6 +217,15 @@ func _build_diorama(reg: Dictionary) -> void:
 			_weather = _particles(Color(0.9, 0.78, 0.5, 0.5), Vector3(2.5, -0.1, 0), 80, 3.0, 0.025)
 	if _weather:
 		add_child(_weather)
+
+
+## Czy obiekt stałby między kamerą a areną (korytarz widoku zza pleców bohatera)?
+func _blocks_view(pos: Vector3) -> bool:
+	var a := Vector2(-11.5, 4.8)
+	var b := Vector2(2.0, 0.5)
+	var p := Vector2(pos.x, pos.z)
+	var t := clampf((p - a).dot(b - a) / (b - a).length_squared(), 0.0, 1.0)
+	return p.distance_to(a.lerp(b, t)) < 2.0 + t * 1.8
 
 
 func _prop(k: MeshKit, kind: String, rng: RandomNumberGenerator) -> void:
@@ -267,7 +307,10 @@ func set_hero(eq: Array) -> void:
 		hero.equipment = eq
 		hero._refresh_model()
 		return
-	hero = _entity({"i": 1, "k": "p", "n": "Bohater", "l": "3", "h": 100, "eq": eq}, HERO_TILE, PI / 2.0 - 0.45)
+	hero = _entity({"i": 1, "k": "p", "n": "Bohater", "l": "3", "h": 100, "eq": eq}, HERO_TILE, PI / 2.0 - 0.1)
+	hero._to = HERO_POS
+	hero._from = HERO_POS
+	hero.position = HERO_POS
 
 
 ## Najemnicy (do 3 najsilniejszych) stoją za bohaterem.
@@ -286,8 +329,11 @@ func set_mercs(list: Array) -> void:
 		if eq.size() == 6:
 			e["k"] = "p"
 			e["eq"] = eq
-		var ent := _entity(e, MERC_TILES[i], PI / 2.0 - 0.3)
+		var ent := _entity(e, MERC_TILES[i], PI / 2.0 - 0.15)
 		ent.scale = Vector3.ONE * 0.9
+		ent._to = MERC_POS[i]
+		ent._from = MERC_POS[i]
+		ent.position = MERC_POS[i]
 		mercs.append(ent)
 
 
@@ -297,9 +343,14 @@ func spawn_enemy(cur: Dictionary) -> void:
 		enemy = null
 	var kind := int(cur.kind)
 	enemy = _entity({"i": 2, "k": "m", "n": str(cur.name), "l": str(cur.look), "h": 100, "b": 1 if kind > 0 else 0}, ENEMY_TILE, -PI / 2.0 + 0.4)
-	if kind == 1 and not Entity3D.LOOK_SCALE.has(str(cur.look)):
-		enemy.scale = Vector3.ONE * 0.8
-	_place_camera(enemy.label_height * enemy.scale.x)
+	# Skala modelu (węzeł skaluje animacja pojawienia się Entity3D).
+	var body := maxf(0.3, enemy.label_height - 0.32)
+	var h: float = ENEMY_HEIGHT[clampi(kind, 0, 2)]
+	var f := clampf(h / body, 0.8, 2.3)
+	if enemy.model:
+		enemy.model.scale *= f
+	_enemy_h = body * f
+	_place_camera(h)
 	if kind > 0:
 		fx.ring(Fx3D.center(ENEMY_TILE.x, ENEMY_TILE.y), Color(1.0, 0.4, 0.15), 0.3, 3.0, 0.8, 0.12)
 		shake(0.6)
@@ -309,7 +360,7 @@ func spawn_enemy(cur: Dictionary) -> void:
 func enemy_screen_pos() -> Vector2:
 	var p := Fx3D.center(ENEMY_TILE.x, ENEMY_TILE.y) + Vector3(0, 1.0, 0)
 	if enemy:
-		p.y = enemy.label_height * enemy.scale.x * 0.65
+		p.y = _enemy_h * 0.55
 	return camera.unproject_position(p)
 
 

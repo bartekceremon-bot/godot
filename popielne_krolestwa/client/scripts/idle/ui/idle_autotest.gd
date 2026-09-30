@@ -36,7 +36,8 @@ func _ready() -> void:
 			for i in 12:
 				g.combat.tap()
 			return 0.4,
-		func(): await _shot("03_walka_postep"); ui.show_tab("gear"); return 0.8,
+		func(): await _shot("03_walka_postep"); ui.show_tab("heroes"); return 0.8,
+		func(): await _shot("03b_druzyna"); ui.show_tab("gear"); return 0.8,
 		func(): await _shot("04_ekwipunek"); _open_first_item(); return 0.8,
 		func(): await _shot("05_przedmiot"); _close_modals(); ui.show_tab("craft"); return 0.8,
 		func(): await _shot("06_craft"); ui.show_tab("spells"); return 0.8,
@@ -60,6 +61,9 @@ func _ready() -> void:
 		func(): await _shot("18_zarogniew"); g.s.stage = 34; g.enemy.spawn(); return 2.5,
 		func(): await _shot("19_pustynia"); return 0.2,
 	]
+	# --idle-quick: tylko menu i walka (szybki podgląd układu).
+	if "--idle-quick" in OS.get_cmdline_user_args():
+		_steps = _steps.slice(0, 12)
 
 
 ## Postęp: złoto, najemnicy, czary, łup – żeby ekrany miały treść.

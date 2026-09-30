@@ -277,3 +277,63 @@ static func price_text(amount: float, have: float, suffix := " zł") -> String:
 static func set_affordable(b: Button, ok: bool) -> void:
 	b.disabled = not ok
 	b.modulate = Color.WHITE if ok else Color(0.75, 0.7, 0.68)
+
+
+# --- Oprawa „Popiół i żar” (assets/ui/ash, tools/textures/gen_ui_ash.py) -----------
+
+static var _bold: Font = null
+
+
+static func ash_tex(name: String) -> Texture2D:
+	return load("res://assets/ui/ash/%s.png" % name)
+
+
+## Kamienna płyta 9-patch (stone_panel, slot, sheet, stone_button, badge, tile_on).
+static func ash_box(name: String, margin: int, content := -1) -> StyleBoxTexture:
+	var sb := StyleBoxTexture.new()
+	sb.texture = ash_tex(name)
+	sb.set_texture_margin_all(margin)
+	sb.set_content_margin_all(content if content >= 0 else margin * 0.6)
+	return sb
+
+
+## Gruba czcionka HUD-u (Exo 2 ExtraBold).
+static func bold_font() -> Font:
+	if _bold == null:
+		_bold = load("res://assets/fonts/Exo2-ExtraBold.ttf")
+	return _bold
+
+
+## Napis HUD-u: gruby, z ciemnym obrysem – czytelny na tle sceny 3D.
+static func hud_label(text: String, size := 22, color := Color(0.95, 0.93, 0.9), outline := 6) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_override("font", bold_font())
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", color)
+	l.add_theme_constant_override("outline_size", outline)
+	l.add_theme_color_override("font_outline_color", Color(0.04, 0.03, 0.03, 0.95))
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return l
+
+
+## Przycisk z kamienną płytą: ten sam wygląd we wszystkich stanach, wciśnięty – przygaszony.
+static func ash_button(name: String, margin: int, pressed_name := "") -> Button:
+	var b := Button.new()
+	var n := ash_box(name, margin)
+	var p := ash_box(pressed_name if pressed_name != "" else name, margin)
+	if pressed_name == "":
+		p.modulate_color = Color(0.78, 0.74, 0.7)
+	b.add_theme_stylebox_override("normal", n)
+	b.add_theme_stylebox_override("hover", n)
+	b.add_theme_stylebox_override("pressed", p)
+	b.add_theme_stylebox_override("hover_pressed", p)
+	b.add_theme_stylebox_override("disabled", n)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	return b
+
+
+## Przestawia pojemnik i jego dzieci-pojemniki na przepuszczanie dotyku (do ekranu walki).
+static func pass_through(c: Control) -> Control:
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return c

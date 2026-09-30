@@ -1,13 +1,13 @@
 class_name IdleMain
 extends Control
-## UIManager wersji idle: menu główne, górny pasek (poziom, XP, złoto, żarokryształy, popiół),
-## ekran walki, panel zakładek, dolna nawigacja (WALKA / EKWIPUNEK / CRAFT / CZARY / QUESTY / MAPA),
-## menu boczne (sklep, targ, stajnia, ołtarz, postać, ustawienia), powiadomienia, okna i animacje łupu.
+## UIManager wersji idle: menu główne, kamienny pasek górny (ZŁOTO | PD | STREFA), ekran walki
+## na całą wysokość, zakładki wysuwane nad walką, dolna nawigacja (INWENTARZ / TWORZENIE / CZARY /
+## ZADANIA / MAPA / SKLEP), menu (drużyna, stajnia, ołtarz, postać, ustawienia), okna i animacje łupu.
 ## Układ pionowy dla telefonu (16:9 … 20:9), na tabletach i w przeglądarce – wyśrodkowana kolumna.
 
 const MAX_COLUMN := 900.0
-const NAV := [["fight", "WALKA", "attack"], ["gear", "EKWIPUNEK", "bag"], ["craft", "CRAFT", "craft"],
-	["spells", "CZARY", "book"], ["quests", "QUESTY", "quest"], ["map", "MAPA", "map"]]
+const NAV := [["gear", "INWENTARZ", "nav_bag"], ["craft", "TWORZENIE", "nav_forge"], ["spells", "CZARY", "nav_book"],
+	["quests", "ZADANIA", "nav_scroll"], ["map", "MAPA", "nav_compass"], ["shop", "SKLEP", "nav_gem"]]
 
 var gm: IdleGame
 var column: Control
@@ -27,6 +27,10 @@ var _gold_l: Label
 var _gem_l: Label
 var _ash_box: Control
 var _ash_l: Label
+var _zone_l: Label
+var _gem_badge: Control
+var _lvl_badge: Control
+var _sheet_close: Button
 var _menu_screen: Control
 var _ui_t := 0.0
 var _started := false
@@ -64,6 +68,7 @@ func _ready() -> void:
 	_overlay = Control.new()
 	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay.z_index = 20
 	add_child(_overlay)
 	_toasts = IdleUI.vbox(6)
 	_toasts.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -83,10 +88,10 @@ func _layout() -> void:
 	var w := minf(size.x, MAX_COLUMN)
 	column.position = Vector2((size.x - w) / 2.0, 0)
 	column.size = Vector2(w, size.y)
-	_toasts.position = Vector2(column.position.x + 20, size.y * 0.3)
+	_toasts.position = Vector2(column.position.x + 20, size.y * 0.5)
 	_toasts.size = Vector2(w - 40, 0)
 	if combat:
-		_resize_combat()
+		_place_sheet.call_deferred()
 
 
 # --- Menu główne ------------------------------------------------------------------
@@ -114,7 +119,7 @@ func _start_game() -> void:
 	if not gm.offline_report.is_empty():
 		_show_offline(gm.offline_report)
 	elif int(gm.s.stats.kills) == 0:
-		dialog("Witaj, Popielniku!", "Dotknij przeciwnika, by go zaatakować (albo przytrzymaj palec). Za złoto wynajmuj najemników – walczą za ciebie także wtedy, gdy nie grasz. Ulepszaj ekwipunek, ucz się czarów u kapłanów i odblokowuj kolejne krainy.", [["Do boju!", Callable()]])
+		dialog("Witaj, Popielniku!", "Uderzaj przyciskiem ATAK! albo dotykając przeciwnika (przytrzymaj, by bić seriami). Za złoto wynajmuj najemników (DRUŻYNA pod portretem) – walczą za ciebie także wtedy, gdy nie grasz. Ulepszaj ekwipunek, ucz się czarów u kapłanów i odblokowuj kolejne krainy.", [["Do boju!", Callable()]])
 
 
 ## Przejście do klasycznej wersji MMO (poziomy ekran, logowanie na serwer).
@@ -135,26 +140,34 @@ func open_classic() -> void:
 
 func _build_game() -> void:
 	_root_box = IdleUI.vbox(0)
-	_root_box.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_root_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	column.add_child(_root_box)
-	_root_box.add_child(_build_topbar())
+	var top := _build_topbar()
 	combat = CombatScreen.new()
-	combat.custom_minimum_size = Vector2(0, 600)
+	combat.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_root_box.add_child(top)
 	_root_box.add_child(combat)
+	# Pasek górny rysowany nad sceną (wiszące plakietki XP / klejnoty / region).
+	top.z_index = 2
 	combat.setup(self)
 	combat.open_tab.connect(show_tab)
-	_panel_host = PanelContainer.new()
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.03, 0.026, 0.034, 0.97)
-	sb.border_color = Color(1.0, 0.55, 0.2, 0.7)
-	sb.border_width_top = 2
-	sb.shadow_color = Color(1.0, 0.45, 0.1, 0.25)
-	sb.shadow_size = 10
-	sb.set_content_margin_all(12)
-	_panel_host.add_theme_stylebox_override("panel", sb)
-	_panel_host.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_root_box.add_child(_panel_host)
 	_root_box.add_child(_build_nav())
+	# Wysuwany panel zakładek nad ekranem walki.
+	_panel_host = PanelContainer.new()
+	_panel_host.add_theme_stylebox_override("panel", IdleUI.ash_box("sheet", 30, 18))
+	_panel_host.visible = false
+	_panel_host.z_index = 1
+	column.add_child(_panel_host)
+	_sheet_close = IdleUI.ash_button("slot", 18)
+	_sheet_close.text = "✕"
+	_sheet_close.add_theme_font_size_override("font_size", 26)
+	_sheet_close.custom_minimum_size = Vector2(60, 60)
+	_sheet_close.pressed.connect(func():
+		Sfx.play("click")
+		show_tab("fight"))
+	_sheet_close.z_index = 1
+	column.add_child(_sheet_close)
+	combat.resized.connect(_place_sheet)
 	gm.changed.connect(_on_changed)
 	gm.level_up.connect(_on_level_up)
 	gm.loot_gained.connect(_on_loot)
@@ -163,138 +176,243 @@ func _build_game() -> void:
 	show_tab("fight")
 
 
+## Kamienny pasek: ZŁOTO | PD (pasek XP) | STREFA – jak w projekcie ekranu.
 func _build_topbar() -> Control:
 	var p := PanelContainer.new()
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.025, 0.022, 0.03, 0.96)
-	sb.border_color = Color(1.0, 0.55, 0.2, 0.75)
-	sb.border_width_bottom = 2
-	sb.shadow_color = Color(1.0, 0.45, 0.1, 0.3)
-	sb.shadow_size = 10
-	sb.content_margin_left = 12
-	sb.content_margin_right = 12
+	var sb := IdleUI.ash_box("stone_panel", 26, 0)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
 	sb.content_margin_top = 10
-	sb.content_margin_bottom = 8
+	sb.content_margin_bottom = 14
+	sb.expand_margin_left = 4
+	sb.expand_margin_right = 4
+	sb.expand_margin_top = 4
 	p.add_theme_stylebox_override("panel", sb)
-	var h := IdleUI.hbox(12)
+	var h := IdleUI.hbox(0)
 	p.add_child(h)
-	# Portret z poziomem.
-	var portrait := Control.new()
-	portrait.custom_minimum_size = Vector2(84, 84)
-	var fr := IdleUI.icon_rect(load("res://assets/ui/frame_round.png"), 84)
-	portrait.add_child(fr)
-	var face := IdleUI.icon_rect(Sprites.icon("character"), 52)
-	face.position = Vector2(16, 12)
-	portrait.add_child(face)
-	_lvl_l = IdleUI.label("1", 22, UiTheme.ACCENT)
-	_lvl_l.position = Vector2(0, 58)
-	_lvl_l.size = Vector2(84, 26)
-	_lvl_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	portrait.add_child(_lvl_l)
-	var pb := Button.new()
-	pb.flat = true
-	pb.set_anchors_preset(Control.PRESET_FULL_RECT)
-	pb.pressed.connect(func(): show_tab("stats"))
-	portrait.add_child(pb)
-	h.add_child(portrait)
-	var mid := IdleUI.vbox(6)
-	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	h.add_child(mid)
-	var cur := IdleUI.hbox(18)
-	mid.add_child(cur)
-	var g := IdleUI.currency(Sprites.item_icon("gold", 0), IdleUI.GOLD_COL, 26)
-	_gold_l = g[1]
-	cur.add_child(g[0])
-	var gem := IdleUI.currency(Sprites.icon("gem"), IdleUI.GEM_COL, 24)
-	_gem_l = gem[1]
-	cur.add_child(gem[0])
-	var ash := IdleUI.currency(Sprites.icon("ash"), IdleUI.ASH_COL, 24)
-	_ash_box = ash[0]
-	_ash_l = ash[1]
-	cur.add_child(_ash_box)
-	_xp_bar = IdleUI.bar(Color(0.55, 0.35, 0.9), 22)
-	_xp_l = IdleUI.bar_label(_xp_bar, 15)
-	mid.add_child(_xp_bar)
-	var menu := Button.new()
-	menu.custom_minimum_size = Vector2(84, 84)
-	menu.icon = Sprites.icon("menu")
-	menu.expand_icon = true
-	menu.pressed.connect(_open_menu)
-	h.add_child(menu)
+	var cap_col := Color(0.72, 0.7, 0.68)
+	var val_col := Color(1.0, 0.7, 0.28)
+	# ZŁOTO
+	var gold := IdleUI.hbox(6)
+	gold.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gold.size_flags_stretch_ratio = 1.0
+	h.add_child(gold)
+	var gv := IdleUI.vbox(0)
+	gv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gv.alignment = BoxContainer.ALIGNMENT_CENTER
+	gold.add_child(gv)
+	var gc := IdleUI.hud_label("ZŁOTO:", 19, cap_col, 4)
+	gc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	gv.add_child(gc)
+	_gold_l = IdleUI.hud_label("0", 34, val_col, 6)
+	_gold_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	gv.add_child(_gold_l)
+	gold.add_child(IdleUI.icon_rect(IdleUI.ash_tex("ico_gold"), 64))
+	h.add_child(_divider())
+	# PD (doświadczenie)
+	var xp := IdleUI.vbox(4)
+	xp.alignment = BoxContainer.ALIGNMENT_CENTER
+	xp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	xp.size_flags_stretch_ratio = 1.25
+	h.add_child(xp)
+	var xc := IdleUI.hud_label("PD:", 19, cap_col, 4)
+	xc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	xp.add_child(xc)
+	_xp_bar = ProgressBar.new()
+	_xp_bar.show_percentage = false
+	_xp_bar.max_value = 1.0
+	_xp_bar.step = 0.0
+	_xp_bar.custom_minimum_size = Vector2(0, 38)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color(0.5, 0.26, 0.85)
+	fill.border_color = Color(0.75, 0.55, 1.0)
+	fill.border_width_top = 3
+	fill.set_corner_radius_all(4)
+	var back := StyleBoxFlat.new()
+	back.bg_color = Color(0.07, 0.05, 0.1)
+	back.border_color = Color(0.42, 0.4, 0.45)
+	back.set_border_width_all(2)
+	back.set_corner_radius_all(5)
+	_xp_bar.add_theme_stylebox_override("fill", fill)
+	_xp_bar.add_theme_stylebox_override("background", back)
+	_xp_l = IdleUI.hud_label("", 18, Color.WHITE, 5)
+	_xp_l.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_xp_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_xp_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_xp_bar.add_child(_xp_l)
+	xp.add_child(_xp_bar)
+	h.add_child(_divider())
+	# STREFA (etap) – dotknięcie otwiera mapę.
+	var zone := IdleUI.hbox(6)
+	zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	h.add_child(zone)
+	var zv := IdleUI.vbox(0)
+	zv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	zv.alignment = BoxContainer.ALIGNMENT_CENTER
+	zone.add_child(zv)
+	var zc := IdleUI.hud_label("STREFA", 19, cap_col, 4)
+	zc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	zv.add_child(zc)
+	_zone_l = IdleUI.hud_label("1", 34, val_col, 6)
+	_zone_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	zv.add_child(_zone_l)
+	zone.add_child(IdleUI.icon_rect(IdleUI.ash_tex("ico_map"), 64))
+	var zb := Button.new()
+	zb.flat = true
+	zb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	zb.pressed.connect(func():
+		Sfx.play("click")
+		show_tab("map"))
+	zone.add_child(zb)
+	# Wiszące plakietki: żarokryształy (z lewej), poziom (środek), popiół (z prawej).
+	var wrap := Control.new()
+	wrap.custom_minimum_size = Vector2(0, 112)
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	p.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	wrap.add_child(p)
+	_gem_badge = _hang_badge(wrap, Sprites.icon("gem"), IdleUI.GEM_COL)
+	_gem_l = _gem_badge.get_meta("label")
+	_lvl_badge = _hang_badge(wrap, null, Color(0.78, 0.6, 1.0))
+	_lvl_l = _lvl_badge.get_meta("label")
+	_ash_box = _hang_badge(wrap, Sprites.icon("ash"), IdleUI.ASH_COL)
+	_ash_l = _ash_box.get_meta("label")
+	var place := func():
+		var w := wrap.size.x
+		for pair in [[_gem_badge, 0.17], [_lvl_badge, 0.5], [_ash_box, 0.83]]:
+			var b: Control = pair[0]
+			b.reset_size()
+			b.position = Vector2(w * float(pair[1]) - b.size.x / 2.0, wrap.size.y - 16)
+	wrap.resized.connect(place)
+	_gem_l.resized.connect(place)
+	_lvl_l.resized.connect(place)
+	return wrap
+
+
+func _divider() -> Control:
+	var d := ColorRect.new()
+	d.color = Color(0.3, 0.29, 0.3, 0.8)
+	d.custom_minimum_size = Vector2(2, 0)
+	d.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var m := MarginContainer.new()
+	m.add_theme_constant_override("margin_left", 8)
+	m.add_theme_constant_override("margin_right", 8)
+	m.add_theme_constant_override("margin_top", 6)
+	m.add_theme_constant_override("margin_bottom", 6)
+	m.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	m.add_child(d)
+	return m
+
+
+## Sześciokątna plakietka wisząca pod paskiem (klejnoty, poziom, popiół).
+func _hang_badge(parent: Control, tex: Texture2D, col: Color) -> Control:
+	var p := PanelContainer.new()
+	var sb := IdleUI.ash_box("badge", 22, 0)
+	sb.content_margin_left = 22
+	sb.content_margin_right = 22
+	sb.content_margin_top = 4
+	sb.content_margin_bottom = 4
+	p.add_theme_stylebox_override("panel", sb)
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	p.custom_minimum_size = Vector2(96, 38)
+	var h := IdleUI.hbox(4)
+	h.alignment = BoxContainer.ALIGNMENT_CENTER
+	p.add_child(h)
+	if tex:
+		h.add_child(IdleUI.icon_rect(tex, 26))
+	var l := IdleUI.hud_label("", 19, col, 4)
+	h.add_child(l)
+	p.set_meta("label", l)
+	parent.add_child(p)
+	p.top_level = false
 	return p
 
 
+## Dolna nawigacja: kamienne kafle z malowanymi ikonami.
 func _build_nav() -> Control:
 	var p := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.025, 0.022, 0.03, 0.97)
-	sb.border_color = Color(1.0, 0.55, 0.2, 0.75)
+	sb.bg_color = Color(0.03, 0.028, 0.03)
+	sb.border_color = Color(0.22, 0.2, 0.2)
 	sb.border_width_top = 2
-	sb.shadow_color = Color(1.0, 0.45, 0.1, 0.3)
-	sb.shadow_size = 10
-	sb.set_content_margin_all(8)
+	sb.content_margin_left = 6
+	sb.content_margin_right = 6
+	sb.content_margin_top = 6
+	sb.content_margin_bottom = 8
 	p.add_theme_stylebox_override("panel", sb)
-	# Zakładki: przezroczyste, aktywna – żarzące się szkło.
-	var tab_n := IdleUI.glass(Color(1, 1, 1, 0.02), Color(1, 1, 1, 0.0), 14, 0, Color(0, 0, 0, 0), 0)
-	var tab_on := IdleUI.glass(Color(0.3, 0.12, 0.04, 0.85), IdleUI.EMBER, 14, 2, Color(1.0, 0.45, 0.1, 0.5), 12)
-	for st in [tab_n, tab_on]:
-		st.content_margin_top = 6
-		st.content_margin_bottom = 4
-	var tab_font := FontVariation.new()
-	tab_font.base_font = load("res://assets/fonts/Exo2-SemiBold.ttf")
-	tab_font.opentype_features = {0x6B65726E: 0}
-	tab_font.spacing_glyph = 1
 	var h := IdleUI.hbox(6)
 	p.add_child(h)
 	for n in NAV:
-		var b := Button.new()
-		b.custom_minimum_size = Vector2(0, 104)
+		var b := IdleUI.ash_button("stone_panel", 26, "tile_on")
+		b.custom_minimum_size = Vector2(0, 124)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.toggle_mode = true
-		b.icon = Sprites.icon(str(n[2]))
-		b.expand_icon = true
-		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-		b.text = str(n[1])
-		b.add_theme_font_size_override("font_size", 14)
-		b.add_theme_constant_override("icon_max_width", 56)
-		b.add_theme_font_override("font", tab_font)
-		b.add_theme_stylebox_override("normal", tab_n)
-		b.add_theme_stylebox_override("hover", tab_n)
-		b.add_theme_stylebox_override("pressed", tab_on)
-		b.add_theme_stylebox_override("hover_pressed", tab_on)
-		b.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.55))
+		b.clip_contents = false
 		var id := str(n[0])
+		var icon := IdleUI.icon_rect(IdleUI.ash_tex(str(n[2])), 80)
+		icon.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+		icon.position.y = 6
+		b.add_child(icon)
+		var l := IdleUI.hud_label(str(n[1]), 16, Color(0.96, 0.94, 0.9), 5)
+		l.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		l.offset_top = -30
+		l.offset_bottom = -6
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.clip_text = true
+		b.add_child(l)
 		b.pressed.connect(func():
 			Sfx.play("click")
-			show_tab(id))
+			show_tab("fight" if _current == id else id))
 		h.add_child(b)
 		_nav_btns[id] = b
-		var badge := UiTheme.label("", 16, Color.WHITE)
-		var bs := StyleBoxFlat.new()
-		bs.bg_color = Color(0.9, 0.15, 0.08)
-		bs.shadow_color = Color(1.0, 0.2, 0.1, 0.6)
-		bs.shadow_size = 6
-		bs.set_corner_radius_all(12)
-		bs.content_margin_left = 7
-		bs.content_margin_right = 7
-		badge.add_theme_stylebox_override("normal", bs)
-		badge.position = Vector2(6, 2)
-		badge.visible = false
-		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		b.add_child(badge)
-		_badges[id] = badge
+		_badges[id] = _dot(b)
 	return p
 
 
-## Proporcje: na zakładce WALKA widok walki jest wyższy.
-func _resize_combat() -> void:
-	var h := column.size.y
-	var ratio := 0.54 if _current == "fight" else 0.4
-	combat.custom_minimum_size = Vector2(0, maxf(460.0, h * ratio))
+## Pomarańczowa kropka powiadomienia (z liczbą) w rogu przycisku.
+func _dot(b: Control) -> Label:
+	var badge := IdleUI.hud_label("", 14, Color.WHITE, 3)
+	var bs := StyleBoxFlat.new()
+	bs.bg_color = Color(1.0, 0.45, 0.1)
+	bs.border_color = Color(1.0, 0.8, 0.5)
+	bs.set_border_width_all(1)
+	bs.shadow_color = Color(1.0, 0.4, 0.05, 0.8)
+	bs.shadow_size = 6
+	bs.set_corner_radius_all(12)
+	bs.content_margin_left = 6
+	bs.content_margin_right = 6
+	badge.add_theme_stylebox_override("normal", bs)
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.custom_minimum_size = Vector2(22, 22)
+	badge.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	badge.position = Vector2(-26, 4)
+	badge.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	badge.visible = false
+	b.add_child(badge)
+	return badge
 
 
+## Panel zakładki: od dołu nagłówka wroga do dolnej nawigacji.
+func _place_sheet() -> void:
+	if not combat or not _panel_host:
+		return
+	var r := combat.get_rect()
+	var top := r.position.y + minf(combat.sheet_top(), r.size.y * 0.3)
+	_panel_host.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_panel_host.offset_left = r.position.x + 4
+	_panel_host.offset_right = r.end.x - column.size.x - 4
+	_panel_host.offset_top = top
+	_panel_host.offset_bottom = r.end.y - column.size.y + 4
+	_sheet_close.position = Vector2(r.end.x - 70, top - 26)
+
+
+## Zakładki: „fight” zamyka panel (sam ekran walki), pozostałe wysuwają się nad walkę.
 func show_tab(id: String) -> void:
+	if id == "fight":
+		_current = "fight"
+		_close_sheet()
+		for k in _nav_btns:
+			_nav_btns[k].set_pressed_no_signal(false)
+		return
 	if not _panels.has(id):
 		var p: IdlePanel = _make_panel(id)
 		if p == null:
@@ -307,16 +425,33 @@ func show_tab(id: String) -> void:
 			_panel_host.remove_child(pn)
 	var panel: IdlePanel = _panels[id]
 	_panel_host.add_child(panel)
+	var was_open := _panel_host.visible
 	_current = id
 	panel.refresh()
 	for k in _nav_btns:
 		_nav_btns[k].set_pressed_no_signal(k == id)
-	_resize_combat()
+	_place_sheet()
+	_panel_host.visible = true
+	_sheet_close.visible = true
+	if not was_open:
+		# Wysunięcie z dołu (przesunięcie rysowania – bez ruszania układu).
+		_panel_host.modulate.a = 0.0
+		_panel_host.scale = Vector2(1.0, 0.94)
+		_panel_host.pivot_offset = Vector2(_panel_host.size.x / 2.0, _panel_host.size.y)
+		var tw := _panel_host.create_tween().set_parallel(true)
+		tw.tween_property(_panel_host, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_panel_host, "modulate:a", 1.0, 0.15)
+
+
+func _close_sheet() -> void:
+	if _panel_host:
+		_panel_host.visible = false
+		_sheet_close.visible = false
 
 
 func _make_panel(id: String) -> IdlePanel:
 	match id:
-		"fight":
+		"heroes":
 			return HeroesPanel.new()
 		"gear":
 			return IdleInventoryPanel.new()
@@ -342,7 +477,7 @@ func _make_panel(id: String) -> IdlePanel:
 
 
 func _open_menu() -> void:
-	var items := [["Sklep i targ", "shop", "shop"], ["Stajnia – wierzchowce", "mount", "mounts"], ["Ołtarz Popiołu – odrodzenie", "prestige", "prestige"],
+	var items := [["Drużyna – najemnicy", "character", "heroes"], ["Stajnia – wierzchowce", "mount", "mounts"], ["Ołtarz Popiołu – odrodzenie", "prestige", "prestige"],
 		["Postać i statystyki", "character", "stats"], ["Ustawienia", "menu", "settings"]]
 	var box := IdleUI.vbox(10)
 	var m: Control
@@ -367,15 +502,15 @@ func _process(delta: float) -> void:
 	if _ui_t >= 0.25:
 		_ui_t = 0.0
 		_refresh_top()
-		if _panels.has(_current):
+		if _panels.has(_current) and _panel_host.visible:
 			_panels[_current].tick_ui()
 		_refresh_badges()
 
 
 func _on_changed(what: String) -> void:
-	if what in ["gold", "xp", "level", "all"]:
+	if what in ["gold", "xp", "level", "stage", "all"]:
 		_refresh_top()
-	if _panels.has(_current):
+	if _panels.has(_current) and _panel_host.visible:
 		_panels[_current].on_changed(what)
 	if what == "all":
 		for k in _panels:
@@ -384,19 +519,20 @@ func _on_changed(what: String) -> void:
 
 func _refresh_top() -> void:
 	var s := gm.s
-	_lvl_l.text = str(int(s.level))
 	var need := ProgressionManager.xp_next(int(s.level))
-	_xp_bar.value = float(s.xp) / need
-	_xp_l.text = "Poziom %d  •  %s / %s XP" % [int(s.level), IdleDB.fmt(float(s.xp)), IdleDB.fmt(need)]
+	var frac := clampf(float(s.xp) / need, 0.0, 1.0)
+	_xp_bar.value = frac
+	_xp_l.text = "%s / %s (%d%%)" % [IdleDB.fmt(float(s.xp)), IdleDB.fmt(need), int(frac * 100.0)]
+	_lvl_l.text = "POZIOM %d" % int(s.level)
 	_gold_l.text = IdleDB.fmt(float(s.gold))
 	_gem_l.text = str(int(s.gems))
+	_zone_l.text = str(int(s.stage))
 	_ash_box.visible = int(s.ash_total) > 0 or gm.prestige.can_rebirth()
 	_ash_l.text = str(int(s.ash))
 
 
 func _refresh_badges() -> void:
-	var q := gm.quests.ready_count()
-	_set_badge("quests", q)
+	_set_badge("quests", gm.quests.ready_count())
 	var chests := 0
 	for r in range(1, 6):
 		chests += gm.inventory.count("chest_%d" % r)
@@ -406,6 +542,8 @@ func _refresh_badges() -> void:
 		if gm.spells.can_learn(str(id)):
 			learn += 1
 	_set_badge("spells", learn)
+	if combat:
+		combat.refresh_badges()
 
 
 func _set_badge(id: String, n: int) -> void:
@@ -470,9 +608,22 @@ func fly_icon(tex: Texture2D, from: Vector2, to: Vector2, tint := Color.WHITE, d
 
 
 func toast_msg(text: String, color := UiTheme.ACCENT) -> void:
-	var c := IdleUI.card(Color(0.04, 0.04, 0.05, 0.92), color)
+	var c := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.03, 0.025, 0.025, 0.88)
+	sb.border_color = color
+	sb.border_width_left = 4
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 12
+	sb.content_margin_top = 6
+	sb.content_margin_bottom = 6
+	c.add_theme_stylebox_override("panel", sb)
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var l := IdleUI.label(text, 20, color, true)
+	c.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var l := IdleUI.hud_label(text, 19, color, 4)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size = Vector2(minf(560.0, column.size.x - 60.0), 0)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	c.add_child(l)
 	_toasts.add_child(c)
@@ -521,10 +672,11 @@ func modal(title_text: String, content: Control, closable := true) -> Control:
 	dim.color = Color(0, 0, 0, 0.6)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	dim.z_index = 10
 	add_child(dim)
 	_modals.append(dim)
 	var card := IdleUI.card(Color(0.06, 0.06, 0.08, 0.98), UiTheme.BORDER)
-	card.add_theme_stylebox_override("panel", UiTheme.tex_box("panel", 32, 26))
+	card.add_theme_stylebox_override("panel", IdleUI.ash_box("sheet", 30, 24))
 	var w := minf(column.size.x - 30.0, 700.0)
 	card.custom_minimum_size = Vector2(w, 0)
 	dim.add_child(card)
@@ -537,7 +689,10 @@ func modal(title_text: String, content: Control, closable := true) -> Control:
 	t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	head.add_child(t)
 	if closable:
-		var x := IdleUI.button("✕", Vector2(64, 64), 26)
+		var x := IdleUI.ash_button("slot", 18)
+		x.text = "✕"
+		x.custom_minimum_size = Vector2(64, 64)
+		x.add_theme_font_size_override("font_size", 26)
 		x.pressed.connect(func(): close_modal(dim))
 		head.add_child(x)
 	var sc := ScrollContainer.new()

@@ -2,28 +2,28 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cj5i1dty68efo"
-path="res://.godot/imported/items.png-c4408c4fe152b33a0c65216daba38a2d.ctex"
+uid="uid://pw4vd8csvxkq"
+path="res://.godot/imported/nav_book.png-e29c75ca3f1b44c0b82728606702a12a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/items/items.png"
-dest_files=["res://.godot/imported/items.png-c4408c4fe152b33a0c65216daba38a2d.ctex"]
+source_file="res://assets/ui/ash/nav_book.png"
+dest_files=["res://.godot/imported/nav_book.png-e29c75ca3f1b44c0b82728606702a12a.ctex"]
 
 [params]
 
 compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.72
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
