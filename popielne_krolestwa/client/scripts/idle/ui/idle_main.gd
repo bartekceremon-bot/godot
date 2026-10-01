@@ -124,6 +124,8 @@ func _start_game() -> void:
 	music.play("walka")
 	var ev := gm.events.current()
 	get_tree().create_timer(2.0).timeout.connect(func(): toast_msg("%s: %s" % [ev.name, ev.text], Color(1.0, 0.75, 0.35)))
+	if gm.soul_night.active():
+		get_tree().create_timer(6.0).timeout.connect(func(): banner("NOC DUSZ", "Zbieraj Płomyki Dusz – Upiorny Kram czeka w Menu!", Color(0.7, 0.55, 1.0)))
 	if gm.festival.active():
 		get_tree().create_timer(4.0).timeout.connect(func(): banner("FESTYN ŻARU", "Zbieraj lampiony – kram czeka w Menu!", Color(1.0, 0.65, 0.25)))
 	gm.enemy_spawned.connect(_update_music)
@@ -630,6 +632,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return DragonPanel.new()
 		"stronghold":
 			return StrongholdPanel.new()
+		"soul_night":
+			return SoulNightPanel.new()
 	return null
 
 
@@ -641,7 +645,8 @@ func _open_menu() -> void:
 			["Koło Żaru", IdleUI.ash_tex("nav_gem"), "wheel", gm.wheel.free_spins(), 0],
 			["Wyzwania tygodnia", Sprites.icon("quest"), "weekly", gm.weekly.ready_count(), 0],
 			["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count(), 0],
-			["Festyn Żaru", load("res://assets/ui/modes/relic_lantern.png"), "festival", 1 if gm.festival.active() else 0, 0]]],
+			["Festyn Żaru", load("res://assets/ui/modes/relic_lantern.png"), "festival", 1 if gm.festival.active() else 0, 0],
+			["Noc Dusz", load("res://assets/ui/modes/soul_flame.png"), "soul_night", (1 if gm.soul_night.milestone_ready() else 0) + (1 if gm.soul_night.active() else 0), 0]]],
 		["Walki i wyzwania", [["Lochy Żaru", load("res://assets/ui/modes/dungeon.png"), "dungeon", gm.dungeon.total_keys() if gm.dungeon.unlocked() else 0, 15],
 			["Arena", load("res://assets/ui/modes/arena.png"), "arena", (gm.arena.tickets() + (1 if gm.arena.weekly_ready() else 0)) if gm.arena.unlocked() else 0, 25],
 			["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts(), 0],

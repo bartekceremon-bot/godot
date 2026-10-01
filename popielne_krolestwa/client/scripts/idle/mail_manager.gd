@@ -6,6 +6,7 @@ extends RefCounted
 
 ## [id, tytuł, treść, prezent {gems, chest} albo {}]
 const MESSAGES := [
+	["v4.6", "Nowości: wersja 4.6", "Noc Dusz (25 października – 3 listopada): wrogowie gubią Płomyki Dusz, a w Upiornym Kramie czeka strój Żniwiarza Dusz, przysmaki dla smoka i inne nagrody. Za 300 płomyków – dodatkowy prezent. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],
 	["v4.5", "Nowości: wersja 4.5", "Cechy elit i bossów (od etapu 30): przeciwnicy bywają Opancerzeni, Regenerujący, W szale, Zwinni, Kolosalni albo Przeklęci. Każda cecha to trudniejsza walka, ale +50% złota i dodatkowy żarokryształ. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],
 	["v4.4", "Nowości: wersja 4.4", "Twierdza Popielników (od etapu 12): sześć budynków – Skarbiec, Koszary, Kuźnia, Biblioteka, Wieża Magów i Strażnica – daje stałe premie, które zostają po odrodzeniu. Budowa trwa także przy zamkniętej grze. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],
 	["v4.3", "Nowości: wersja 4.3", "Smoczy towarzysz (od etapu 45): odbierz jajo Żarogniewa, wykluj smoka i karm go złotem oraz ziołami z ogrodu. Smok rośnie przez cztery stadia, zieje ogniem w walce i daje +1% złota za każdy poziom. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],

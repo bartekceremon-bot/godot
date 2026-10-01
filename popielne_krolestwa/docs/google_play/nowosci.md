@@ -3,6 +3,31 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.6.0
+
+```
+<pl-PL>
+• Noc Dusz (25.10–3.11): Płomyki Dusz i Upiorny Kram
+• Nowy strój: Żniwiarz Dusz
+</pl-PL>
+<en-US>
+• Night of Souls (Oct 25 – Nov 3): Soul Flames and the Haunted Stall
+• New outfit: Soul Reaper
+</en-US>
+<es-ES>
+• Noche de las Almas (25/10–3/11): Llamas de Alma y el Puesto Embrujado
+• Nuevo atuendo: Segador de Almas
+</es-ES>
+<pt-BR>
+• Noite das Almas (25/10–3/11): Chamas de Alma e a Barraca Assombrada
+• Novo traje: Ceifador de Almas
+</pt-BR>
+<de-DE>
+• Nacht der Seelen (25.10.–3.11.): Seelenflammen und der Spukstand
+• Neues Outfit: Seelenschnitter
+</de-DE>
+```
+
 ## 4.5.0
 
 ```

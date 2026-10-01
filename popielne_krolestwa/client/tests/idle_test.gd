@@ -900,6 +900,25 @@ func _ready() -> void:
 	s.farm_mode = false
 	g.enemy.spawn()
 
+	# --- Noc Dusz ---
+	var sn := g.soul_night
+	s.erase("soul_night")
+	var oct30 := Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 10, "day": 30, "hour": 12, "minute": 0, "second": 0})
+	var nov2 := Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 11, "day": 2, "hour": 12, "minute": 0, "second": 0})
+	var oct10 := Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 10, "day": 10, "hour": 12, "minute": 0, "second": 0})
+	check(sn.active(oct30) and sn.active(nov2) and not sn.active(oct10), "daty Nocy Dusz")
+	sn.force = 1
+	check(sn.on_kill(2) == 4 and sn.flames() == 4, "płomyki z bossa")
+	s.soul_night.flames = 600
+	s.soul_night.total = 600
+	check(sn.milestone_ready() and sn.claim_milestone() and not sn.milestone_ready(), "nagroda za 300 płomyków raz")
+	check(sn.buy(0) and g.skins.unlocked("reaper") and not sn.can_buy(0), "strój Żniwiarz Dusz")
+	check(sn.flames() == 100, "płomyki po zakupie: %d" % sn.flames())
+	sn.force = 0
+	check(not sn.can_buy(1) and sn.on_kill(2) == 0, "po wydarzeniu kram zamknięty")
+	sn.force = -1
+	check(sn.days_left() >= 1, "dni do Nocy Dusz: %d" % sn.days_left())
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

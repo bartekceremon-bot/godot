@@ -13,6 +13,7 @@ const SKINS := [
 	{"id": "dragonslayer", "name": "Pogromca Smoka", "eq": ["plate_head_t8", "plate_body_t8", "plate_legs_t8", "plate_feet_t8", "sword_t8", "shield_t8"], "req": "story:outro:fire_temple", "text": "Pokonaj Żarogniewa"},
 	{"id": "ashprince", "name": "Popielny Książę", "eq": ["plate_head_t8", "leather_body_t8", "plate_legs_t8", "leather_feet_t8", "staff_t8", ""], "req": "owned:ashprince", "text": "Nagroda 30. poziomu Złotego Karnetu"},
 	{"id": "festival", "name": "Mistrz Festynu", "eq": ["cloth_head_t8", "plate_body_t7", "leather_legs_t8", "plate_feet_t8", "mace_t8", "shield_t8"], "req": "owned:festival", "text": "Kram Festynu Żaru (600 lampionów)"},
+	{"id": "reaper", "name": "Żniwiarz Dusz", "eq": ["cloth_head_t7", "cloth_body_t8", "cloth_legs_t7", "leather_feet_t7", "staff_t7", ""], "req": "owned:reaper", "text": "Upiorny Kram Nocy Dusz (500 płomyków)"},
 	{"id": "phoenix", "name": "Feniks", "eq": ["leather_head_t8", "leather_body_t8", "leather_legs_t8", "leather_feet_t8", "axe_t8", ""], "req": "phoenix:1", "text": "Przebudź się jako Feniks"},
 ]
 
