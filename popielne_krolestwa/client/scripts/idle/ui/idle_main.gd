@@ -125,7 +125,7 @@ func _start_game() -> void:
 	var ev := gm.events.current()
 	get_tree().create_timer(2.0).timeout.connect(func(): toast_msg("%s: %s" % [ev.name, ev.text], Color(1.0, 0.75, 0.35)))
 	gm.enemy_spawned.connect(_update_music)
-	gm.changed.connect(func(w): if w in ["tower", "raid"]: _update_music())
+	gm.changed.connect(func(w): if w in ["tower", "raid", "dungeon", "arena"]: _update_music())
 	if _menu_screen.has_method("leave"):
 		_menu_screen.leave()
 	else:
@@ -218,7 +218,7 @@ func show_odds(title_text: String, rows: Array) -> void:
 ## Muzyka bossa przy bossach, elitach i w Wieży Popiołu, w pozostałych walkach – temat walki.
 func _update_music() -> void:
 	var e := gm.enemy.cur
-	music.play("boss" if gm.tower.active or gm.raid.active or (not e.is_empty() and int(e.kind) > 0) else "walka")
+	music.play("boss" if gm.challenge() != null or (not e.is_empty() and int(e.kind) > 0) else "walka")
 
 
 ## Przejście do klasycznej wersji MMO (poziomy ekran, logowanie na serwer).
@@ -598,6 +598,12 @@ func _make_panel(id: String) -> IdlePanel:
 			return SeasonPanel.new()
 		"raid":
 			return RaidPanel.new()
+		"dungeon":
+			return DungeonPanel.new()
+		"arena":
+			return ArenaPanel.new()
+		"relics":
+			return RelicsPanel.new()
 	return null
 
 
@@ -607,6 +613,9 @@ func _open_menu() -> void:
 		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
 		["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count()],
 		["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers()],
+		["Lochy Żaru", load("res://assets/ui/modes/dungeon.png"), "dungeon", gm.dungeon.total_keys() if gm.dungeon.unlocked() else 0],
+		["Arena", load("res://assets/ui/modes/arena.png"), "arena", (gm.arena.tickets() + (1 if gm.arena.weekly_ready() else 0)) if gm.arena.unlocked() else 0],
+		["Relikwie", load("res://assets/ui/modes/relics.png"), "relics", int(gm.relics.shards() / RelicManager.PULL_COST)],
 		["Wyprawy", IdleUI.ash_tex("nav_compass"), "expeditions", gm.expeditions.ready_count()],
 		["Chowańce", load("res://assets/ui/runes/egg.png"), "pets", gm.inventory.count("pet_egg")],
 		["Talenty", Sprites.icon("attack"), "talents", maxi(0, gm.talents.free_points())],

@@ -117,6 +117,13 @@ func kill() -> void:
 		clear_dots()
 		gm.enemy.spawn()
 		return
+	if e.has("challenge"):
+		clear_dots()
+		var ch = gm.challenge()
+		if ch != null:
+			ch.on_kill(e)
+		gm.enemy.spawn()
+		return
 	if e.has("tower"):
 		# Wieża: bez złota i etapów – nagroda piętra i od razu wyżej.
 		gm.bestiary.on_kill(str(e.monster))

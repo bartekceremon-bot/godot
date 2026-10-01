@@ -55,6 +55,9 @@ var tower: TowerManager
 var runes: RuneManager
 var pets: PetManager
 var raid: RaidManager
+var dungeon: DungeonManager
+var arena: ArenaManager
+var relics: RelicManager
 var story: StoryManager
 var phoenix: PhoenixManager
 var events: EventManager
@@ -103,6 +106,9 @@ func _ready() -> void:
 	runes = RuneManager.new(self)
 	pets = PetManager.new(self)
 	raid = RaidManager.new(self)
+	dungeon = DungeonManager.new(self)
+	arena = ArenaManager.new(self)
+	relics = RelicManager.new(self)
 	story = StoryManager.new(self)
 	phoenix = PhoenixManager.new(self)
 	events = EventManager.new(self)
@@ -206,6 +212,14 @@ func _notification(what: int) -> void:
 	# Telefon: zapis przy zminimalizowaniu i zamknięciu aplikacji.
 	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		save.save_game()
+
+
+## Aktywne wyzwanie (Wieża, Boss tygodnia, Loch, Arena) albo null – zwykła walka.
+func challenge() -> Object:
+	for m in [tower, raid, dungeon, arena]:
+		if m != null and m.active:
+			return m
+	return null
 
 
 func add_gold(n: float) -> void:

@@ -87,6 +87,8 @@ func rebirth() -> bool:
 	gm.achievements.remember()
 	gm.tower.active = false
 	gm.raid.active = false
+	gm.dungeon.active = false
+	gm.arena.active = false
 	s.gold = 0.0
 	s.level = 1
 	s.xp = 0.0

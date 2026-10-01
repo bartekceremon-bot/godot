@@ -62,7 +62,7 @@ func floor_monster(f: int) -> Array:
 
 
 func can_enter() -> bool:
-	return not active and not gm.raid.active and gm.running
+	return gm.challenge() == null and gm.running
 
 
 func enter(use_gems := false) -> bool:

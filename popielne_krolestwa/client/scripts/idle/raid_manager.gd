@@ -75,7 +75,7 @@ func ready_tiers() -> int:
 
 
 func enter() -> bool:
-	if active or gm.tower.active or attempts() <= 0:
+	if gm.challenge() != null or attempts() <= 0:
 		return false
 	_st().attempts = attempts() - 1
 	active = true

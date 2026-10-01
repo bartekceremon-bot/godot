@@ -381,10 +381,8 @@ func _build_bottom() -> void:
 	_boss_btn.add_theme_color_override("font_color", Color(1.0, 0.8, 0.5))
 	_boss_btn.custom_minimum_size = Vector2(340, 84)
 	_boss_btn.pressed.connect(func():
-		if gm.raid.active:
-			gm.raid.leave()
-		elif gm.tower.active:
-			gm.tower.leave()
+		if gm.challenge() != null:
+			gm.challenge().leave()
 		else:
 			gm.progression.challenge_boss())
 	boss_row.add_child(_boss_btn)
@@ -656,7 +654,7 @@ func _on_changed(what: String) -> void:
 			_refresh_goals()
 		"spells":
 			_refresh_spell_icons()
-		"tower", "raid":
+		"tower", "raid", "dungeon", "arena":
 			_refresh_stage()
 		"pets":
 			_refresh_pets()
@@ -698,6 +696,15 @@ func _refresh_stage() -> void:
 		_boss_btn.visible = true
 		view.set_region(_tower_region())
 		return
+	if gm.dungeon.active or gm.arena.active:
+		var ch = gm.challenge()
+		_region_l.text = ch.hud_text()
+		_boss_btn.text = "OPUŚĆ LOCH" if gm.dungeon.active else "PODDAJ WALKĘ"
+		_boss_btn.visible = true
+		if gm.dungeon.active:
+			_stage_bar.value = float(gm.dungeon.kills) / float(DungeonManager.GUARDS)
+		view.set_region(_challenge_region())
+		return
 	if gm.tower.active:
 		_region_l.text = "WIEŻA POPIOŁU  •  piętro %d  •  rekord %d" % [gm.tower.floor_n, gm.tower.best()]
 		_boss_btn.text = "OPUŚĆ WIEŻĘ"
@@ -709,6 +716,14 @@ func _refresh_stage() -> void:
 	_boss_btn.visible = bool(s.farm_mode)
 	_auto_btn.set_pressed_no_signal(bool(s.auto_progress))
 	view.set_region(pm.region(st))
+
+
+## Loch: kraina strażników; Arena: Popielisko (jak Wieża).
+func _challenge_region() -> Dictionary:
+	if gm.dungeon.active:
+		var ri: Array = DungeonManager.KINDS[gm.dungeon.kind].regions
+		return gm.db.regions[int(ri[0]) % gm.db.regions.size()]
+	return _tower_region()
 
 
 ## Wieża stoi w Popielisku (ruiny, żar, dym).
@@ -849,10 +864,15 @@ func _on_spawn() -> void:
 	_elvl_l.text = "LVL %d" % int(e.stage)
 	(_stage_bar.get_theme_stylebox("fill") as StyleBoxFlat).bg_color = Color(1.0, 0.6, 0.18) if kind == 0 else Color(1.0, 0.3, 0.12)
 	_shown_hp = 1.0
-	view.set_region(_tower_region() if e.has("tower") or e.has("raid") else gm.progression.region(int(e.stage)))
+	view.set_region(_challenge_region() if e.has("challenge") else (_tower_region() if e.has("tower") or e.has("raid") else gm.progression.region(int(e.stage))))
 	view.spawn_enemy(e)
 	_refresh_stage()
-	if e.has("raid"):
+	if str(e.get("challenge", "")) == "arena":
+		ui.banner("ARENA", str(e.name), Color(1.0, 0.5, 0.3))
+	elif str(e.get("challenge", "")) == "dungeon":
+		if gm.dungeon.kills == 0:
+			ui.banner(str(DungeonManager.KINDS[gm.dungeon.kind].name).to_upper(), "Pokonaj %d strażników w %d s!" % [DungeonManager.GUARDS, int(DungeonManager.TIME)], DungeonManager.KINDS[gm.dungeon.kind].color)
+	elif e.has("raid"):
 		ui.banner("BOSS TYGODNIA", str(gm.raid.boss().name) + " – zadaj jak najwięcej obrażeń!", Color(1.0, 0.45, 0.25))
 	elif e.has("tower"):
 		ui.banner("PIĘTRO %d" % int(e.tower), str(e.name).get_slice(" – ", 0), Color(1.0, 0.6, 0.3))

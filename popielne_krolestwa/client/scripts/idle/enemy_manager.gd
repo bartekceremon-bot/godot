@@ -31,8 +31,9 @@ func is_boss() -> bool:
 
 
 func spawn() -> void:
-	if gm.tower.active or gm.raid.active:
-		cur = gm.tower.make_enemy() if gm.tower.active else gm.raid.make_enemy()
+	var ch = gm.challenge()
+	if ch != null:
+		cur = ch.make_enemy()
 		_boss_attack_t = 2.0
 		gm.combat.clear_dots()
 		gm.boss_started.emit()
@@ -123,8 +124,8 @@ func fail(reason: String) -> void:
 		gm.audio.play("fail")
 		spawn()
 		return
-	if gm.tower.active:
-		gm.tower.on_fail(reason)
+	if gm.challenge() != null:
+		gm.challenge().on_fail(reason)
 		gm.audio.play("fail")
 		spawn()
 		return

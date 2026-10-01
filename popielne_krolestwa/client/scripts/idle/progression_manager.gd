@@ -173,7 +173,7 @@ func on_boss_fail(reason: String) -> void:
 
 ## Ręczne wyzwanie bossa z trybu farmienia.
 func challenge_boss() -> void:
-	if gm.tower.active or gm.raid.active:
+	if gm.challenge() != null:
 		return
 	var s := gm.s
 	if not bool(s.farm_mode):
@@ -190,7 +190,7 @@ func toggle_auto(on: bool) -> void:
 
 ## Podróż na wybrany (odblokowany) etap – mapa.
 func travel(stage: int) -> void:
-	if gm.tower.active or gm.raid.active:
+	if gm.challenge() != null:
 		return
 	var s := gm.s
 	stage = clampi(stage, 1, int(s.max_stage))
@@ -204,7 +204,7 @@ func travel(stage: int) -> void:
 
 func tick(dt: float) -> void:
 	var s := gm.s
-	if gm.tower.active or gm.raid.active:
+	if gm.challenge() != null:
 		return
 	if bool(s.farm_mode) and bool(s.auto_progress) and int(s.stage) + 1 == int(s.max_stage) and boss_kind(int(s.stage) + 1) > 0:
 		_farm_t += dt

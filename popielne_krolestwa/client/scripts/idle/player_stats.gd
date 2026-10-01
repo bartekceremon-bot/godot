@@ -69,6 +69,9 @@ func recalc() -> void:
 	var pe: Dictionary = gm.pets.totals()
 	for k in pe:
 		ru[k] = float(ru.get(k, 0.0)) + float(pe[k])
+	var rl: Dictionary = gm.relics.totals()
+	for k in rl:
+		ru[k] = float(ru.get(k, 0.0)) + float(rl[k])
 	var best := 1.0 + gm.bestiary.bonus()
 	var arch: float = tl.get("archmage", 0.0)
 

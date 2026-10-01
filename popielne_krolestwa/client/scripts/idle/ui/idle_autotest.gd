@@ -87,7 +87,23 @@ func _ready() -> void:
 		func(): await _shot("12p_garderoba"); ui.show_tab("shop"); return 0.8,
 		func(): await _shot("12q_skarbiec"); ui.show_odds(LootManager.CHEST_NAMES[4], g.loot.chest_odds(4)); return 0.7,
 		func(): await _shot("12r_szanse"); _close_modals(); g.season.add_xp(500); ui.show_tab("season"); return 0.8,
-		func(): await _shot("12s_karnet"); ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s_karnet"); g.achievements.remember(); g.s.ach.best_stage = maxi(int(g.s.ach.best_stage), 40); ui.show_tab("dungeon"); return 0.8,
+		func(): await _shot("12s1_lochy"); _press("Wejdź"); return 2.0,
+		func():
+			for i in 4:
+				if g.dungeon.active:
+					g.combat.damage(float(g.enemy.cur.max_hp) * 2.0, false, "tap")
+			return 1.2,
+		func(): await _shot("12s2_loch_walka"); g.dungeon.leave(); ui.show_tab("arena"); return 0.8,
+		func(): await _shot("12s3_arena"); _press("Walcz"); return 2.0,
+		func(): await _shot("12s4_arena_walka"); g.arena.leave(); g.relics.add_shards(40); ui.show_tab("relics"); return 0.8,
+		func(): await _shot("12s5_relikwie_przed"); _press("Odkryj relikwię (10 odłamków)"); return 1.0,
+		func():
+			for i in 3:
+				g.relics.pull()
+			ui.show_tab("relics")
+			return 0.8,
+		func(): await _shot("12s6_relikwie"); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0

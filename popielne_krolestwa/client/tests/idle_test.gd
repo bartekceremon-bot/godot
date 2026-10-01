@@ -272,6 +272,88 @@ func _ready() -> void:
 	check(g.tower.attempts() == 2, "zostały 2 próby")
 	check(g.tower.boss_hp(20) > g.tower.boss_hp(10) * 100.0, "piętra rosną wykładniczo")
 
+	print("== lochy żaru")
+	g.achievements.remember()
+	if int(g.achievements.value("best_stage")) < 15:
+		s.ach.best_stage = 15
+	check(g.dungeon.unlocked(), "lochy otwarte od etapu 15")
+	check(g.dungeon.keys("gold") == DungeonManager.DAILY_KEYS and g.dungeon.total_keys() == 6, "2 klucze dziennie na każdy loch")
+	check(not g.dungeon.enter("gold", g.dungeon.max_tier("gold") + 1), "wyższe poziomy zablokowane")
+	var dg_gold := float(s.gold)
+	var dg_shards := g.relics.shards()
+	check(g.dungeon.enter("gold", 1), "wejście do Skarbca Goblinów")
+	check(str(g.enemy.cur.get("challenge", "")) == "dungeon" and int(g.enemy.cur.kind) == 1, "strażnik lochu: %s" % g.enemy.cur.name)
+	check(g.challenge() == g.dungeon, "aktywne wyzwanie: loch")
+	for i in DungeonManager.GUARDS:
+		g.combat.damage(float(g.enemy.cur.max_hp) * 2.0, false, "tap")
+	check(not g.dungeon.active and g.dungeon.best("gold") == 1 and g.dungeon.max_tier("gold") >= 2, "10 strażników – loch oczyszczony, poziom 2 odblokowany")
+	check(float(s.gold) > dg_gold and g.relics.shards() > dg_shards, "złoto i odłamki relikwii z lochu")
+	check(bool(g.dungeon.last_run.cleared) and int(g.dungeon.last_run.kills) == 10, "podsumowanie przejścia")
+	check(g.dungeon.enter("mats", 1), "wejście do Kuźni Przodków")
+	var t_left := float(g.enemy.cur.time_left)
+	g.combat.damage(float(g.enemy.cur.max_hp) * 2.0, false, "tap")
+	g.tick(1.0)
+	check(float(g.enemy.cur.time_left) < t_left and float(g.enemy.cur.time_max) == DungeonManager.TIME, "wspólny czas na całe przejście")
+	g.enemy.cur.time_left = 0.01
+	g.tick(0.1)
+	check(not g.dungeon.active and g.dungeon.best("mats") == 0 and not bool(g.dungeon.last_run.cleared), "koniec czasu – loch nieoczyszczony")
+	check(g.challenge() == null and not g.enemy.cur.has("challenge"), "powrót do zwykłej walki")
+	check(g.dungeon.keys("mats") == 1, "klucz zużyty")
+	s.dungeon.keys.gems = 0
+	var gems_d := int(s.gems)
+	check(not g.dungeon.enter("gems", 1), "bez klucza nie da się wejść")
+	check(g.dungeon.enter("gems", 1, true) and int(s.gems) <= gems_d - DungeonManager.EXTRA_COST + 3, "dodatkowe wejście za żarokryształy")
+	g.dungeon.leave()
+	check(not g.dungeon.active, "wyjście z lochu")
+
+	print("== arena popiołu")
+	if int(g.achievements.value("best_stage")) < 25:
+		s.ach.best_stage = 25
+	check(g.arena.unlocked() and g.arena.rating() == 1000 and g.arena.tickets() == ArenaManager.DAILY_TICKETS, "arena: ranking 1000, 5 biletów")
+	check(g.arena.rivals().size() == 3, "3 rywali do wyboru")
+	check(ArenaManager.league_name(1000) == "Brąz" and ArenaManager.league_name(1500) == "Złoto" and ArenaManager.league_name(3000) == "Legenda", "ligi")
+	var rv: Array = g.arena.rivals()
+	check(g.arena.rival_hp(rv[2]) > g.arena.rival_hp(rv[0]), "silniejszy rywal ma więcej zdrowia")
+	check(g.arena.fight(1), "pojedynek z rywalem")
+	check(str(g.enemy.cur.get("challenge", "")) == "arena" and int(g.enemy.cur.kind) == 2, "champion rywala: %s" % g.enemy.cur.name)
+	g.combat.damage(float(g.enemy.cur.max_hp) * 2.0, false, "tap")
+	check(not g.arena.active and g.arena.rating() > 1000 and g.arena.coins() > 0, "wygrana: ranking %d, odznaki %d" % [g.arena.rating(), g.arena.coins()])
+	var r_win := g.arena.rating()
+	check(g.arena.fight(0), "drugi pojedynek")
+	g.enemy.cur.time_left = 0.01
+	g.tick(0.1)
+	check(not g.arena.active and g.arena.rating() < r_win, "porażka obniża ranking")
+	check(g.arena.tickets() == ArenaManager.DAILY_TICKETS - 2, "bilety zużyte")
+	check(g.arena.weekly_ready(), "nagroda tygodnia dostępna po walce")
+	var wk := g.arena.claim_weekly()
+	check(wk.size() == 4 and not g.arena.weekly_ready(), "nagroda ligowa odebrana raz")
+	s.arena.coins = 500
+	var keys_before := g.dungeon.total_keys()
+	check(g.arena.buy(6) != "" and g.dungeon.total_keys() == keys_before + 1, "sklep areny: klucz do lochu")
+	check(g.arena.buy(3) == "pet_egg" and not g.arena.can_buy(3), "jajo chowańca – limit 1 dziennie")
+	check(absf(ArenaManager.expected(1000, 1000) - 0.5) < 0.001, "ELO: równi rywale 50%")
+
+	print("== relikwie")
+	s.relics.shards = 200
+	var dmg_rl := g.stats.dmg_mult
+	var pulled := 0
+	while g.relics.can_pull() and pulled < 20:
+		g.relics.pull()
+		pulled += 1
+	check(g.relics.shards() == 0 and pulled == 20, "20 relikwii z Relikwiarza")
+	check(g.relics.owned_count() >= 8, "kolekcja: %d / 12" % g.relics.owned_count())
+	g.stats.recalc()
+	check(g.stats.dmg_mult >= dmg_rl, "relikwie wzmacniają bohatera")
+	for id in RelicManager.RELICS:
+		s.relics.owned[id] = 5
+	g.stats.recalc()
+	check(g.relics.set_level("dragon") == 2, "komplet zestawu z poziomami 5+")
+	var tt := g.relics.totals()
+	check(absf(float(tt.dmg) - (0.05 * 5 * 3 + 0.4)) < 0.001, "premie relikwii i zestawu: +%d%% obrażeń" % roundi(float(tt.dmg) * 100))
+
+	s.relics.owned = {}
+	g.stats.recalc()
+
 	print("== runy")
 	for k in s.inv.keys():
 		if str(k).begins_with("rune_"):

@@ -27,7 +27,7 @@ func refresh() -> void:
 	v.add_child(IdleUI.label("Suma obrażeń: %s" % IdleDB.fmt(r.damage()), 24, UiTheme.ACCENT))
 	v.add_child(IdleUI.label("Próby na dziś: %d / %d" % [r.attempts(), RaidManager.DAILY], 19, IdleUI.GOOD if r.attempts() > 0 else IdleUI.BAD))
 	var go := IdleUI.button("Walcz z bossem tygodnia", Vector2(0, 90), 26)
-	IdleUI.set_affordable(go, r.attempts() > 0 and not gm.tower.active)
+	IdleUI.set_affordable(go, r.attempts() > 0 and gm.challenge() == null)
 	go.pressed.connect(func():
 		if gm.raid.enter():
 			ui.show_tab("fight"))
