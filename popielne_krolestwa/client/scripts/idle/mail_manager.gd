@@ -6,6 +6,7 @@ extends RefCounted
 
 ## [id, tytuł, treść, prezent {gems, chest} albo {}]
 const MESSAGES := [
+	["v4.8", "Nowości: wersja 4.8", "Tytuły bohatera: 12 tytułów za wyczyny w różnych trybach – od Łowcy Bossów po Legendę Popiołu. Noszony tytuł daje premię i widać go w Rekordach. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],
 	["v4.7", "Nowości: wersja 4.7", "Kwatermistrz (Menu → Kolekcje i inne): automatyczny zakup najemników po pierwszym odrodzeniu, auto-ekwipunek od etapu 20 i auto-odrodzenie po trzech odrodzeniach. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],
 	["v4.6", "Nowości: wersja 4.6", "Noc Dusz (25 października – 3 listopada): wrogowie gubią Płomyki Dusz, a w Upiornym Kramie czeka strój Żniwiarza Dusz, przysmaki dla smoka i inne nagrody. Za 300 płomyków – dodatkowy prezent. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],
 	["v4.5", "Nowości: wersja 4.5", "Cechy elit i bossów (od etapu 30): przeciwnicy bywają Opancerzeni, Regenerujący, W szale, Zwinni, Kolosalni albo Przeklęci. Każda cecha to trudniejsza walka, ale +50% złota i dodatkowy żarokryształ. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],

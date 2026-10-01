@@ -66,7 +66,10 @@ func recalc() -> void:
 	var boost: Dictionary = gm.crafting.active_boosts()
 	var tl: Dictionary = gm.talents.totals().duplicate()
 	var ms: Dictionary = gm.mastery.totals().duplicate()
-	var shb: Dictionary = gm.stronghold.totals()
+	var shb: Dictionary = gm.stronghold.totals().duplicate()
+	var ttl: Dictionary = gm.titles.totals()
+	for k in ttl:
+		shb[k] = float(shb.get(k, 0.0)) + float(ttl[k])
 	for k in shb:
 		ms[k] = float(ms.get(k, 0.0)) + float(shb[k])
 	for k in ms:

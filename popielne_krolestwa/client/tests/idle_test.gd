@@ -946,6 +946,25 @@ func _ready() -> void:
 	s.erase("auto")
 	s.rebirths = rb_keep
 
+	# --- Tytuły ---
+	var ttm := g.titles
+	s.erase("titles")
+	var combo_keep := int(s.stats.get("best_combo", 0))
+	s.stats["best_combo"] = 100
+	var got_t := ttm.check()
+	check(got_t.has("combo_master") and ttm.owned("combo_master"), "tytuł Burza Ciosów")
+	check(ttm.active() != "", "pierwszy tytuł noszony automatycznie")
+	check(ttm.wear("combo_master") and ttm.totals().has("click"), "premia tytułu")
+	g.stats.recalc()
+	var click_t := g.stats.click
+	ttm.wear("")
+	g.stats.recalc()
+	check(g.stats.click < click_t, "zdjęcie tytułu zmniejsza cios")
+	check(not ttm.wear("legend") or ttm.owned("legend"), "nie można nosić niezdobytego")
+	s.stats["best_combo"] = combo_keep
+	s.erase("titles")
+	g.stats.mark_dirty()
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

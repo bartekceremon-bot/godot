@@ -636,6 +636,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return SoulNightPanel.new()
 		"auto":
 			return AutoPanel.new()
+		"titles":
+			return TitlesPanel.new()
 	return null
 
 
@@ -670,6 +672,7 @@ func _open_menu() -> void:
 			["Feniks", Sprites.icon("prestige"), "phoenix", 1 if gm.phoenix.can_awaken() else 0, 0]]],
 		["Kolekcje i inne", [["Osiągnięcia", Sprites.icon("quest"), "achievements", gm.achievements.ready_count(), 0],
 			["Rekordy", IdleUI.ash_tex("badge"), "records", 0, 0],
+			["Tytuły", load("res://assets/ui/modes/badge.png"), "titles", 0, 0],
 			["Bestiariusz", IdleUI.ash_tex("nav_book"), "bestiary", 0, 0],
 			["Opowieść", Sprites.icon("book"), "chronicle", 0, 0],
 			["Garderoba", IdleUI.ash_tex("portrait"), "skins", 0, 0],

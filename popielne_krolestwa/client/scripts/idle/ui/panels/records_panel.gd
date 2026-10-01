@@ -23,6 +23,7 @@ func rows() -> Array:
 	for k in dn:
 		dbest = maxi(dbest, int(dn[k]))
 	return [
+		["Tytuł", tr(TitleManager.title_name(gm.titles.active())) if gm.titles.active() != "" else "—"],
 		["Najdalszy etap", str(int(gm.achievements.value("best_stage")))],
 		["Najwyższy poziom", str(int(gm.achievements.value("best_level")))],
 		["Odrodzenia / przebudzenia Feniksa", "%d / %d" % [int(s.rebirths), gm.phoenix.count()]],

@@ -73,6 +73,7 @@ var stronghold: StrongholdManager
 var affix: AffixManager
 var soul_night: SoulNightManager
 var auto: AutoManager
+var titles: TitleManager
 var weekly: WeeklyManager
 var mail: MailManager
 var story: StoryManager
@@ -139,6 +140,7 @@ func _ready() -> void:
 	affix = AffixManager.new(self)
 	soul_night = SoulNightManager.new(self)
 	auto = AutoManager.new(self)
+	titles = TitleManager.new(self)
 	weekly = WeeklyManager.new(self)
 	mail = MailManager.new(self)
 	story = StoryManager.new(self)
@@ -235,6 +237,7 @@ func tick(dt: float) -> void:
 	dragon.tick(dt)
 	stronghold.tick(dt)
 	auto.tick(dt)
+	titles.tick(dt)
 	stats.tick(dt)
 
 

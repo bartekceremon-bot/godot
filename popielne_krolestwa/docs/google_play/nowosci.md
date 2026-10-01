@@ -3,6 +3,26 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.8.0
+
+```
+<pl-PL>
+• Tytuły bohatera – 12 tytułów z premiami
+</pl-PL>
+<en-US>
+• Hero titles – 12 titles with bonuses
+</en-US>
+<es-ES>
+• Títulos del héroe: 12 títulos con bonificaciones
+</es-ES>
+<pt-BR>
+• Títulos do herói – 12 títulos com bônus
+</pt-BR>
+<de-DE>
+• Heldentitel – 12 Titel mit Boni
+</de-DE>
+```
+
 ## 4.7.0
 
 ```
