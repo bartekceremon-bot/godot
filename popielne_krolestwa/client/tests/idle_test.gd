@@ -332,6 +332,13 @@ func _ready() -> void:
 	for c in g.db.story.chapters:
 		check(not g.story.lines("intro:" + str(c.region)).is_empty() and not g.story.lines("outro:" + str(c.region)).is_empty(), "rozdział %s kompletny" % c.title)
 
+	print("== stroje i wydarzenia")
+	check(g.skins.unlocked("") and g.skins.unlocked("guard"), "strój Strażnika odblokowany (etap 10)")
+	check(not g.skins.select("dragonslayer") or g.story.seen().has("outro:fire_temple"), "Pogromca Smoka wymaga pokonania Żarogniewa")
+	check(g.skins.select("guard") and g.skins.model(["", "", "", "", "sword_t1", ""])[1] == "plate_body_t2", "strój zmienia wygląd modelu")
+	g.skins.select("")
+	check(not str(g.events.current().name).is_empty(), "wydarzenie tygodnia: %s" % g.events.current().name)
+
 	print("== przebudzenie feniksa")
 	s.phoenix = {"feathers": 0, "total": 0, "count": 0, "upg": {}, "ash_base": 0}
 	s.ash_total = 50

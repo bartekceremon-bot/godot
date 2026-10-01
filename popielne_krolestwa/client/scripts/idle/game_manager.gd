@@ -57,6 +57,8 @@ var pets: PetManager
 var raid: RaidManager
 var story: StoryManager
 var phoenix: PhoenixManager
+var events: EventManager
+var skins: SkinManager
 var achievements: AchievementManager
 
 ## Wynik postępu offline z ostatniego uruchomienia (pokazywany w oknie „Witaj ponownie!”).
@@ -98,6 +100,8 @@ func _ready() -> void:
 	raid = RaidManager.new(self)
 	story = StoryManager.new(self)
 	phoenix = PhoenixManager.new(self)
+	events = EventManager.new(self)
+	skins = SkinManager.new(self)
 	achievements = AchievementManager.new(self)
 	set_process(false)
 

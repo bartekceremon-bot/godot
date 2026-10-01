@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 2.3.0)
+## Popielne Królestwa Idle (wersja 2.4.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
@@ -29,6 +29,8 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 | Opowieść (2.3) | 8 rozdziałów (`data/idle/story.json`): wstęp przy pierwszym wejściu do krainy, zakończenie po pierwszym pokonaniu jej bossa, epilog przy każdym Kręgu Popiołu. Mówią postacie miast MMO (Kapłanka Wiesława, Mistrz gildii Zawisza, Mistrzyni gildii Jaga, Kapłan Mieczysław…). Tekst pisany na bieżąco, scena czeka, aż ekran jest wolny; wszystko do ponownego przeczytania w menu → Opowieść; wyłącznik w ustawieniach. |
 | Przebudzenie Feniksa (menu, 2.3) | Druga warstwa odrodzenia: od 300 Popiołu Dusz zebranego od ostatniego przebudzenia i etapu 80. Zeruje to co odrodzenie oraz Popiół Dusz i Ołtarz; daje Pióra Feniksa na mnożniki (Płomień Feniksa ×obrażenia, Złote Pióra ×złoto, Popiół Odrodzeń, Pamięć Ognia – start dalej, Skrzydła Snu – offline, Mądrość Feniksa – punkty talentów). |
 | Żarzący się miecz (2.3) | Broń bohatera w scenie walki płonie (poświata, światło, iskry) – jak na projekcie ekranu. |
+| Garderoba (menu, 2.4) | Stroje bohatera z podglądem 3D – sam wygląd, premie zostają z ekwipunku: Strażnik Popielgrodu (etap 10), Łowca Puszczy (15 stopni bestiariusza), Mag Szronogrodu (500 czarów), Rycerz Popiołu (20. piętro Wieży), Pogromca Smoka (Żarogniew), Feniks (przebudzenie). |
+| Tygodnie świąteczne (2.4) | Co tydzień inny modyfikator świata: Tydzień Złota (+50% złota), Tydzień Łowów (×2 surowce, +25% łupu), Tydzień Run (×2 runy i jaja), Tydzień Nauki (+50% XP, +25% siły czarów). Informacja przy starcie, na pasku walki i w panelu Bossa tygodnia. |
 | Muzyka (2.1) | Trzy pętle syntezowane w całości (`tools/audio/gen_music.py`: lutnia Karplus-Strong, pady, chór, dzwony FM, bębny, pogłos): temat menu, temat walki i temat bossa / Wieży; płynne przejścia, wyłącznik w ustawieniach. |
 | Rozmiar (2.0) | Bez limitu rozmiaru: pełna, bezstratna jakość grafik, APK z bibliotekami arm64-v8a i armeabi-v7a (~57 MB). |
 | Codzienna nagroda (menu) | Seria 7 dni: złoto, mikstury, żarokryształy, skrzynie; 7. dnia epicka skrzynia i 100 żarokryształów. Opuszczony dzień zaczyna serię od nowa. Okno pojawia się samo przy starcie gry. |

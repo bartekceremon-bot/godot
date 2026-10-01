@@ -637,7 +637,7 @@ func _on_changed(what: String) -> void:
 			if what == "all":
 				_refresh_all()
 		"gear", "level":
-			view.set_hero(gm.equipment.model_equipment())
+			view.set_hero(gm.skins.model(gm.equipment.model_equipment()))
 		"mercs":
 			_refresh_mercs()
 		"stats":
@@ -654,7 +654,7 @@ func _on_changed(what: String) -> void:
 
 func _refresh_all() -> void:
 	view.set_region(gm.progression.region(int(gm.s.stage)))
-	view.set_hero(gm.equipment.model_equipment())
+	view.set_hero(gm.skins.model(gm.equipment.model_equipment()))
 	_refresh_mercs()
 	_refresh_pets()
 	_refresh_stage()
@@ -711,7 +711,7 @@ func _tower_region() -> Dictionary:
 
 func _refresh_stats() -> void:
 	var st := gm.stats
-	_stats_l.text = "CIOS %s   •   DPS %s   •   KRYT %d%%" % [IdleDB.fmt(st.click), IdleDB.fmt(st.dps), roundi(st.crit_chance * 100.0)]
+	_stats_l.text = "CIOS %s   •   DPS %s   •   KRYT %d%%   •   %s" % [IdleDB.fmt(st.click), IdleDB.fmt(st.dps), roundi(st.crit_chance * 100.0), str(gm.events.current().name).to_upper()]
 
 
 func _refresh_goals() -> void:

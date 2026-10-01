@@ -17,6 +17,8 @@ func refresh() -> void:
 	var r := gm.raid
 	var b := r.boss()
 	var days_left := 7 - (int(floor(Time.get_unix_time_from_system() / 86400.0 + 3.0)) % 7)
+	var ev := gm.events.current()
+	_box.add_child(IdleUI.label("Wydarzenie tygodnia – %s: %s." % [ev.name, ev.text], 19, Color(1.0, 0.75, 0.35), true))
 	_box.add_child(IdleUI.label("W tym tygodniu: %s. Każda próba trwa 30 s – zadaj jak najwięcej obrażeń. Suma ze wszystkich prób w tygodniu odblokowuje nagrody. Nowy boss za %d dni." % [b.name, days_left], 18, UiTheme.TEXT, true))
 	var c := IdleUI.card()
 	var v := IdleUI.vbox(6)

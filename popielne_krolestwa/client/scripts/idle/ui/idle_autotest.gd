@@ -82,7 +82,9 @@ func _ready() -> void:
 		func(): await _shot("12l_boss_tygodnia"); _press("Walcz z bossem tygodnia"); return 2.5,
 		func(): await _shot("12m_rajd_walka"); g.raid.leave(); ui.show_story("intro:meadow"); return 1.5,
 		func(): await _shot("12n_opowiesc"); _close_modals(); g.s.ash_total = 600; g.s.max_stage = 85; ui.show_tab("phoenix"); return 0.8,
-		func(): await _shot("12o_feniks"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
+		func(): await _shot("12o_feniks"); g.s.skin = ""; ui.show_tab("skins"); return 0.6,
+		func(): g.skins.select("guard"); ui._panels["skins"].refresh(); return 1.0,
+		func(): await _shot("12p_garderoba"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
 			g.spells.cast("fireball")

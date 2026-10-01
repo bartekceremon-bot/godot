@@ -118,6 +118,8 @@ func _start_game() -> void:
 	gm.start()
 	music.set_enabled(bool(gm.s.settings.get("music", true)))
 	music.play("walka")
+	var ev := gm.events.current()
+	get_tree().create_timer(2.0).timeout.connect(func(): toast_msg("%s: %s" % [ev.name, ev.text], Color(1.0, 0.75, 0.35)))
 	gm.enemy_spawned.connect(_update_music)
 	gm.changed.connect(func(w): if w in ["tower", "raid"]: _update_music())
 	if _menu_screen.has_method("leave"):
@@ -511,6 +513,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return ChroniclePanel.new()
 		"phoenix":
 			return PhoenixPanel.new()
+		"skins":
+			return SkinsPanel.new()
 		"raid":
 			return RaidPanel.new()
 	return null
@@ -531,7 +535,8 @@ func _open_menu() -> void:
 		["Ołtarz Popiołu", Sprites.icon("prestige"), "prestige", 1 if gm.prestige.can_rebirth() else 0],
 		["Feniks", Sprites.icon("prestige"), "phoenix", 1 if gm.phoenix.can_awaken() else 0],
 		["Opowieść", Sprites.icon("book"), "chronicle", 0],
-		["Postać", IdleUI.ash_tex("portrait"), "stats", 0], ["Ustawienia", Sprites.icon("menu"), "settings", 0]]
+		["Garderoba", IdleUI.ash_tex("portrait"), "skins", 0],
+		["Postać", Sprites.icon("character"), "stats", 0], ["Ustawienia", Sprites.icon("menu"), "settings", 0]]
 	var box := GridContainer.new()
 	box.columns = 3
 	box.add_theme_constant_override("h_separation", 8)

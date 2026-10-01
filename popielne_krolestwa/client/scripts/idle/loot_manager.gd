@@ -122,11 +122,12 @@ func on_kill(e: Dictionary) -> void:
 		gm.inventory.add("chest_%d" % r, 1)
 		got.append(["chest_%d" % r, 1, r])
 	# Jaja chowańców: boss 6% (od etapu 15).
-	if kind == 2 and stage >= 15 and _rng.randf() < 0.06 * lm:
+	var ev := 1.0 + gm.events.bonus("runes")
+	if kind == 2 and stage >= 15 and _rng.randf() < 0.06 * lm * ev:
 		gm.inventory.add("pet_egg", 1)
 		got.append(["pet_egg", 1, 4])
 	# Runy: boss 30%, elita 8% (od etapu 10).
-	if kind > 0 and stage >= 10 and _rng.randf() < [0.0, 0.08, 0.3][kind] * lm:
+	if kind > 0 and stage >= 10 and _rng.randf() < [0.0, 0.08, 0.3][kind] * lm * ev:
 		var rn := gm.runes.random_rune(clampf(stage / 120.0, 0.0, 1.0) + (0.1 if kind == 2 else 0.0))
 		gm.inventory.add(rn, 1)
 		got.append([rn, 1, 4])
