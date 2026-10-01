@@ -14,5 +14,26 @@ def soul_flame():
     ic.save('soul_flame')
 
 
+def snowflake():
+    ic = Icon()
+    import math
+    for k in range(6):
+        a = k * math.pi / 3
+        dx, dy = math.cos(a), math.sin(a)
+        nx, ny = -dy, dx
+        w = 0.035
+        pts = [(0.5 + nx * w, 0.5 + ny * w), (0.5 + dx * 0.42 + nx * w, 0.5 + dy * 0.42 + ny * w),
+               (0.5 + dx * 0.42 - nx * w, 0.5 + dy * 0.42 - ny * w), (0.5 - nx * w, 0.5 - ny * w)]
+        ic.shape(poly(pts), (240, 252, 255), (110, 180, 240), ow=1.5, shine=0.7, glow=(140, 210, 255))
+        for r in (0.22, 0.32):
+            bx, by = 0.5 + dx * r, 0.5 + dy * r
+            for s in (1, -1):
+                ex, ey = bx + (dx * 0.5 + nx * s * 0.86) * 0.1, by + (dy * 0.5 + ny * s * 0.86) * 0.1
+                ic.shape(poly([(bx + nx * 0.02, by + ny * 0.02), (ex, ey), (bx - nx * 0.02, by - ny * 0.02)]), (240, 252, 255), (110, 180, 240), ow=1.2)
+    ic.shape(ell(0.42, 0.42, 0.58, 0.58), (255, 255, 255), (170, 220, 255), ow=1.5, glow=(160, 220, 255))
+    ic.save('snowflake')
+
+
 if __name__ == '__main__':
     soul_flame()
+    snowflake()

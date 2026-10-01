@@ -965,6 +965,21 @@ func _ready() -> void:
 	s.erase("titles")
 	g.stats.mark_dirty()
 
+	# --- Gwiazdka Mrozu ---
+	var wn := g.winter
+	s.erase("winter")
+	var dec24 := Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 12, "day": 24, "hour": 12, "minute": 0, "second": 0})
+	var jan3 := Time.get_unix_time_from_datetime_dict({"year": 2027, "month": 1, "day": 3, "hour": 12, "minute": 0, "second": 0})
+	var jan10 := Time.get_unix_time_from_datetime_dict({"year": 2027, "month": 1, "day": 10, "hour": 12, "minute": 0, "second": 0})
+	check(wn.active(dec24) and wn.active(jan3) and not wn.active(jan10), "daty Gwiazdki Mrozu")
+	check(WinterManager.event_year(dec24) == WinterManager.event_year(jan3), "Gwiazdka przez Nowy Rok to jedno wydarzenie")
+	wn.force = 1
+	s.winter = {"flames": 520, "total": 520, "bought": {}, "year": WinterManager.event_year(), "milestone": false}
+	check(wn.buy(0) and g.skins.unlocked("winter"), "strój Strażnik Zimy")
+	check(wn.claim_milestone(), "nagroda za 300 płatków")
+	wn.force = -1
+	s.erase("winter")
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

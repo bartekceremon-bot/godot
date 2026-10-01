@@ -3,6 +3,31 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.9.0
+
+```
+<pl-PL>
+• Gwiazdka Mrozu (20.12–6.01): Płatki Szronu i Zimowy Kram
+• Nowy strój: Strażnik Zimy
+</pl-PL>
+<en-US>
+• Frost Festival (Dec 20 – Jan 6): Frost Flakes and the Winter Stall
+• New outfit: Winter Warden
+</en-US>
+<es-ES>
+• Fiesta de la Escarcha (20/12–6/1): Copos de Escarcha y el Puesto Invernal
+• Nuevo atuendo: Guardián del Invierno
+</es-ES>
+<pt-BR>
+• Festa do Gelo (20/12–6/1): Flocos de Gelo e a Barraca de Inverno
+• Novo traje: Guardião do Inverno
+</pt-BR>
+<de-DE>
+• Frostfest (20.12.–6.1.): Frostflocken und der Winterstand
+• Neues Outfit: Winterwächter
+</de-DE>
+```
+
 ## 4.8.0
 
 ```

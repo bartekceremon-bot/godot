@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 4.8.0)
+## Popielne Królestwa Idle (wersja 4.9.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
@@ -38,6 +38,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 | Noc Dusz (4.6) | Coroczne wydarzenie 25.10–3.11: Płomyki Dusz z wrogów (zwykli 10%, elity/bossowie zawsze 3/4), Upiorny Kram (strój Żniwiarz Dusz 500, jaja, skrzynie, przysmak +300 PD smoka, Smoczy Eliksir, żarokryształy, pieczęcie), nagroda za 300 płomyków raz na wydarzenie; baner przy starcie, kafel w menu. Płomyki zostają do następnego roku. |
 | Kwatermistrz (4.7) | Automatyzacja w zwykłej walce: auto-najemnicy po 1. odrodzeniu (co 3 s najlepszy DPS/koszt + trening, rezerwa złota 0/25/50%), auto-ekwipunek od etapu 20 (co 10 s najlepsze przedmioty + sprzedaż słabych), auto-odrodzenie po 3 odrodzeniach (brak postępu 3 min i min. Popiołu 1/10/50/200/1000). |
 | Tytuły (4.8) | 12 tytułów za wyczyny (bossowie, gobliny, combo, ogród, Twierdza, mistrzostwo, smok, Sen, Wieża, odrodzenia, relikwie, etap 120), sprawdzane co 5 s; noszony jeden – premia 5–10% (obrażenia, złoto, PD, cios, krytyki, bossowie, czary); widoczny w Rekordach. |
+| Gwiazdka Mrozu (4.9) | Zimowe wydarzenie 20.12–6.01 (jedno wydarzenie przez Nowy Rok): Płatki Szronu, Zimowy Kram ze strojem Strażnik Zimy, przysmakiem dla smoka, jajami i skrzyniami, nagroda za 300 płatków; baner, kafel w menu, ikona płatka śniegu. |
 | Wyzwania tygodnia i Poczta (menu, 3.7) | Co tydzień 7 celów losowanych z puli 12 (te same dla wszystkich w danym tygodniu: bossowie, przeciwnicy, lochy, arena, sen, koło, czary, rzemiosło, ulepszenia, wyprawy, piętra Wieży, krytyki) – nagroda za każdy cel i komplet tygodnia (150 żarokr., Legendarna skrzynia, odłamki, Pieczęć Przebudzenia). Poczta: wiadomości Gildii o nowościach wersji, prezent do powitania i do wiadomości o bieżącej wersji. Kropka przy MENU sumuje też wyzwania, pocztę i darmowy obrót koła. |
 | Sen Popielnika (menu, 3.6) | Tryb roguelike od etapu 40. Piętra snu z elitami i bossami krain (co 5. piętro boss), 20 s na piętro; zdrowie zjaw = siła bohatera z początku snu × 0,35 × 1,25^(piętro−1). Po każdym piętrze wybór 1 z 3 błogosławieństw (Ostrze Snu, Wataha Snu, Krwawy Księżyc, Żar w Żyłach, Klepsydra, Kamienna Skóra, Rój Iskier, Sen o Skarbach, Echo Ciosu, Wizja Smoka) – kumulują się do końca snu. Okruchy Snu (2 za piętro + premie za 10/20/30) na Drzewo Snu: Siła Snu (+4% obrażeń/poz.), Złote Sny (+5% złota/poz.), Długi Sen (+1 s/poz.), Jasnowidzenie (błogosławieństwa na start). 1 darmowy sen dziennie, 2 kolejne za 50 żarokr. |
 | Przebudzenie najemników (3.5) | Najemnik od poziomu 100 może się przebudzić: każda gwiazdka (maks. 5, kolejne od poz. 200, 300…) to DPS ×3 na zawsze – gwiazdki zostają po odrodzeniu. Koszt: 1, 2, 4, 8, 16 Pieczęci Przebudzenia. Pieczęcie: pełne przejście lochu od poziomu 5, co 10 pięter Wieży, sklep areny (1 dziennie), kram festynu. |
