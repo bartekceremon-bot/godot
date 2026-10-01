@@ -25,6 +25,7 @@ Ten dokument prowadzi od zera do opublikowanej gry. Część rzeczy musisz zrobi
    Konto **osobiste** utworzone po 13.11.2023 musi przed publikacją przeprowadzić **test zamknięty: min. 12 testerów przez 14 dni** – zaplanuj to (ścieżka „Test zamknięty”, zaproś znajomych przez e-mail / Grupę Google).
 2. Do sprzedaży: **profil płatności** (Konfiguracja → Profil płatności) – dane do wypłat, w UE także dane podatkowe.
 3. „Utwórz aplikację”: nazwa **Popielne Królestwa**, język domyślny polski, **Gra**, **Bezpłatna**.
+   Gra ma dwie wersje językowe (polską i angielską – wybór automatyczny wg języka telefonu, zmiana w Ustawieniach). W **Obecność w sklepie → Główna strona aplikacji** dodaj tłumaczenie **angielskie (en-US)** z tekstem z `docs/google_play/opis_sklepu.md`; polityka i regulamin po angielsku: `privacy_en.html`, `terms_en.html`.
 4. Nazwa pakietu w grze: **`pl.popielnekrolestwa.gra`** (ustalona w `client/export_presets.cfg` – nie zmieniaj po pierwszym wydaniu).
 
 ## 2. Podpis (klucz przesyłania)

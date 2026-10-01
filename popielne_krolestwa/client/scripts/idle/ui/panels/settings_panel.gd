@@ -45,13 +45,34 @@ func refresh() -> void:
 			gm.save.save_game()
 			request_refresh())
 		qrow.add_child(qb)
+	# Język: automatycznie wg telefonu, polski albo angielski.
+	var lrow := IdleUI.hbox(8)
+	add_child(lrow)
+	lrow.add_child(IdleUI.label("Język:", 22))
+	var lang := str(set.get("lang", "auto"))
+	for l in [["auto", "Automatycznie"], ["pl", "Polski"], ["en", "English"]]:
+		var lb := IdleUI.button(str(l[1]), Vector2(0, 68), 19)
+		lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lb.toggle_mode = true
+		lb.set_pressed_no_signal(lang == l[0])
+		lb.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED if l[0] != "auto" else Node.AUTO_TRANSLATE_MODE_INHERIT
+		var code: String = l[0]
+		lb.pressed.connect(func():
+			set["lang"] = code
+			SmartTranslation.apply_language(code)
+			gm.save.save_game()
+			request_refresh())
+		lrow.add_child(lb)
 	var store: Dictionary = gm.db.store
+	var en := not TranslationServer.get_locale().begins_with("pl")
 	var links := IdleUI.hbox(8)
 	add_child(links)
 	for l in [["Polityka prywatności", str(store.get("privacy_url", ""))], ["Regulamin", str(store.get("terms_url", ""))]]:
 		var lb := IdleUI.button(str(l[0]), Vector2(0, 72), 19)
 		lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var url: String = l[1]
+		if en:
+			url = url.replace(".html", "_en.html")
 		lb.pressed.connect(func(): OS.shell_open(url))
 		links.add_child(lb)
 	var row2 := IdleUI.hbox(8)

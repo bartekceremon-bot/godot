@@ -61,7 +61,10 @@ func is_sandbox() -> bool:
 
 
 func price_of(product_id: String, fallback: String) -> String:
-	return str(prices.get(product_id, fallback))
+	if prices.has(product_id):
+		return str(prices[product_id])
+	# cena orientacyjna z katalogu (wersja bez Google Play) – w złotówkach, nie w złocie z gry
+	return fallback if TranslationServer.get_locale().begins_with("pl") else fallback.replace(" zł", " PLN")
 
 
 ## Rozpoczyna zakup. Wynik przychodzi sygnałem purchase_ok / purchase_failed.

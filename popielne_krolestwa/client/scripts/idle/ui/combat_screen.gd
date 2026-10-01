@@ -721,7 +721,7 @@ func _tower_region() -> Dictionary:
 
 func _refresh_stats() -> void:
 	var st := gm.stats
-	_stats_l.text = "CIOS %s   •   DPS %s   •   KRYT %d%%   •   %s" % [IdleDB.fmt(st.click), IdleDB.fmt(st.dps), roundi(st.crit_chance * 100.0), str(gm.events.current().name).to_upper()]
+	_stats_l.text = "CIOS %s   •   DPS %s   •   KRYT %d%%   •   %s" % [IdleDB.fmt(st.click), IdleDB.fmt(st.dps), roundi(st.crit_chance * 100.0), SmartTranslation.t(str(gm.events.current().name)).to_upper()]
 
 
 func _refresh_goals() -> void:
@@ -772,7 +772,7 @@ func _refresh_spell_icons() -> void:
 		else:
 			b.text = ""
 			b.icon = Sprites.icon(str(gm.spells.def(id).icon))
-			cap.text = str(gm.spells.def(id).get("name", "")).to_upper()
+			cap.text = SmartTranslation.t(str(gm.spells.def(id).get("name", ""))).to_upper()
 			b.get_node("auto").visible = gm.spells.auto_enabled() and bool(gm.s.auto_spells.get(id, false))
 
 
@@ -843,7 +843,7 @@ func _update_enemy(delta: float) -> void:
 func _on_spawn() -> void:
 	var e := gm.enemy.cur
 	var kind := int(e.kind)
-	var nm := str(e.name).to_upper()
+	var nm := SmartTranslation.t(str(e.name)).to_upper()
 	_enemy_l.text = "[%s - " % (nm if nm.length() <= 18 else nm.left(17) + "…")
 	_enemy_l.add_theme_color_override("font_color", [Color(0.97, 0.95, 0.92), Color(0.85, 0.65, 1.0), Color(1.0, 0.6, 0.3)][kind])
 	_elvl_l.text = "LVL %d" % int(e.stage)

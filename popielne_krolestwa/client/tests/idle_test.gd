@@ -403,6 +403,31 @@ func _ready() -> void:
 		g.phoenix.buy("wisdom")
 		check(g.talents.earned() == tal0 + 3, "Mądrość Feniksa: +3 punkty talentów")
 
+	# --- wersja angielska ---
+	var tr_en := SmartTranslation.new()
+	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")
+	for pair in [["ATAK!", "ATTACK!"], ["PZ: 1.2K / 3K", "HP: 1.2K / 3K"], ["Miecz Adepta (T3)", "Adept Sword (T3)"],
+			["Pokonaj 25 przeciwników", "Defeat 25 enemies"], ["KULA OGNIA", "FIREBALL"], ["5× Mikstura życia", "5× Health potion"],
+			["Ciężka ręka  4/20", "Heavy Hand  4/20"], ["42.1M złota", "42.1M gold"]]:
+		check(str(tr_en.translate(pair[0])) == pair[1], "tłumaczenie: %s → %s" % pair)
+	check(tr_en.translate("12.5K") == null, "liczby bez zmian")
+	# każda nazwa przedmiotu, potwora i regionu ma tłumaczenie
+	var untranslated := 0
+	for id in g.db.items:
+		if tr_en.translate(g.db.item_name(str(id))) == null:
+			untranslated += 1
+	check(untranslated == 0, "nazwy przedmiotów po angielsku (brak: %d)" % untranslated)
+	for r in g.db.regions:
+		check(tr_en.translate(str(r.name)) != null, "region po angielsku: %s" % r.name)
+	check(SmartTranslation.resolve("en") == "en" and SmartTranslation.resolve("pl") == "pl", "wybór języka")
+	SmartTranslation.apply_language("en")
+	check(tr("ATAK!") == "ATTACK!", "po angielsku: ATAK! → ATTACK!")
+	SmartTranslation.apply_language("pl")
+	check(tr("ATAK!") == "ATAK!", "po polsku bez tłumaczenia (bez zapasowego angielskiego)")
+	SmartTranslation.apply_language("en")
+	check(tr("Zabij szczury") == "Kill the rats", "ponowne przełączenie na angielski")
+	SmartTranslation.apply_language("pl")
+
 	g.save.delete_save()
 	print("== wynik: %s (%d błędów)" % ["OK" if fails == 0 else "BŁĘDY", fails])
 	get_tree().quit(1 if fails > 0 else 0)

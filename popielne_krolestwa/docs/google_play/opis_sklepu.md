@@ -40,7 +40,7 @@ Gra jest bezpłatna. Zawiera opcjonalne zakupy w aplikacji (w tym przedmioty los
 
 **Title:** Ash Kingdoms: Idle RPG
 **Short description:** Rise from the ashes! Slay the dragon, collect loot and grow stronger even offline.
-**Full description:** A hundred years ago the dragon Emberwrath burned the Five Kingdoms. Born from the ashes, you are the only one who can stop his return. Tap ATTACK, cast spells and lead a party of mercenaries through 8 lands in 3D – progress continues while you are away. Gear in 5 rarities, crafting, 18 spells, a talent tree, runes, pets, mounts and outfits. Endless Ash Tower, a weekly boss, expeditions, a bestiary, achievements and a seasonal pass. Rebirth and Phoenix Awakening make every cycle stronger. Free to play with optional in-app purchases (including random items – odds shown in game) and optional rewarded ads. *(Note: the game UI is currently in Polish.)*
+**Full description:** A hundred years ago the dragon Emberwrath burned the Five Kingdoms. Born from the ashes, you are the only one who can stop his return. Tap ATTACK, cast spells and lead a party of mercenaries through 8 lands in 3D – progress continues while you are away. Gear in 5 rarities, crafting, 18 spells, a talent tree, runes, pets, mounts and outfits. Endless Ash Tower, a weekly boss, expeditions, a bestiary, achievements and a seasonal pass. Rebirth and Phoenix Awakening make every cycle stronger. Free to play with optional in-app purchases (including random items – odds shown in game) and optional rewarded ads. Available in English and Polish.
 
 ## Grafiki (docs/google_play/grafiki/)
 - `ikona_512.png` – ikona 512×512 (32-bit PNG)

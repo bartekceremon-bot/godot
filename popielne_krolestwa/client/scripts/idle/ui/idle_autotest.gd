@@ -186,6 +186,7 @@ func _process(delta: float) -> void:
 	if _wait > 0.0:
 		return
 	if _steps.is_empty():
+		SmartTranslation.dump_missing(dir.path_join("brak_tlumaczen.txt"))
 		print("idle-autotest: %s" % ("OK" if fails == 0 else "BŁĘDY: %d" % fails))
 		Idle.save.delete_save()
 		get_tree().quit(0 if fails == 0 else 1)

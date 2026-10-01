@@ -47,6 +47,9 @@ func _ready() -> void:
 		if a.begins_with("--autotest="):
 			open_classic.call_deferred()
 			return
+	# Język trzeba znać już na ekranie tytułowym (przed wczytaniem gry).
+	var saved: Dictionary = gm.save.load_game()
+	SmartTranslation.apply_language(str(saved.get("settings", {}).get("lang", "auto")))
 	theme = IdleUI.theme()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	var bg := TextureRect.new()
@@ -154,7 +157,7 @@ func buy_product(pid: String) -> void:
 		return
 	if gm.billing.is_sandbox():
 		var p := gm.premium.product(pid)
-		confirm("Tryb testowy", "Kupić „%s” (%s)? W tej wersji bez płatności – w aplikacji z Google Play zapłacisz przez Google Play." % [p.name, p.price_pln], func(): gm.billing.buy(pid))
+		confirm("Tryb testowy", "Kupić „%s” (%s)? W tej wersji bez płatności – w aplikacji z Google Play zapłacisz przez Google Play." % [p.name, gm.billing.price_of(pid, str(p.price_pln))], func(): gm.billing.buy(pid))
 	else:
 		gm.billing.buy(pid)
 

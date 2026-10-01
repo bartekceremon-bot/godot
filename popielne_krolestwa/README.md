@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 3.0.0)
+## Popielne Królestwa Idle (wersja 3.1.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
@@ -26,6 +26,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 | Runy (menu, 2.1) | 6 rodzajów (Ognia – obrażenia, Krwi – krytyk, Żaru – obrażenia krytyczne, Złota, Mądrości – XP, Wichru – szybkość) × 5 stopni (Okruch … Popielna runa). Po 2 gniazda w każdym slocie ekwipunku (trzecie za 150 żarokryształów) – gniazda zostają przy zmianie przedmiotów i po odrodzeniu. 3 runy łączą się w wyższy stopień za złoto. Źródła: bossowie i elity od etapu 10, Wieża Popiołu, wyprawy 4 h+, skrzynie. Ikony: `tools/textures/gen_runes.py`. |
 | Chowańce (menu, 2.2) | 8 gatunków (Lisek Szronek, Wilczek Kieł, Ropuszek, Skarabeusz Złotek, Ogar Popiołu, Bazyliszek Łuska, Niedźwiadek Burek, Smoczek Żarek) w 4 rzadkościach. Jaja: bossowie od etapu 15, co 10 pięter Wieży, długie wyprawy, Boss tygodnia. Kolejne jajo gatunku = gwiazdka (maks. 5), poziom do 10 × gwiazdki za złoto. Aktywny chowaniec chodzi za bohaterem w scenie 3D i daje premię; drugi slot od 25. piętra Wieży. Podgląd 3D w panelu. |
 | Boss tygodnia (menu, 2.2) | Co tydzień (od poniedziałku) inny boss regionu o ogromnym zdrowiu; 5 prób dziennie po 30 s, obrażenia sumują się przez tydzień; 6 progów nagród (żarokryształy, skrzynie, runy, jaja). Progi rosną z rekordem etapu. |
+| Wersja angielska (3.1) | Cała gra po angielsku („Ash Kingdoms”): język wybierany automatycznie wg telefonu (polski → polski, inny → angielski), przełącznik Automatycznie / Polski / English w Ustawieniach. Słownik `data/i18n/en.json` (~1200 wpisów: interfejs, przedmioty, potwory, krainy, czary, zadania, fabuła, sklep). Silnik `scripts/idle/i18n/smart_translation.gd` (własna klasa `Translation`) tłumaczy też napisy składane w kodzie: rozpoznaje wzorce (`"PZ: %s / %s"` → `"HP: %s / %s"`), nazwy ekwipunku (`"Miecz %s"` + stopień), przyrostki `(T3)`, liczniki, ozdobniki i zdania sklejone z kilku części. Test językowy: `-- --idle-shots=KATALOG --lang=en` zapisuje `brak_tlumaczen.txt`. Regulamin i polityka prywatności także po angielsku. |
 | Opowieść (2.3) | 8 rozdziałów (`data/idle/story.json`): wstęp przy pierwszym wejściu do krainy, zakończenie po pierwszym pokonaniu jej bossa, epilog przy każdym Kręgu Popiołu. Mówią postacie miast MMO (Kapłanka Wiesława, Mistrz gildii Zawisza, Mistrzyni gildii Jaga, Kapłan Mieczysław…). Tekst pisany na bieżąco, scena czeka, aż ekran jest wolny; wszystko do ponownego przeczytania w menu → Opowieść; wyłącznik w ustawieniach. |
 | Przebudzenie Feniksa (menu, 2.3) | Druga warstwa odrodzenia: od 300 Popiołu Dusz zebranego od ostatniego przebudzenia i etapu 80. Zeruje to co odrodzenie oraz Popiół Dusz i Ołtarz; daje Pióra Feniksa na mnożniki (Płomień Feniksa ×obrażenia, Złote Pióra ×złoto, Popiół Odrodzeń, Pamięć Ognia – start dalej, Skrzydła Snu – offline, Mądrość Feniksa – punkty talentów). |
 | Żarzący się miecz (2.3) | Broń bohatera w scenie walki płonie (poświata, światło, iskry) – jak na projekcie ekranu. |

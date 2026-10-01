@@ -132,7 +132,7 @@ func new_state() -> Dictionary:
 		"quests": {"active": {}, "done": [], "tasks": [], "tasks_done": 0, "track": {}},
 		"prestige": {}, "boosts": {}, "craft_xp": 0.0, "craft_lvl": 1,
 		"market": {}, "stats": {"kills": 0, "taps": 0, "gold": 0.0, "bosses": 0, "crits": 0, "spells": 0},
-		"settings": {"sound": true, "music": true, "story": true, "quality": 2 if not OS.has_feature("mobile") else 1, "auto_potion": true, "effects": true},
+		"settings": {"sound": true, "music": true, "story": true, "quality": 2 if not OS.has_feature("mobile") else 1, "auto_potion": true, "effects": true, "lang": "auto"},
 		"daily": {"day": 0, "last": ""}, "talents": {}, "bestiary": {}, "exped": {"active": [], "done": 0},
 		"tower": {"best": 0, "attempts": 3, "day": ""}, "ach": {"claimed": {}, "best_stage": 1, "best_level": 1},
 	}
@@ -146,6 +146,7 @@ func start() -> void:
 		equipment.give_starter_gear()
 	_migrate()
 	Config.sound_enabled = bool(s.settings.get("sound", true))
+	SmartTranslation.apply_language(str(s.settings.get("lang", "auto")))
 	stats.recalc()
 	combat.reset_player()
 	offline_report = offline.compute_and_apply()
@@ -193,6 +194,10 @@ func tick(dt: float) -> void:
 	progression.tick(dt)
 	premium.tick(dt)
 	stats.tick(dt)
+
+
+func _exit_tree() -> void:
+	SmartTranslation.uninstall()
 
 
 func _notification(what: int) -> void:
