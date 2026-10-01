@@ -67,6 +67,7 @@ var festival: FestivalManager
 var dream: DreamManager
 var garden: GardenManager
 var goblin: GoblinManager
+var mastery: MasteryManager
 var weekly: WeeklyManager
 var mail: MailManager
 var story: StoryManager
@@ -127,6 +128,7 @@ func _ready() -> void:
 	dream = DreamManager.new(self)
 	garden = GardenManager.new(self)
 	goblin = GoblinManager.new(self)
+	mastery = MasteryManager.new(self)
 	weekly = WeeklyManager.new(self)
 	mail = MailManager.new(self)
 	story = StoryManager.new(self)

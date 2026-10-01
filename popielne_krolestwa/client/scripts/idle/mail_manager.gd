@@ -6,6 +6,7 @@ extends RefCounted
 
 ## [id, tytuł, treść, prezent {gems, chest} albo {}]
 const MESSAGES := [
+	["v4.2", "Nowości: wersja 4.2", "Mistrzostwo broni: każdy pokonany wróg rozwija broń, którą trzymasz. Miecze, topory, buławy, łuki i kostury dają różne stałe premie – działają wszystkie naraz i zostają po odrodzeniu (Menu → Mistrzostwo broni). W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],
 	["v4.1", "Nowości: wersja 4.1", "Złoty Goblin! Od etapu 8 w zwykłej walce czasem pojawia się goblin z workiem skarbów – masz 12 sekund, zanim ucieknie. Nagroda: góra złota, żarokryształy, a czasem skrzynia lub runa. W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],
 	["v4.0", "Nowości: wersja 4.0", "Ogród Alchemika (od etapu 20): sadź zioła, które rosną nawet przy zamkniętej grze, podlewaj je i warz w kotle eliksiry – więcej obrażeń, złota i doświadczenia. Nowe osiągnięcie Zielarz i wyzwanie tygodnia. W prezencie od Gildii – 100 żarokryształów.", {"gems": 100}],
 	["v3.9", "Nowości: wersja 3.9", "Gra mówi teraz także po hiszpańsku, portugalsku i niemiecku – zmień język w Ustawieniach. Powiedz znajomym z innych krajów! W prezencie od Gildii – 50 żarokryształów.", {"gems": 50}],

@@ -771,6 +771,26 @@ func _ready() -> void:
 	check(g.achievements.value("goblins") == float(gk0 + 1), "osiągnięcie goblinów")
 	s.farm_mode = false
 
+	# --- Mistrzostwo broni ---
+	s.erase("mastery")
+	var wtype := g.mastery.current()
+	check(MasteryManager.TYPES.has(wtype), "rodzaj broni w ręku: %s" % wtype)
+	g.stats.recalc()
+	var m_click0 := g.stats.click
+	g.mastery.add_xp("sword", MasteryManager.need(0) + MasteryManager.need(1) + MasteryManager.need(2))
+	check(g.mastery.level("sword") == 3 and g.mastery.xp("sword") == 0, "mistrzostwo mieczy: poziom %d" % g.mastery.level("sword"))
+	g.stats.recalc()
+	check(g.stats.click > m_click0 * 1.04, "premia mistrzostwa do ciosu: %s → %s" % [m_click0, g.stats.click])
+	check(absf(float(g.mastery.totals().get("click", 0.0)) - 0.06) < 0.001, "premia 3 × 2%")
+	var mx0 := g.mastery.xp(wtype) + g.mastery.level(wtype) * 100000
+	g.mastery.on_kill(2)
+	check(g.mastery.xp(wtype) + g.mastery.level(wtype) * 100000 > mx0, "zabójstwo rozwija broń w ręku")
+	g.mastery.add_xp("axe", 99999999)
+	check(g.mastery.level("axe") == MasteryManager.MAX_LVL and g.mastery.xp("axe") == 0, "maksymalny poziom mistrzostwa")
+	check(g.achievements.value("mastery_levels") >= 53.0, "osiągnięcie mistrzostwa")
+	s.erase("mastery")
+	g.stats.mark_dirty()
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

@@ -142,7 +142,8 @@ func _ready() -> void:
 		func(): await _shot("12s27_ogrod_zbior"); _scroll_bottom(ui); return 0.6,
 		func(): await _shot("12s28_kociol"); _close_modals(); ui.show_tab("fight"); g.s.farm_mode = true; g.goblin.force = true; g.enemy.spawn(); return 1.6,
 		func(): await _shot("12s29_goblin"); g.combat.damage(float(g.enemy.cur.max_hp) * 2.0, false, "tap"); return 0.7,
-		func(): await _shot("12s30_goblin_lup"); g.s.farm_mode = false; ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s30_goblin_lup"); g.s.farm_mode = false; g.mastery.add_xp(g.mastery.current(), 3000); g.mastery.add_xp("bow", 900); ui.show_tab("mastery"); return 0.8,
+		func(): await _shot("12s31_mistrzostwo"); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0

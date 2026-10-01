@@ -3,6 +3,31 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.2.0
+
+```
+<pl-PL>
+• Mistrzostwo broni – stałe premie za walkę różnymi rodzajami broni
+• Nowe osiągnięcie Mistrz oręża
+</pl-PL>
+<en-US>
+• Weapon Mastery – permanent bonuses for fighting with different weapon types
+• New Weapon Master achievement
+</en-US>
+<es-ES>
+• Maestría de armas: bonificaciones permanentes por luchar con distintos tipos de armas
+• Nuevo logro Maestro de armas
+</es-ES>
+<pt-BR>
+• Maestria de Armas – bônus permanentes por lutar com diferentes tipos de armas
+• Nova conquista Mestre de Armas
+</pt-BR>
+<de-DE>
+• Waffenmeisterschaft – dauerhafte Boni für den Kampf mit verschiedenen Waffenarten
+• Neuer Erfolg Waffenmeister
+</de-DE>
+```
+
 ## 4.1.0
 
 ```

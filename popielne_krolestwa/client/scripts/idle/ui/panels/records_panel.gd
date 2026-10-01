@@ -34,6 +34,7 @@ func rows() -> Array:
 		["Stopnie bestiariusza", str(gm.bestiary.total_tiers())],
 		["Zebrane plony", str(gm.garden.harvests())],
 		["Złote Gobliny", str(gm.goblin.kills())],
+		["Mistrzostwo broni – suma poziomów", str(gm.mastery.total_levels())],
 		["Pokonani przeciwnicy", IdleDB.fmt(float(st.kills))],
 		["Pokonani bossowie i elity", IdleDB.fmt(float(st.bosses))],
 		["Zadane ciosy", IdleDB.fmt(float(st.taps))],

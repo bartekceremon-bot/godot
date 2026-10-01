@@ -143,6 +143,7 @@ func kill() -> void:
 		gm.quests.on_event("kills", 1)
 		clear_dots()
 		gm.enemy_killed.emit({"name": e.name, "monster": e.monster, "gold": float(r.gold), "xp": 0.0, "boss": 0, "gems": int(r.gems), "goblin": true, "extra": str(r.extra)})
+		gm.mastery.on_kill(1)
 		gm.progression.on_normal_kill()
 		gm.enemy.spawn()
 		return
@@ -150,6 +151,7 @@ func kill() -> void:
 	var kind := int(e.kind)
 	var stage := int(e.stage)
 	gm.hero.add_charge(3.0 + kind * 7.0)
+	gm.mastery.on_kill(kind)
 	var lant := gm.festival.on_kill(kind)
 	if lant > 0 and kind > 0:
 		gm.notify("+%d Żarne Lampiony" % lant, Color(1.0, 0.6, 0.25))

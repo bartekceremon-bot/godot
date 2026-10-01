@@ -624,6 +624,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return RecordsPanel.new()
 		"garden":
 			return GardenPanel.new()
+		"mastery":
+			return MasteryPanel.new()
 	return null
 
 
@@ -645,6 +647,7 @@ func _open_menu() -> void:
 		["Ogród i alchemia", [["Ogród Alchemika", load("res://assets/ui/modes/garden.png"), "garden", gm.garden.ready_count() + gm.garden.empty_count() if gm.garden.unlocked() else 0, GardenManager.UNLOCK_STAGE]]],
 		["Rozwój bohatera", [["Klasa bohatera", load("res://assets/ui/runes/fire.png"), "class", 1 if gm.hero.unlocked() and gm.hero.current() == "" else 0, ClassManager.UNLOCK_STAGE],
 			["Talenty", Sprites.icon("attack"), "talents", maxi(0, gm.talents.free_points()), 0],
+			["Mistrzostwo broni", IdleUI.item_tex(gm.db, "sword_t4"), "mastery", 0, 0],
 			["Relikwie", load("res://assets/ui/modes/relics.png"), "relics", int(gm.relics.shards() / RelicManager.PULL_COST), 0],
 			["Runy", load("res://assets/ui/runes/fire.png"), "runes", 0, 0],
 			["Chowańce", load("res://assets/ui/runes/egg.png"), "pets", gm.inventory.count("pet_egg"), 0],
