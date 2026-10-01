@@ -3,6 +3,31 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.1.0
+
+```
+<pl-PL>
+• Złoty Goblin – rzadki uciekający wróg ze skarbem
+• Nowe osiągnięcie i wyzwanie tygodnia
+</pl-PL>
+<en-US>
+• Golden Goblin – a rare fleeing enemy full of treasure
+• New achievement and weekly challenge
+</en-US>
+<es-ES>
+• Goblin Dorado: un enemigo raro que huye cargado de tesoros
+• Nuevo logro y desafío semanal
+</es-ES>
+<pt-BR>
+• Goblin Dourado – um inimigo raro que foge cheio de tesouros
+• Nova conquista e desafio semanal
+</pt-BR>
+<de-DE>
+• Goldener Goblin – ein seltener, fliehender Gegner voller Schätze
+• Neuer Erfolg und Wochen-Herausforderung
+</de-DE>
+```
+
 ## 4.0.0
 
 ```

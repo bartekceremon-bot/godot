@@ -32,6 +32,8 @@ func rows() -> Array:
 		["Lochy Żaru – najwyższy poziom", str(dbest)],
 		["Relikwie", "%d / %d" % [gm.relics.owned_count(), RelicManager.RELICS.size()]],
 		["Stopnie bestiariusza", str(gm.bestiary.total_tiers())],
+		["Zebrane plony", str(gm.garden.harvests())],
+		["Złote Gobliny", str(gm.goblin.kills())],
 		["Pokonani przeciwnicy", IdleDB.fmt(float(st.kills))],
 		["Pokonani bossowie i elity", IdleDB.fmt(float(st.bosses))],
 		["Zadane ciosy", IdleDB.fmt(float(st.taps))],

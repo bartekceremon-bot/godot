@@ -16,6 +16,7 @@ const LIST := [
 	["arena_wins", "Gladiator", "Wygrane pojedynki na Arenie: %s", [1, 10, 50, 250]],
 	["relic_levels", "Kolekcjoner relikwii", "Suma poziomów relikwii: %s", [1, 12, 40, 120]],
 	["harvests", "Zielarz", "Zebrane plony: %s", [1, 25, 100, 500]],
+	["goblins", "Łowca skarbów", "Pokonane Złote Gobliny: %s", [1, 10, 50, 200]],
 ]
 
 var gm: IdleGame

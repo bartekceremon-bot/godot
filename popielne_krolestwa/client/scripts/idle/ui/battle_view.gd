@@ -573,6 +573,28 @@ func spawn_enemy(cur: Dictionary) -> void:
 	if kind > 0:
 		fx.ring(Fx3D.center(ENEMY_TILE.x, ENEMY_TILE.y), Color(1.0, 0.4, 0.15), 0.3, 3.0, 0.8, 0.12)
 		shake(0.6)
+	if cur.has("goblin") and enemy.model:
+		_goldify(enemy.model)
+		var gp := Fx3D.center(ENEMY_TILE.x, ENEMY_TILE.y)
+		fx.ring(gp, Color(1.0, 0.82, 0.25), 0.3, 2.6, 0.7, 0.1)
+		fx.burst(gp + Vector3(0, 0.8, 0), Color(1.0, 0.85, 0.3), 40, 4.0, -3.0, 0.9, 1.2)
+		fx.pillar(gp, Color(1.0, 0.8, 0.3), 1.2, 0.5, 2.2)
+
+
+## Złota poświata (Złoty Goblin): półprzezroczysta nakładka na wszystkich siatkach modelu.
+func _goldify(n: Node) -> void:
+	if n is GeometryInstance3D:
+		var m := StandardMaterial3D.new()
+		m.albedo_color = Color(1.0, 0.8, 0.2, 0.45)
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.emission_enabled = true
+		m.emission = Color(1.0, 0.7, 0.15)
+		m.emission_energy_multiplier = 0.9
+		m.metallic = 1.0
+		m.roughness = 0.25
+		(n as GeometryInstance3D).material_overlay = m
+	for c in n.get_children():
+		_goldify(c)
 
 
 ## Punkt nad przeciwnikiem w pikselach widoku (liczby obrażeń, łup).

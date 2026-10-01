@@ -242,7 +242,7 @@ func _auto_cast() -> void:
 		# Leczenie tylko przy niskim zdrowiu, reszta – gdy jest cel.
 		if kind == "heal" and gm.combat.hp > gm.stats.max_hp * 0.55:
 			continue
-		if kind in ["shield", "freeze"] and not gm.enemy.is_boss():
+		if kind in ["shield", "freeze"] and not gm.enemy.is_boss() and not gm.enemy.cur.has("goblin"):
 			continue
 		if can_cast(str(id)):
 			cast(str(id))

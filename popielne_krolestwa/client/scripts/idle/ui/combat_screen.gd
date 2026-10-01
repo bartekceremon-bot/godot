@@ -1084,7 +1084,7 @@ func _update_enemy(delta: float) -> void:
 	_hp_bar.value = _shown_hp
 	_hp_l.text = "PZ: %s / %s" % [IdleDB.fmt(maxf(0.0, float(e.hp))), IdleDB.fmt(float(e.max_hp))]
 	# U bossa cienki pasek pod ramą odlicza czas walki.
-	var boss := int(e.kind) > 0
+	var boss := int(e.kind) > 0 or e.has("goblin")
 	if boss:
 		_stage_bar.value = float(e.time_left) / float(e.time_max)
 		_timer_l.text = ("❄ " if float(e.frozen) > 0.0 else "") + "%.1f s" % maxf(0.0, float(e.time_left))
@@ -1116,6 +1116,10 @@ func _on_spawn() -> void:
 		ui.banner("BOSS TYGODNIA", str(gm.raid.boss().name) + " – zadaj jak najwięcej obrażeń!", Color(1.0, 0.45, 0.25))
 	elif e.has("tower"):
 		ui.banner("PIĘTRO %d" % int(e.tower), str(e.name).get_slice(" – ", 0), Color(1.0, 0.6, 0.3))
+	elif e.has("goblin"):
+		_enemy_l.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		ui.banner("ZŁOTY GOBLIN!", "Pokonaj go, zanim ucieknie (%d s)!" % int(e.time_max), Color(1.0, 0.85, 0.3))
+		_buzz(60, true)
 	elif kind > 0:
 		ui.banner(["", "ELITA", "BOSS"][kind] + ": " + str(e.name), "Pokonaj w %d s!" % int(e.time_max), Color(1.0, 0.55, 0.3))
 
@@ -1171,6 +1175,10 @@ func _on_killed(info: Dictionary) -> void:
 	_pop_gold(float(info.gold))
 	if boss > 0:
 		_flash_edge(1.0)
+	if info.has("goblin"):
+		ui.fly_coins(global_position + pos, 14)
+		_flash_edge(1.0)
+		ui.banner("Złoty Goblin pokonany!", tr("+%s zł  •  +%d żarokr.") % [IdleDB.fmt(float(info.gold)), int(info.gems)] + ("  •  " + tr(str(info.extra)) if str(info.extra) != "" else ""), Color(1.0, 0.85, 0.3))
 	if boss > 0 and float(info.gold) > 0.0:
 		ui.banner("Pokonano: %s!" % info.name, "+%s zł  •  +%s XP" % [IdleDB.fmt(float(info.gold)), IdleDB.fmt(float(info.xp))], Color(1.0, 0.85, 0.35))
 

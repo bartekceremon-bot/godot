@@ -64,6 +64,10 @@ func spawn() -> void:
 	cur = {"monster": mid, "name": name, "look": str(m.get("look", mid)), "max_hp": hp, "hp": hp, "kind": kind,
 		"stage": stage, "time_left": gm.db.boss_time, "time_max": gm.db.boss_time, "frozen": 0.0, "vuln": 0.0, "vuln_t": 0.0,
 		"undead": gm.db.undead.has(mid)}
+	if kind == 0:
+		var gob := gm.goblin.maybe_spawn(stage)
+		if not gob.is_empty():
+			cur = gob
 	_boss_attack_t = 2.0
 	gm.combat.clear_dots()
 	if kind > 0:
@@ -99,6 +103,15 @@ func tick(dt: float) -> void:
 		return
 	if float(cur.vuln_t) > 0.0:
 		cur.vuln_t = maxf(0.0, float(cur.vuln_t) - dt)
+	if cur.has("goblin") and alive():
+		if float(cur.frozen) > 0.0:
+			cur.frozen = maxf(0.0, float(cur.frozen) - dt)
+			return
+		cur.time_left = float(cur.time_left) - dt
+		if float(cur.time_left) <= 0.0:
+			gm.goblin.on_escape()
+			spawn()
+		return
 	if not is_boss() or not alive():
 		return
 	if float(cur.frozen) > 0.0:

@@ -137,6 +137,15 @@ func kill() -> void:
 		gm.tower.on_win()
 		gm.enemy.spawn()
 		return
+	if e.has("goblin"):
+		var r := gm.goblin.on_kill(e)
+		gm.s.stats.kills = int(gm.s.stats.kills) + 1
+		gm.quests.on_event("kills", 1)
+		clear_dots()
+		gm.enemy_killed.emit({"name": e.name, "monster": e.monster, "gold": float(r.gold), "xp": 0.0, "boss": 0, "gems": int(r.gems), "goblin": true, "extra": str(r.extra)})
+		gm.progression.on_normal_kill()
+		gm.enemy.spawn()
+		return
 	var s := gm.s
 	var kind := int(e.kind)
 	var stage := int(e.stage)

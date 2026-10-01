@@ -701,9 +701,10 @@ func _ready() -> void:
 	s.erase("mail")
 	check(g.mail.unread() == MailManager.MESSAGES.size(), "poczta: %d nieprzeczytanych" % g.mail.unread())
 	var gems_m := int(s.gems)
-	check(g.mail.has_gift(0) and g.mail.claim(0).size() == 1 and int(s.gems) == gems_m + 100, "prezent za aktualizację")
+	check(g.mail.has_gift(0) and g.mail.claim(0).size() == 1 and int(s.gems) == gems_m + 50, "prezent za aktualizację")
 	check(not g.mail.has_gift(0) and g.mail.claim(0).is_empty(), "prezent raz")
-	check(not g.mail.has_gift(3), "starsze wiadomości bez prezentów")
+	var old_i := MailManager.MESSAGES.map(func(m): return m[0]).find("v3.6")
+	check(old_i > 0 and not g.mail.has_gift(old_i), "starsze wiadomości bez prezentów")
 	var last := MailManager.MESSAGES.size() - 1
 	check(g.mail.has_gift(last), "powitanie z prezentem")
 
@@ -748,6 +749,27 @@ func _ready() -> void:
 	s.boosts.clear()
 	s.max_stage = ms_keep
 	s.ach.best_stage = bs_keep
+
+	# --- Złoty Goblin ---
+	s.stage = 21
+	s.farm_mode = true
+	g.goblin.force = true
+	g.enemy.spawn()
+	check(g.enemy.cur.has("goblin") and int(g.enemy.cur.kind) == 0, "pojawił się Złoty Goblin")
+	var gold_g := float(s.gold)
+	var gems_g := int(s.gems)
+	var gk0 := g.goblin.kills()
+	var gf0 := int(s.stats.get("goblins_fled", 0))
+	g.combat.damage(float(g.enemy.cur.max_hp) * 2.0, false, "tap")
+	check(float(s.gold) > gold_g and int(s.gems) >= gems_g + 5 and g.goblin.kills() == gk0 + 1, "nagroda za goblina")
+	check(not g.enemy.cur.has("goblin"), "po goblinie zwykły wróg")
+	check(g.goblin.maybe_spawn(20).is_empty(), "odstęp między goblinami")
+	g.goblin.force = true
+	g.enemy.spawn()
+	g.enemy.tick(GoblinManager.TIME + 1.0)
+	check(not g.enemy.cur.has("goblin") and int(s.stats.get("goblins_fled", 0)) == gf0 + 1, "goblin ucieka po czasie")
+	check(g.achievements.value("goblins") == float(gk0 + 1), "osiągnięcie goblinów")
+	s.farm_mode = false
 
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
