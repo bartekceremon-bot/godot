@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 3.2.0)
+## Popielne Królestwa Idle (wersja 3.3.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
@@ -26,6 +26,9 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 | Runy (menu, 2.1) | 6 rodzajów (Ognia – obrażenia, Krwi – krytyk, Żaru – obrażenia krytyczne, Złota, Mądrości – XP, Wichru – szybkość) × 5 stopni (Okruch … Popielna runa). Po 2 gniazda w każdym slocie ekwipunku (trzecie za 150 żarokryształów) – gniazda zostają przy zmianie przedmiotów i po odrodzeniu. 3 runy łączą się w wyższy stopień za złoto. Źródła: bossowie i elity od etapu 10, Wieża Popiołu, wyprawy 4 h+, skrzynie. Ikony: `tools/textures/gen_runes.py`. |
 | Chowańce (menu, 2.2) | 8 gatunków (Lisek Szronek, Wilczek Kieł, Ropuszek, Skarabeusz Złotek, Ogar Popiołu, Bazyliszek Łuska, Niedźwiadek Burek, Smoczek Żarek) w 4 rzadkościach. Jaja: bossowie od etapu 15, co 10 pięter Wieży, długie wyprawy, Boss tygodnia. Kolejne jajo gatunku = gwiazdka (maks. 5), poziom do 10 × gwiazdki za złoto. Aktywny chowaniec chodzi za bohaterem w scenie 3D i daje premię; drugi slot od 25. piętra Wieży. Podgląd 3D w panelu. |
 | Boss tygodnia (menu, 2.2) | Co tydzień (od poniedziałku) inny boss regionu o ogromnym zdrowiu; 5 prób dziennie po 30 s, obrażenia sumują się przez tydzień; 6 progów nagród (żarokryształy, skrzynie, runy, jaja). Progi rosną z rekordem etapu. |
+| Ścieżka Popielnika (3.3) | 20 celów dla nowych graczy (pierwsze ciosy → najemnicy → czary → rzemiosło → lochy → arena → odrodzenie) z nagrodami. Bieżący cel w złotej karcie na ekranie walki (dotknięcie: odbierz albo przejdź do właściwej zakładki); przy pierwszych 12 celach animowana łapka wskazuje, co nacisnąć. Stare zapisy z dużym postępem zaliczają ścieżkę bez nagród. Zapowiedzi nowych trybów („NOWOŚĆ: …”) przy etapach 15, 25 i pierwszym możliwym odrodzeniu. |
+| Koło Żaru (menu, 3.3) | 1 darmowy obrót dziennie, +1 za reklamę, do 5 za 25 żarokr. 8 pól z jawnymi szansami (24/20/14/12/10/10/7/3%) – złoto, żarokryształy, skrzynia, runa, odłamki, wielka wygrana. Koło rysowane w kodzie z animacją obrotu. |
+| Wydarzenia i osiągnięcia (3.3) | Nowe tygodnie: Lochów (podwójny łup, +1 klucz) i Gladiatorów (podwójne odznaki, +2 bilety). Osiągnięcia: Grotołaz, Gladiator, Kolekcjoner relikwii. |
 | Lochy Żaru (menu, 3.2) | Od etapu 15. Trzy lochy: Skarbiec Goblinów (złoto), Kopalnia Żaru (żarokryształy, runy), Kuźnia Przodków (surowce, skrzynie). 2 klucze dziennie na loch (kolejne wejście 30 żarokr.). 45 s na 10 strażników (ostatni – elita ×3 zdrowia); łup za każdego, pełne przejście daje odłamki relikwii i wyższy poziom. Poziom polecany wg bieżącego etapu. |
 | Arena Popiołu (menu, 3.2) | Od etapu 25. Pojedynki z championami rywali (generowanymi wokół rankingu gracza – bez serwera), 30 s na walkę. Ranking ELO (K=32), ligi Brąz → Legenda, 5 biletów dziennie (+ za 25 żarokr.), odznaki chwały za walki, sklep areny (skrzynie, runy, jajo, odłamki, żarokryształy, klucze do lochów, limity dzienne), nagroda tygodnia wg najwyższej ligi, miękki reset rankingu co tydzień. |
 | Relikwie (menu, 3.2) | 12 relikwii w 4 zestawach (Dziedzictwo Królów, Oręż Smokobójcy, Sakwy Pielgrzyma, Skarby Szronu). 10 odłamków = losowa relikwia (nowa albo +1 poziom, maks. 10). Premie relikwii i kompletów (+15%, przy poziomach 5+ +40%) wchodzą do statystyk jak runy. Ikony: `tools/textures/gen_mode_icons.py`. |

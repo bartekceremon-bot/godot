@@ -160,6 +160,7 @@ func on_gather(item_id: String, n: int) -> void:
 
 ## Postęp zleceń: kills, taps, gold, spells, upgrades, crafts, materials, bosses, crits, mercs.
 func on_event(type: String, amount: float) -> void:
+	gm.path.on_event(type, amount)
 	var qs := _q()
 	if qs.is_empty():
 		return

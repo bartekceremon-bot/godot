@@ -7,6 +7,8 @@ const EVENTS := [
 	{"id": "hunt", "name": "Tydzień Łowów", "text": "podwójne surowce i +25% szansy na łup", "materials": 1.0, "loot": 0.25},
 	{"id": "runes", "name": "Tydzień Run", "text": "podwójna szansa na runy i jaja chowańców", "runes": 1.0},
 	{"id": "wisdom", "name": "Tydzień Nauki", "text": "+50% doświadczenia i +25% siły czarów", "xp": 0.5, "spell": 0.25},
+	{"id": "dungeons", "name": "Tydzień Lochów", "text": "podwójny łup w Lochach Żaru i +1 klucz dziennie do każdego lochu", "dungeon": 1.0},
+	{"id": "arena", "name": "Tydzień Gladiatorów", "text": "podwójne odznaki chwały i +2 bilety na Arenę dziennie", "arena": 1.0},
 ]
 
 var gm: IdleGame

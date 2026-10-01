@@ -41,7 +41,7 @@ func _st() -> Dictionary:
 	if str(d.day) != DailyManager.today():
 		d.day = DailyManager.today()
 		for k in ORDER:
-			d.keys[k] = DAILY_KEYS
+			d.keys[k] = DAILY_KEYS + int(gm.events.bonus("dungeon"))
 	return d
 
 
@@ -127,20 +127,22 @@ func on_kill(e: Dictionary) -> void:
 	kills += 1
 	gm.bestiary.on_kill(str(e.monster))
 	var stage := tier_stage(tier)
+	# Tydzień Lochów: podwójny łup.
+	var mult := 1.0 + gm.events.bonus("dungeon")
 	match kind:
 		"gold":
-			var g := ProgressionManager.gold_for(stage) * 30.0 * gm.stats.gold_mult
+			var g := ProgressionManager.gold_for(stage) * 30.0 * gm.stats.gold_mult * mult
 			gm.add_gold(g)
 			run.gold = float(run.gold) + g
 		"gems":
-			var n := 1 + int(tier / 6)
+			var n := (1 + int(tier / 6)) * int(mult)
 			gm.add_gems(n)
 			run.gems = int(run.gems) + n
 			if _rng.randf() < 0.18:
 				gm.inventory.add(gm.runes.random_rune(clampf(tier / 25.0, 0.0, 1.0)), 1)
 				run.runes = int(run.runes) + 1
 		"mats":
-			var n := 3 + int(tier / 2)
+			var n := (3 + int(tier / 2)) * int(mult)
 			for i in 2:
 				gm.inventory.add(gm.loot.random_material(stage), n)
 			run.mats = int(run.mats) + n * 2

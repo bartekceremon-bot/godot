@@ -135,6 +135,7 @@ func advance() -> void:
 	s.kills_in_stage = 0
 	if int(s.stage) > int(s.max_stage):
 		s.max_stage = int(s.stage)
+		gm.path.check_unlocks()
 		_on_new_max_stage()
 	gm.changed.emit("stage")
 

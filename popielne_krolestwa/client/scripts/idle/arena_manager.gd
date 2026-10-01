@@ -52,7 +52,7 @@ func _st() -> Dictionary:
 	var a: Dictionary = gm.s.arena
 	if str(a.day) != DailyManager.today():
 		a.day = DailyManager.today()
-		a.tickets = DAILY_TICKETS
+		a.tickets = DAILY_TICKETS + 2 * int(gm.events.bonus("arena"))
 		a.buys = {}
 	if int(a.week) != RaidManager.week_id():
 		a.week = RaidManager.week_id()
@@ -183,7 +183,7 @@ func _end(win: bool, reason: String) -> void:
 	st.rating = maxi(0, me + delta)
 	st.best = maxi(int(st.best), int(st.rating))
 	st.week_best = maxi(int(st.week_best), int(st.rating))
-	var c := (12 + int(int(rival.rating) / 250)) if win else 4
+	var c := ((12 + int(int(rival.rating) / 250)) if win else 4) * (1 + int(gm.events.bonus("arena")))
 	st.coins = coins() + c
 	var shard := false
 	if win:

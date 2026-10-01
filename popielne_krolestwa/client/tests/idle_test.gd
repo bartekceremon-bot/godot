@@ -277,7 +277,8 @@ func _ready() -> void:
 	if int(g.achievements.value("best_stage")) < 15:
 		s.ach.best_stage = 15
 	check(g.dungeon.unlocked(), "lochy otwarte od etapu 15")
-	check(g.dungeon.keys("gold") == DungeonManager.DAILY_KEYS and g.dungeon.total_keys() == 6, "2 klucze dziennie na każdy loch")
+	var dk := DungeonManager.DAILY_KEYS + int(g.events.bonus("dungeon"))
+	check(g.dungeon.keys("gold") == dk and g.dungeon.total_keys() == dk * 3, "2 klucze dziennie na każdy loch")
 	check(not g.dungeon.enter("gold", g.dungeon.max_tier("gold") + 1), "wyższe poziomy zablokowane")
 	var dg_gold := float(s.gold)
 	var dg_shards := g.relics.shards()
@@ -298,7 +299,7 @@ func _ready() -> void:
 	g.tick(0.1)
 	check(not g.dungeon.active and g.dungeon.best("mats") == 0 and not bool(g.dungeon.last_run.cleared), "koniec czasu – loch nieoczyszczony")
 	check(g.challenge() == null and not g.enemy.cur.has("challenge"), "powrót do zwykłej walki")
-	check(g.dungeon.keys("mats") == 1, "klucz zużyty")
+	check(g.dungeon.keys("mats") == dk - 1, "klucz zużyty")
 	s.dungeon.keys.gems = 0
 	var gems_d := int(s.gems)
 	check(not g.dungeon.enter("gems", 1), "bez klucza nie da się wejść")
@@ -309,7 +310,8 @@ func _ready() -> void:
 	print("== arena popiołu")
 	if int(g.achievements.value("best_stage")) < 25:
 		s.ach.best_stage = 25
-	check(g.arena.unlocked() and g.arena.rating() == 1000 and g.arena.tickets() == ArenaManager.DAILY_TICKETS, "arena: ranking 1000, 5 biletów")
+	var at := ArenaManager.DAILY_TICKETS + 2 * int(g.events.bonus("arena"))
+	check(g.arena.unlocked() and g.arena.rating() == 1000 and g.arena.tickets() == at, "arena: ranking 1000, 5 biletów")
 	check(g.arena.rivals().size() == 3, "3 rywali do wyboru")
 	check(ArenaManager.league_name(1000) == "Brąz" and ArenaManager.league_name(1500) == "Złoto" and ArenaManager.league_name(3000) == "Legenda", "ligi")
 	var rv: Array = g.arena.rivals()
@@ -323,7 +325,7 @@ func _ready() -> void:
 	g.enemy.cur.time_left = 0.01
 	g.tick(0.1)
 	check(not g.arena.active and g.arena.rating() < r_win, "porażka obniża ranking")
-	check(g.arena.tickets() == ArenaManager.DAILY_TICKETS - 2, "bilety zużyte")
+	check(g.arena.tickets() == at - 2, "bilety zużyte")
 	check(g.arena.weekly_ready(), "nagroda tygodnia dostępna po walce")
 	var wk := g.arena.claim_weekly()
 	check(wk.size() == 4 and not g.arena.weekly_ready(), "nagroda ligowa odebrana raz")
@@ -484,6 +486,56 @@ func _ready() -> void:
 	if g.phoenix.feathers() >= g.phoenix.cost("wisdom"):
 		g.phoenix.buy("wisdom")
 		check(g.talents.earned() == tal0 + 3, "Mądrość Feniksa: +3 punkty talentów")
+
+	print("== ścieżka popielnika")
+	var pth := g.path
+	s.erase("path")
+	s.max_stage = 1
+	s.rebirths = 0
+	check(pth.index() == 0 and not pth.finished(), "nowa gra: ścieżka od pierwszego celu")
+	s.stats.taps = 0
+	check(not pth.ready() and pth.claim().is_empty(), "cel niespełniony – brak nagrody")
+	s.stats.taps = 20
+	var pg := int(s.gems)
+	check(pth.ready() and pth.claim().size() == 1 and int(s.gems) == pg + 10, "15 ciosów: +10 żarokr.")
+	check(pth.index() == 1 and str(pth.current()[1]) == "merc_levels", "kolejny cel: najemnik")
+	g.quests.on_event("upgrades", 1)
+	check(pth.value("upgrades") == 1.0, "licznik ulepszeń ścieżki")
+	s.path.i = PathManager.GOALS.size() - 1
+	s.rebirths = 1
+	var eggs0 := g.inventory.count("pet_egg")
+	pth.claim()
+	check(pth.finished() and g.inventory.count("pet_egg") == eggs0 + 1, "ostatni cel (odrodzenie): jajo, ścieżka ukończona")
+	s.erase("path")
+	s.max_stage = 60
+	check(pth.finished(), "stary zapis z dużym postępem – ścieżka zaliczona bez nagród")
+
+	print("== koło żaru")
+	var wh := g.wheel
+	s.erase("wheel")
+	check(wh.free_spins() == 1 and wh.can_spin(), "1 darmowy obrót dziennie")
+	var total := 0
+	for seg in WheelManager.SEGMENTS:
+		total += int(seg[2])
+	check(total == 100 and wh.odds().size() == 8, "szanse pól sumują się do 100%")
+	var r1 := wh.spin()
+	check(r1.size() == 2 and str(r1[1]) != "" and wh.free_spins() == 0, "obrót: %s" % (r1[1] if r1.size() == 2 else "?"))
+	check(not wh.can_spin() and wh.spin().is_empty(), "bez obrotów – brak losowania")
+	s.gems = 1000
+	var gw := int(s.gems)
+	var r2 := wh.spin(true)
+	check(r2.size() == 2 and wh.paid_today() == 1 and int(s.gems) <= gw - WheelManager.GEM_COST + 250, "obrót za żarokryształy")
+	for i in 10:
+		wh.spin(true)
+	check(wh.paid_today() == WheelManager.PAID_LIMIT, "limit płatnych obrotów: %d dziennie" % WheelManager.PAID_LIMIT)
+	wh.add_free_spin()
+	check(wh.can_spin(), "obrót za reklamę")
+	var hits := {}
+	for i in 400:
+		s.wheel.free = 1
+		var rr := wh.spin()
+		hits[int(rr[0])] = int(hits.get(int(rr[0]), 0)) + 1
+	check(int(hits.get(0, 0)) > int(hits.get(7, 0)), "pole złota częstsze niż wielka wygrana (%d vs %d)" % [int(hits.get(0, 0)), int(hits.get(7, 0))])
 
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()

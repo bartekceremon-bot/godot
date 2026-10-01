@@ -12,6 +12,9 @@ const LIST := [
 	["crits", "Ostrze losu", "Trafienia krytyczne: %s", [50, 500, 5000, 50000]],
 	["spells", "Adept magii", "Rzucone czary: %s", [10, 100, 1000, 10000]],
 	["rebirths", "Feniks", "Odrodzenia z popiołu: %s", [1, 3, 10, 25]],
+	["dungeon_clears", "Grotołaz", "Oczyszczone lochy: %s", [1, 10, 50, 200]],
+	["arena_wins", "Gladiator", "Wygrane pojedynki na Arenie: %s", [1, 10, 50, 250]],
+	["relic_levels", "Kolekcjoner relikwii", "Suma poziomów relikwii: %s", [1, 12, 40, 120]],
 ]
 
 var gm: IdleGame
@@ -38,6 +41,15 @@ func value(key: String) -> float:
 			return float(st.best_level)
 		"rebirths":
 			return float(gm.s.rebirths)
+		"dungeon_clears":
+			return float(gm.s.get("dungeon", {}).get("clears", 0))
+		"arena_wins":
+			return float(gm.s.get("arena", {}).get("wins", 0))
+		"relic_levels":
+			var n := 0
+			for id in gm.s.get("relics", {}).get("owned", {}):
+				n += int(gm.s.relics.owned[id])
+			return float(n)
 	return float(gm.s.stats.get(key, 0))
 
 

@@ -103,7 +103,10 @@ func _ready() -> void:
 				g.relics.pull()
 			ui.show_tab("relics")
 			return 0.8,
-		func(): await _shot("12s6_relikwie"); ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s6_relikwie"); g.s.erase("wheel"); ui.show_tab("wheel"); return 0.8,
+		func(): await _shot("12s7_kolo"); _press("Zakręć kołem!"); return 1.6,
+		func(): await _shot("12s8_kolo_obrot"); return 2.6,
+		func(): await _shot("12s9_kolo_wynik"); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0

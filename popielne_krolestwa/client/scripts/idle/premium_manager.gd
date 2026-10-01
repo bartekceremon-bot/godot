@@ -14,6 +14,7 @@ const PLACEMENTS := {
 	"free_chest": {"name": "Darmowa skrzynia (co 4 h)"},
 	"fury": {"name": "Zwój Furii: ×2 obrażenia i złoto na 5 min"},
 	"tower_attempt": {"name": "Dodatkowa próba w Wieży (raz dziennie)"},
+	"wheel_spin": {"name": "Dodatkowy obrót Koła Żaru (raz dziennie)"},
 }
 
 var gm: IdleGame
@@ -178,6 +179,8 @@ func ad_available(place: String) -> bool:
 			return now() >= float(a.chest_at)
 		"tower_attempt":
 			return str(a.tower_day) != DailyManager.today()
+		"wheel_spin":
+			return str(a.get("wheel_day", "")) != DailyManager.today()
 		"fury":
 			return now() >= float(a.fury_until)
 	return true
@@ -211,6 +214,10 @@ func ad_reward(place: String) -> String:
 			gm.s.tower.attempts = gm.tower.attempts() + 1
 			gm.changed.emit("tower")
 			return "+1 próba w Wieży Popiołu"
+		"wheel_spin":
+			a.wheel_day = DailyManager.today()
+			gm.wheel.add_free_spin()
+			return "+1 obrót Koła Żaru"
 	gm.changed.emit("premium")
 	return "ok"
 

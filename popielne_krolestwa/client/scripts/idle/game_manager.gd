@@ -23,6 +23,8 @@ signal boss_defeated(info: Dictionary)
 signal spell_cast(id: String)
 signal player_hit(amount: float)
 signal toast(text: String, color: Color)
+## Nowy tryb gry odblokowany (zapowiedź na ekranie).
+signal unlocked(title: String, text: String)
 
 var db := IdleDB.new()
 ## Stan gry (zapisywany).
@@ -58,6 +60,8 @@ var raid: RaidManager
 var dungeon: DungeonManager
 var arena: ArenaManager
 var relics: RelicManager
+var path: PathManager
+var wheel: WheelManager
 var story: StoryManager
 var phoenix: PhoenixManager
 var events: EventManager
@@ -109,6 +113,8 @@ func _ready() -> void:
 	dungeon = DungeonManager.new(self)
 	arena = ArenaManager.new(self)
 	relics = RelicManager.new(self)
+	path = PathManager.new(self)
+	wheel = WheelManager.new(self)
 	story = StoryManager.new(self)
 	phoenix = PhoenixManager.new(self)
 	events = EventManager.new(self)

@@ -48,6 +48,11 @@ var _edge: TextureRect
 var _edge_tw: Tween
 var _auto_btn: Button
 var _goals_box: VBoxContainer
+var _menu_btn: Button
+var _path_btn: Button
+## Samouczek: łapka wskazująca, co nacisnąć (cele początkowe Ścieżki Popielnika).
+var _hand: TextureRect
+var _hand_t := 0.0
 var _php: ProgressBar
 var _php_l: Label
 var _pmp: ProgressBar
@@ -319,6 +324,7 @@ func _build_header() -> void:
 	var rcol := IdleUI.pass_through(IdleUI.vbox(8))
 	mid.add_child(rcol)
 	var menu := _side_button(Sprites.icon("menu"), "MENU")
+	_menu_btn = menu
 	menu.pressed.connect(ui._open_menu)
 	_menu_dot = ui._dot(menu)
 	rcol.add_child(menu.get_parent())
@@ -618,10 +624,16 @@ func _process(delta: float) -> void:
 			_tap_at(_enemy_pos() + Vector2(randf_range(-50, 50), randf_range(-30, 60)))
 	_update_enemy(delta)
 	_ui_t += delta
+	_update_guide(delta)
 	if _ui_t >= 0.1:
 		_ui_t = 0.0
 		_update_player()
 		_update_spells()
+		if _path_btn and is_instance_valid(_path_btn):
+			var was := str(_path_btn.text)
+			_update_path_card(_path_btn)
+			if gm.path.ready() and not was.contains("✔"):
+				Sfx.play("levelup")
 
 
 func _enemy_pos() -> Vector2:
@@ -656,6 +668,8 @@ func _on_changed(what: String) -> void:
 			_refresh_spell_icons()
 		"tower", "raid", "dungeon", "arena":
 			_refresh_stage()
+		"path":
+			_refresh_goals()
 		"pets":
 			_refresh_pets()
 
@@ -741,7 +755,12 @@ func _refresh_stats() -> void:
 
 func _refresh_goals() -> void:
 	IdleUI.clear(_goals_box)
-	for g in gm.quests.hud_goals(2):
+	_path_btn = null
+	var path_on := not gm.path.finished()
+	if path_on:
+		_path_btn = _path_card()
+		_goals_box.add_child(_path_btn)
+	for g in gm.quests.hud_goals(1 if path_on else 2):
 		var b := Button.new()
 		b.custom_minimum_size = Vector2(0, 52)
 		b.clip_text = true
@@ -772,6 +791,106 @@ func _refresh_goals() -> void:
 			else:
 				open_tab.emit("quests"))
 		_goals_box.add_child(b)
+
+
+## Karta bieżącego celu Ścieżki Popielnika (złota ramka).
+func _path_card() -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(0, 58)
+	b.clip_text = true
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.add_theme_font_size_override("font_size", 15)
+	b.add_theme_constant_override("outline_size", 4)
+	b.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.12, 0.08, 0.02, 0.82)
+	sb.border_color = IdleUI.GOLD_COL
+	sb.set_border_width_all(2)
+	sb.border_width_left = 4
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 8
+	for st in ["normal", "hover", "pressed"]:
+		b.add_theme_stylebox_override(st, sb)
+	b.pressed.connect(func():
+		Sfx.play("click")
+		if gm.path.ready():
+			var got := gm.path.claim()
+			for it in got:
+				ui.toast_msg("+%s %s" % [IdleDB.fmt(float(it[1])), _reward_name(str(it[0]))], IdleUI.GOLD_COL)
+			if gm.path.finished():
+				ui.banner("ŚCIEŻKA UKOŃCZONA", "Znasz już wszystkie drogi Popielnika!", IdleUI.GOLD_COL)
+		else:
+			var tab := str(gm.path.current()[4])
+			if tab == "daily":
+				ui.show_daily()
+			elif tab != "fight":
+				ui.show_tab(tab))
+	_update_path_card(b)
+	return b
+
+
+func _reward_name(id: String) -> String:
+	if id == "shards":
+		return "odłamków relikwii"
+	if id == "hp_potion":
+		return "mikstura życia"
+	return IdleUI.item_name(gm.db, id)
+
+
+func _update_path_card(b: Button) -> void:
+	var p := gm.path
+	if p.finished():
+		return
+	var g := p.current()
+	var rd := p.ready()
+	b.text = "ŚCIEŻKA %d/%d: %s\n%s" % [p.index() + 1, PathManager.GOALS.size(), g[0], ("✔ Odbierz: " + PathManager.reward_text(g[3])) if rd else "%s / %s  •  %s" % [IdleDB.fmt(p.progress()), IdleDB.fmt(float(g[2])), PathManager.reward_text(g[3])]]
+	b.add_theme_color_override("font_color", IdleUI.GOOD if rd else Color(1.0, 0.9, 0.62))
+
+
+## Element wskazywany przez samouczek.
+func _guide_target(name: String) -> Control:
+	match name:
+		"attack":
+			return _atk_btn
+		"party":
+			return _team_btn
+		"menu":
+			return _menu_btn
+		"spell":
+			for b in _spell_btns:
+				if str(b.text) != "+":
+					return b
+			return _spell_btns[0]
+	return ui._nav_btns.get(name)
+
+
+func _update_guide(delta: float) -> void:
+	if _hand == null:
+		_hand = TextureRect.new()
+		_hand.texture = IdleUI.ash_tex("ico_hand")
+		_hand.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_hand.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_hand.custom_minimum_size = Vector2(72, 72)
+		_hand.size = Vector2(72, 72)
+		_hand.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_hand.z_index = 30
+		ui._overlay.add_child(_hand)
+	var p := gm.path
+	var show := not p.finished() and p.index() < 12 and not p.ready() and is_visible_in_tree() \
+		and ui._modals_open() == 0 and not ui._panel_host.visible and gm.challenge() == null
+	var tgt: Control = null
+	if show:
+		tgt = _guide_target(str(p.current()[5]))
+		show = tgt != null and tgt.is_visible_in_tree()
+	_hand.visible = show
+	if not show:
+		return
+	_hand_t += delta
+	var r := tgt.get_global_rect()
+	var bob := absf(sin(_hand_t * 4.0)) * 14.0
+	_hand.global_position = r.position + Vector2(r.size.x * 0.55, r.size.y * 0.45 + bob)
+	_hand.rotation = -0.35
 
 
 func _refresh_spell_icons() -> void:
