@@ -45,6 +45,8 @@ var _shake := 0.0
 var _t := 0.0
 ## Ekran tytułowy: kamera powoli okrąża scenę.
 var orbit := false
+## Próbka stylu z malowanym tłem: bez ruin i dalekich roślin (zastępuje je obraz).
+var no_ruins := false
 var orbit_focus := Vector3(0.3, 1.3, 0.2)
 var orbit_radius := 8.5
 var orbit_height := 2.6
@@ -101,6 +103,11 @@ func _ready() -> void:
 	add_child(_embers)
 	_place_camera(ENEMY_HEIGHT[0])
 	camera.position = _cam_base
+	var st := StyleLab.requested()
+	if st != "":
+		var lab := StyleLab.new()
+		lab.style = st
+		add_child(lab)
 
 
 func _process(delta: float) -> void:
@@ -203,13 +210,14 @@ func _build_diorama(reg: Dictionary) -> void:
 		var pos := Vector3(cos(a) * d + 0.5, 0, sin(a) * d * 0.9 + 0.5)
 		if i >= 16:
 			pos = Vector3((1.0 if i % 2 == 0 else -1.0) * rng.randf_range(4.5, 7.5), 0, rng.randf_range(-1.0, 3.0))
-		if _blocks_view(pos):
+		if _blocks_view(pos) or (no_ruins and d > 6.0 and i < 16):
 			continue
 		k.place(pos, rng.randf() * TAU, rng.randf_range(0.9, 1.5))
 		_prop(k, str(props[i % props.size()]), rng)
 		k.reset()
 		k.jitter = 0.05
-	_ruins(k, reg, rng)
+	if not no_ruins:
+		_ruins(k, reg, rng)
 	var mi := MeshInstance3D.new()
 	mi.mesh = k.commit()
 	mi.material_override = _obj_mat
