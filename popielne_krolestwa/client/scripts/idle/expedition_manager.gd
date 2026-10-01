@@ -126,6 +126,9 @@ func claim(i: int, t := -1.0) -> Array:
 	if int(p.gems) > 0:
 		gm.add_gems(int(p.gems))
 		got.append(["gems", int(p.gems), 0])
+	if _rng.randf() < [0.0, 0.0, 0.08, 0.35][int(e.dur)]:
+		gm.inventory.add("pet_egg", 1)
+		got.append(["pet_egg", 1, 4])
 	if int(e.dur) >= 2:
 		var rn := gm.runes.random_rune(0.15 * int(e.dur) + float(region_stage(reg)) / 150.0)
 		gm.inventory.add(rn, 1)

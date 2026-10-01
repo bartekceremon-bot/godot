@@ -119,7 +119,7 @@ func _start_game() -> void:
 	music.set_enabled(bool(gm.s.settings.get("music", true)))
 	music.play("walka")
 	gm.enemy_spawned.connect(_update_music)
-	gm.changed.connect(func(w): if w == "tower": _update_music())
+	gm.changed.connect(func(w): if w in ["tower", "raid"]: _update_music())
 	if _menu_screen.has_method("leave"):
 		_menu_screen.leave()
 	else:
@@ -137,7 +137,7 @@ func _start_game() -> void:
 ## Muzyka bossa przy bossach, elitach i w Wieży Popiołu, w pozostałych walkach – temat walki.
 func _update_music() -> void:
 	var e := gm.enemy.cur
-	music.play("boss" if gm.tower.active or (not e.is_empty() and int(e.kind) > 0) else "walka")
+	music.play("boss" if gm.tower.active or gm.raid.active or (not e.is_empty() and int(e.kind) > 0) else "walka")
 
 
 ## Przejście do klasycznej wersji MMO (poziomy ekran, logowanie na serwer).
@@ -505,6 +505,10 @@ func _make_panel(id: String) -> IdlePanel:
 			return TowerPanel.new()
 		"runes":
 			return RunesPanel.new()
+		"pets":
+			return PetsPanel.new()
+		"raid":
+			return RaidPanel.new()
 	return null
 
 
@@ -512,7 +516,9 @@ func _open_menu() -> void:
 	# Kafle menu: [nazwa, ikona, zakładka, plakietka (liczba do odebrania / wolne punkty)].
 	var items := [["Codzienna nagroda", Sprites.icon("chest"), "daily", 1 if gm.daily.available() else 0],
 		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
+		["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers()],
 		["Wyprawy", IdleUI.ash_tex("nav_compass"), "expeditions", gm.expeditions.ready_count()],
+		["Chowańce", load("res://assets/ui/runes/egg.png"), "pets", gm.inventory.count("pet_egg")],
 		["Talenty", Sprites.icon("attack"), "talents", maxi(0, gm.talents.free_points())],
 		["Osiągnięcia", Sprites.icon("quest"), "achievements", gm.achievements.ready_count()],
 		["Runy", load("res://assets/ui/runes/fire.png"), "runes", 0],

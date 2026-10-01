@@ -62,7 +62,7 @@ func floor_monster(f: int) -> Array:
 
 
 func can_enter() -> bool:
-	return not active and gm.running
+	return not active and not gm.raid.active and gm.running
 
 
 func enter(use_gems := false) -> bool:
@@ -100,6 +100,9 @@ func on_win() -> void:
 	var gems := 2 + int(f / 5)
 	gm.add_gems(gems)
 	_run_gems += gems
+	if f % 10 == 0:
+		gm.inventory.add("pet_egg", 1)
+		gm.notify("Wieża: jajo chowańca!", Color(1.0, 0.85, 0.4))
 	if randf() < 0.35:
 		var rn := gm.runes.random_rune(f / 60.0)
 		gm.inventory.add(rn, 1)

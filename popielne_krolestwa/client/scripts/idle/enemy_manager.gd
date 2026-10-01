@@ -31,8 +31,8 @@ func is_boss() -> bool:
 
 
 func spawn() -> void:
-	if gm.tower.active:
-		cur = gm.tower.make_enemy()
+	if gm.tower.active or gm.raid.active:
+		cur = gm.tower.make_enemy() if gm.tower.active else gm.raid.make_enemy()
 		_boss_attack_t = 2.0
 		gm.combat.clear_dots()
 		gm.boss_started.emit()
@@ -115,8 +115,14 @@ func tick(dt: float) -> void:
 func fail(reason: String) -> void:
 	if cur.is_empty():
 		return
-	cur.hp = 0.0
-	gm.combat.clear_dots()
+	# Boss tygodnia: obrażenia liczone z pozostałego zdrowia – przed wyzerowaniem.
+	if gm.raid.active:
+		gm.raid.on_end(reason)
+		cur.hp = 0.0
+		gm.combat.clear_dots()
+		gm.audio.play("fail")
+		spawn()
+		return
 	if gm.tower.active:
 		gm.tower.on_fail(reason)
 		gm.audio.play("fail")

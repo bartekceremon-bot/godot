@@ -32,6 +32,10 @@ var _embers: CPUParticles3D
 var _rim: OmniLight3D
 var _enemy_h := 3.0
 var _smoke: Array = []
+var pets: Array = []
+var _pet_key := ""
+## Chowańce idą obok bohatera (bliżej kamery i lekko w prawo).
+const PET_POS := [Vector3(0.9, 0, 0.6), Vector3(-0.2, 0, 1.2)]
 var _region_id := ""
 var _hero_key := ""
 var _merc_key := ""
@@ -471,6 +475,26 @@ func set_mercs(list: Array) -> void:
 		mercs.append(ent)
 
 
+## Aktywne chowańce (wygląd potworów MMO w pomniejszeniu).
+func set_pets(looks: Array) -> void:
+	var key := ",".join(PackedStringArray(looks))
+	if key == _pet_key:
+		return
+	_pet_key = key
+	for p in pets:
+		p.queue_free()
+	pets.clear()
+	for i in mini(2, looks.size()):
+		var ent := _entity({"i": 30 + i, "k": "m", "n": "", "l": str(looks[i]), "h": 100}, HERO_TILE, PI / 2.0 - 0.3)
+		ent._to = PET_POS[i]
+		ent._from = PET_POS[i]
+		ent.position = PET_POS[i]
+		if ent.model:
+			var body := maxf(0.3, ent.label_height - 0.32)
+			ent.model.scale *= clampf(0.75 / body, 0.25, 1.2)
+		pets.append(ent)
+
+
 func spawn_enemy(cur: Dictionary) -> void:
 	if enemy:
 		enemy.vanish(true)
@@ -512,6 +536,9 @@ func on_hit(crit: bool, source: String) -> void:
 		enemy.flash()
 		if source == "tap" and hero:
 			hero.play_attack("melee")
+		elif source == "auto" and not pets.is_empty() and randf() < 0.15:
+			var pt: Entity3D = pets[randi() % pets.size()]
+			pt.play_attack("melee")
 		elif source == "auto" and not mercs.is_empty() and randf() < 0.5:
 			var m: Entity3D = mercs[randi() % mercs.size()]
 			m.play_attack("melee")

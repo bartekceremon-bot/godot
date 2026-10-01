@@ -108,4 +108,6 @@ func category(id: String) -> String:
 		return "fragment"
 	if id.begins_with("rune_"):
 		return "rune"
+	if id == "pet_egg":
+		return "egg"
 	return str(gm.db.item(id).get("category", "misc"))

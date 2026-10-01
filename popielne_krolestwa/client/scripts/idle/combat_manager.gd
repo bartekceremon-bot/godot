@@ -112,6 +112,11 @@ func damage(amount: float, crit: bool, source: String, overflow := false) -> voi
 
 func kill() -> void:
 	var e := gm.enemy.cur
+	if e.has("raid"):
+		gm.raid.on_end("boss pokonany!")
+		clear_dots()
+		gm.enemy.spawn()
+		return
 	if e.has("tower"):
 		# Wieża: bez złota i etapów – nagroda piętra i od razu wyżej.
 		gm.bestiary.on_kill(str(e.monster))

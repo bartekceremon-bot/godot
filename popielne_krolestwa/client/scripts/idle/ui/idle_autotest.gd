@@ -70,7 +70,15 @@ func _ready() -> void:
 			g.runes.socket("body", 0, "rune_gold_3")
 			ui.show_tab("runes")
 			return 0.8,
-		func(): await _shot("12j_runy"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
+		func(): await _shot("12j_runy"); g.inventory.add("pet_egg", 6); ui.show_tab("pets"); return 0.6,
+		func():
+			for i in 5:
+				g.pets.hatch()
+			_press("Wykluj jajo")
+			return 1.8,
+		func(): await _shot("12k_chowance"); ui.show_tab("raid"); return 0.8,
+		func(): await _shot("12l_boss_tygodnia"); _press("Walcz z bossem tygodnia"); return 2.5,
+		func(): await _shot("12m_rajd_walka"); g.raid.leave(); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
 			g.spells.cast("fireball")

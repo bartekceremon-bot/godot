@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 2.1.0)
+## Popielne Królestwa Idle (wersja 2.2.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
@@ -24,6 +24,8 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 | Bestiariusz (menu, 2.0) | 33 gatunki krain; progi 10 / 100 / 1000 / 10 000 zabitych – każdy stopień na stałe +1% obrażeń i +1% złota. |
 | Wieża Popiołu (menu, 2.0) | Niekończące się piętra z bossami i elitami wszystkich krain (30 s na piętro, zwycięstwo = od razu wyżej). 3 próby dziennie, kolejne za 40 żarokryształów. Nagrody: żarokryształy za piętro, skrzynia co 5 pięter, punkt talentu za każde 5 pięter rekordu, slot wyprawy za 10. piętro. |
 | Runy (menu, 2.1) | 6 rodzajów (Ognia – obrażenia, Krwi – krytyk, Żaru – obrażenia krytyczne, Złota, Mądrości – XP, Wichru – szybkość) × 5 stopni (Okruch … Popielna runa). Po 2 gniazda w każdym slocie ekwipunku (trzecie za 150 żarokryształów) – gniazda zostają przy zmianie przedmiotów i po odrodzeniu. 3 runy łączą się w wyższy stopień za złoto. Źródła: bossowie i elity od etapu 10, Wieża Popiołu, wyprawy 4 h+, skrzynie. Ikony: `tools/textures/gen_runes.py`. |
+| Chowańce (menu, 2.2) | 8 gatunków (Lisek Szronek, Wilczek Kieł, Ropuszek, Skarabeusz Złotek, Ogar Popiołu, Bazyliszek Łuska, Niedźwiadek Burek, Smoczek Żarek) w 4 rzadkościach. Jaja: bossowie od etapu 15, co 10 pięter Wieży, długie wyprawy, Boss tygodnia. Kolejne jajo gatunku = gwiazdka (maks. 5), poziom do 10 × gwiazdki za złoto. Aktywny chowaniec chodzi za bohaterem w scenie 3D i daje premię; drugi slot od 25. piętra Wieży. Podgląd 3D w panelu. |
+| Boss tygodnia (menu, 2.2) | Co tydzień (od poniedziałku) inny boss regionu o ogromnym zdrowiu; 5 prób dziennie po 30 s, obrażenia sumują się przez tydzień; 6 progów nagród (żarokryształy, skrzynie, runy, jaja). Progi rosną z rekordem etapu. |
 | Muzyka (2.1) | Trzy pętle syntezowane w całości (`tools/audio/gen_music.py`: lutnia Karplus-Strong, pady, chór, dzwony FM, bębny, pogłos): temat menu, temat walki i temat bossa / Wieży; płynne przejścia, wyłącznik w ustawieniach. |
 | Rozmiar (2.0) | Bez limitu rozmiaru: pełna, bezstratna jakość grafik, APK z bibliotekami arm64-v8a i armeabi-v7a (~57 MB). |
 | Codzienna nagroda (menu) | Seria 7 dni: złoto, mikstury, żarokryształy, skrzynie; 7. dnia epicka skrzynia i 100 żarokryształów. Opuszczony dzień zaczyna serię od nowa. Okno pojawia się samo przy starcie gry. |

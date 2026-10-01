@@ -371,7 +371,9 @@ func _build_bottom() -> void:
 	_boss_btn.add_theme_color_override("font_color", Color(1.0, 0.8, 0.5))
 	_boss_btn.custom_minimum_size = Vector2(340, 84)
 	_boss_btn.pressed.connect(func():
-		if gm.tower.active:
+		if gm.raid.active:
+			gm.raid.leave()
+		elif gm.tower.active:
 			gm.tower.leave()
 		else:
 			gm.progression.challenge_boss())
@@ -644,18 +646,25 @@ func _on_changed(what: String) -> void:
 			_refresh_goals()
 		"spells":
 			_refresh_spell_icons()
-		"tower":
+		"tower", "raid":
 			_refresh_stage()
+		"pets":
+			_refresh_pets()
 
 
 func _refresh_all() -> void:
 	view.set_region(gm.progression.region(int(gm.s.stage)))
 	view.set_hero(gm.equipment.model_equipment())
 	_refresh_mercs()
+	_refresh_pets()
 	_refresh_stage()
 	_refresh_stats()
 	_refresh_goals()
 	_refresh_spell_icons()
+
+
+func _refresh_pets() -> void:
+	view.set_pets(gm.pets.active().map(func(id): return str(PetManager.def(str(id)).look)))
 
 
 func _refresh_mercs() -> void:
@@ -673,6 +682,12 @@ func _refresh_stage() -> void:
 	var kind := pm.boss_kind(st)
 	var what: String = ["", "  •  ELITA", "  •  BOSS REGIONU"][kind] if not bool(s.farm_mode) else "  •  farmienie"
 	_region_l.text = "%s  •  etap %d/%d%s" % [pm.region_title(st), in_reg, per, what]
+	if gm.raid.active:
+		_region_l.text = "BOSS TYGODNIA  •  suma tygodnia: %s" % IdleDB.fmt(gm.raid.damage())
+		_boss_btn.text = "ZAKOŃCZ PRÓBĘ"
+		_boss_btn.visible = true
+		view.set_region(_tower_region())
+		return
 	if gm.tower.active:
 		_region_l.text = "WIEŻA POPIOŁU  •  piętro %d  •  rekord %d" % [gm.tower.floor_n, gm.tower.best()]
 		_boss_btn.text = "OPUŚĆ WIEŻĘ"
@@ -824,10 +839,12 @@ func _on_spawn() -> void:
 	_elvl_l.text = "LVL %d" % int(e.stage)
 	(_stage_bar.get_theme_stylebox("fill") as StyleBoxFlat).bg_color = Color(1.0, 0.6, 0.18) if kind == 0 else Color(1.0, 0.3, 0.12)
 	_shown_hp = 1.0
-	view.set_region(_tower_region() if e.has("tower") else gm.progression.region(int(e.stage)))
+	view.set_region(_tower_region() if e.has("tower") or e.has("raid") else gm.progression.region(int(e.stage)))
 	view.spawn_enemy(e)
 	_refresh_stage()
-	if e.has("tower"):
+	if e.has("raid"):
+		ui.banner("BOSS TYGODNIA", str(gm.raid.boss().name) + " – zadaj jak najwięcej obrażeń!", Color(1.0, 0.45, 0.25))
+	elif e.has("tower"):
 		ui.banner("PIĘTRO %d" % int(e.tower), str(e.name).get_slice(" – ", 0), Color(1.0, 0.6, 0.3))
 	elif kind > 0:
 		ui.banner(["", "ELITA", "BOSS"][kind] + ": " + str(e.name), "Pokonaj w %d s!" % int(e.time_max), Color(1.0, 0.55, 0.3))

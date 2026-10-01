@@ -56,3 +56,36 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+def egg():
+    """Jajo chowańca: nakrapiane, z pomarańczową poświatą pęknięć."""
+    rng = np.random.default_rng(5)
+    m = Image.new('L', (W, W), 0)
+    ImageDraw.Draw(m).ellipse([W * 0.22, W * 0.1, W * 0.78, W * 0.92], fill=255)
+    m = m.filter(ImageFilter.GaussianBlur(S))
+    a = np.asarray(m, np.float32) / 255
+    yy, xx = np.mgrid[0:W, 0:W] / W
+    shade = np.clip(1.15 - ((xx - 0.42) ** 2 + (yy - 0.35) ** 2) * 3.0, 0.35, 1.2)
+    base = np.dstack([0.82 * shade, 0.74 * shade, 0.62 * shade])
+    spots = Image.new('L', (W, W), 0)
+    d = ImageDraw.Draw(spots)
+    for _ in range(26):
+        x, y, r = rng.uniform(0.25, 0.75) * W, rng.uniform(0.15, 0.88) * W, rng.uniform(0.015, 0.045) * W
+        d.ellipse([x - r, y - r, x + r, y + r], fill=255)
+    sp = np.asarray(spots, np.float32)[..., None] / 255
+    base = base * (1 - sp * 0.55) + np.array([0.35, 0.18, 0.12]) * sp * 0.55
+    crack = Image.new('L', (W, W), 0)
+    ImageDraw.Draw(crack).line([(W * 0.3, W * 0.55), (W * 0.42, W * 0.48), (W * 0.5, W * 0.58), (W * 0.6, W * 0.47), (W * 0.7, W * 0.56)], fill=255, width=4 * S)
+    c = np.asarray(crack, np.float32) / 255
+    g = np.asarray(crack.filter(ImageFilter.GaussianBlur(8 * S)), np.float32) / 255
+    col = np.array([1.0, 0.55, 0.15])
+    base = base * (1 - np.clip(g * 1.4, 0, 0.7)[..., None]) + col * np.clip(g * 1.6, 0, 1)[..., None]
+    base = base * (1 - c[..., None]) + np.array([1.0, 0.9, 0.6]) * c[..., None]
+    img = Image.fromarray((np.clip(np.dstack([base, a]), 0, 1) * 255).astype(np.uint8), 'RGBA').resize((128, 128), Image.LANCZOS)
+    img.save(os.path.join(OUT, 'egg.png'))
+    print('egg')
+
+
+if __name__ == '__main__':
+    egg()

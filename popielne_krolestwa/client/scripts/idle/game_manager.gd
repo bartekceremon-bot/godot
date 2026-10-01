@@ -53,6 +53,8 @@ var bestiary: BestiaryManager
 var expeditions: ExpeditionManager
 var tower: TowerManager
 var runes: RuneManager
+var pets: PetManager
+var raid: RaidManager
 var achievements: AchievementManager
 
 ## Wynik postępu offline z ostatniego uruchomienia (pokazywany w oknie „Witaj ponownie!”).
@@ -88,6 +90,8 @@ func _ready() -> void:
 	expeditions = ExpeditionManager.new(self)
 	tower = TowerManager.new(self)
 	runes = RuneManager.new(self)
+	pets = PetManager.new(self)
+	raid = RaidManager.new(self)
 	achievements = AchievementManager.new(self)
 	set_process(false)
 

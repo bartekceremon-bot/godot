@@ -86,6 +86,7 @@ func rebirth() -> bool:
 	# Osiągnięcia liczą rekordy całej gry – zapamiętaj je przed wyzerowaniem.
 	gm.achievements.remember()
 	gm.tower.active = false
+	gm.raid.active = false
 	s.gold = 0.0
 	s.level = 1
 	s.xp = 0.0
@@ -100,7 +101,7 @@ func rebirth() -> bool:
 	# Surowce, mikstury i skrzynie przepadają; zostają fragmenty wierzchowców i trofea bossów.
 	var keep := {}
 	for id in s.inv:
-		if str(id).begins_with("frag_") or str(id).begins_with("rune_") or str(gm.db.item(str(id)).get("category", "")) == "misc":
+		if str(id).begins_with("frag_") or str(id).begins_with("rune_") or str(id) == "pet_egg" or str(gm.db.item(str(id)).get("category", "")) == "misc":
 			keep[id] = s.inv[id]
 	keep["hp_potion"] = 3
 	s.inv = keep

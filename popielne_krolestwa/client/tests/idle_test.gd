@@ -273,6 +273,9 @@ func _ready() -> void:
 	check(g.tower.boss_hp(20) > g.tower.boss_hp(10) * 100.0, "piętra rosną wykładniczo")
 
 	print("== runy")
+	for k in s.inv.keys():
+		if str(k).begins_with("rune_"):
+			s.inv.erase(k)
 	g.inventory.add("rune_fire_1", 3)
 	g.inventory.add("rune_blood_2", 1)
 	var dmg_r := g.stats.dmg_mult
@@ -290,6 +293,31 @@ func _ready() -> void:
 	check(g.runes.totals().has("crit") and g.inventory.count("rune_fire_2") == 1, "runy zostają po odrodzeniu")
 	var rn := g.runes.random_rune(1.0)
 	check(rn.begins_with("rune_") and RuneManager.value(rn) > 0.0, "losowa runa: %s" % RuneManager.rune_name(rn))
+
+	print("== chowańce")
+	s.pets = {"owned": {}, "active": []}
+	g.inventory.add("pet_egg", 40)
+	var hr := g.pets.hatch()
+	check(not hr.is_empty() and hr.new and g.pets.active().size() == 1, "wykluto pierwszego chowańca: %s" % PetManager.def(str(hr.id)).get("name", ""))
+	for i in 39:
+		g.pets.hatch()
+	check(g.pets.owned().size() >= 5, "kolekcja chowańców: %d" % g.pets.owned().size())
+	var pid := str(g.pets.active()[0])
+	g.add_gold(g.pets.level_cost(pid) * 50.0)
+	var v0 := g.pets.value(pid)
+	check(g.pets.level_up(pid) and g.pets.value(pid) > v0, "poziom chowańca zwiększa premię")
+	g.stats.recalc()
+	check(g.pets.totals().size() > 0, "premia aktywnego chowańca w statystykach")
+
+	print("== boss tygodnia")
+	s.raid = {"week": RaidManager.week_id(), "damage": 0.0, "claimed": 0, "day": DailyManager.today(), "attempts": 5}
+	check(g.raid.enter() and g.enemy.cur.has("raid"), "wejście na bossa tygodnia: %s" % g.enemy.cur.name)
+	g.combat.damage(g.raid.threshold(1) * 1.01, false, "tap")
+	g.enemy.cur.time_left = 0.01
+	g.tick(0.1)
+	check(not g.raid.active and g.raid.damage() >= g.raid.threshold(1) and g.raid.damage() < g.raid.threshold(2), "obrażenia próby dopisane do tygodnia (tylko zadane)")
+	check(g.raid.ready_tiers() == 2 and not g.raid.claim().is_empty() and not g.raid.claim().is_empty(), "odebrano 2 progi")
+	check(g.raid.ready_tiers() == 0 and g.raid.attempts() == 4, "progi odebrane, 4 próby zostały")
 
 	g.save.delete_save()
 	print("== wynik: %s (%d błędów)" % ["OK" if fails == 0 else "BŁĘDY", fails])
