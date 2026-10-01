@@ -34,7 +34,7 @@ static func now() -> float:
 
 func slots() -> int:
 	var ms := int(gm.s.max_stage)
-	return 1 + (1 if ms >= 20 else 0) + (1 if ms >= 50 else 0) + (1 if gm.tower.best() >= 10 else 0)
+	return 1 + (1 if ms >= 20 else 0) + (1 if ms >= 50 else 0) + (1 if gm.tower.best() >= 10 else 0) + int(gm.premium.bonuses().exped_slots)
 
 
 func active() -> Array:
@@ -140,6 +140,7 @@ func claim(i: int, t := -1.0) -> Array:
 		got.append([f, n, 4])
 	active().remove_at(i)
 	_st().done = int(_st().done) + 1
+	gm.season.add_xp(10 + 10 * int(e.dur))
 	gm.quests.on_event("expeditions", 1)
 	gm.changed.emit("exped")
 	return got

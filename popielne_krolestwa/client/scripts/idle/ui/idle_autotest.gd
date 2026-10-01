@@ -84,7 +84,11 @@ func _ready() -> void:
 		func(): await _shot("12n_opowiesc"); _close_modals(); g.s.ash_total = 600; g.s.max_stage = 85; ui.show_tab("phoenix"); return 0.8,
 		func(): await _shot("12o_feniks"); g.s.skin = ""; ui.show_tab("skins"); return 0.6,
 		func(): g.skins.select("guard"); ui._panels["skins"].refresh(); return 1.0,
-		func(): await _shot("12p_garderoba"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
+		func(): await _shot("12p_garderoba"); ui.show_tab("shop"); return 0.8,
+		func(): await _shot("12q_skarbiec"); ui.show_odds(LootManager.CHEST_NAMES[4], g.loot.chest_odds(4)); return 0.7,
+		func(): await _shot("12r_szanse"); _close_modals(); g.season.add_xp(500); ui.show_tab("season"); return 0.8,
+		func(): await _shot("12s_karnet"); ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
 			g.spells.cast("fireball")

@@ -1,0 +1,24 @@
+{
+ "_opis": "Katalog sklepu premium (Google Play Billing). id = identyfikator produktu w Google Play Console (Monetyzacja → Produkty → Produkty w aplikacji). price_pln – cena orientacyjna (gra pokazuje cenę zwróconą przez Google Play w walucie gracza). consumable: true – można kupować wiele razy (zużywane po przyznaniu); false – jednorazowe (potwierdzane, przywracane).",
+ "privacy_url": "https://bartekceremon-bot.github.io/godot/popielne/privacy.html",
+ "terms_url": "https://bartekceremon-bot.github.io/godot/popielne/terms.html",
+ "support_email": "bartek.ceremon@gmail.com",
+ "products": [
+  {"id": "pk_gems_80", "kind": "gems", "name": "Garść żarokryształów", "gems": 80, "bonus": 0, "price_pln": "4,99 zł", "consumable": true, "icon": "gem"},
+  {"id": "pk_gems_550", "kind": "gems", "name": "Sakiewka żarokryształów", "gems": 500, "bonus": 50, "price_pln": "24,99 zł", "consumable": true, "icon": "gem"},
+  {"id": "pk_gems_1250", "kind": "gems", "name": "Szkatuła żarokryształów", "gems": 1100, "bonus": 150, "price_pln": "49,99 zł", "consumable": true, "icon": "gem"},
+  {"id": "pk_gems_2800", "kind": "gems", "name": "Skrzynia żarokryształów", "gems": 2400, "bonus": 400, "price_pln": "99,99 zł", "consumable": true, "icon": "gem", "tag": "NAJCZĘŚCIEJ WYBIERANE"},
+  {"id": "pk_gems_8000", "kind": "gems", "name": "Skarbiec Smoka", "gems": 6500, "bonus": 1500, "price_pln": "229,99 zł", "consumable": true, "icon": "gem", "tag": "NAJLEPSZA WARTOŚĆ"},
+  {"id": "pk_starter", "kind": "starter", "name": "Pakiet Popielnika", "price_pln": "9,99 zł", "consumable": false, "icon": "chest", "tag": "JEDNORAZOWO",
+   "gems": 300, "items": [["chest_4", 1], ["pet_egg", 2]], "rune_power": 0.6,
+   "text": "300 żarokryształów, Epicka skrzynia, 2 jaja chowańców i Wielka runa"},
+  {"id": "pk_monthly", "kind": "monthly", "name": "Przymierze Żaru (30 dni)", "price_pln": "24,99 zł", "consumable": true, "icon": "prestige",
+   "gems": 300, "daily_gems": 100, "days": 30, "gold_bonus": 0.1,
+   "text": "300 żarokryształów od razu + 100 każdego dnia przez 30 dni (razem 3300) i +10% złota"},
+  {"id": "pk_purse", "kind": "purse", "name": "Mieszek Kupca", "price_pln": "19,99 zł", "consumable": false, "icon": "shop",
+   "text": "Nagrody za reklamy bez oglądania reklam, +1 slot wypraw, +25% postępu offline – na zawsze"},
+  {"id": "pk_season", "kind": "season", "name": "Złoty Karnet Popiołu", "price_pln": "39,99 zł", "consumable": true, "icon": "book",
+   "text": "Odblokowuje złotą ścieżkę nagród bieżącego sezonu (także wstecz) i +20% punktów karnetu"}
+ ],
+ "first_purchase_double": true
+}

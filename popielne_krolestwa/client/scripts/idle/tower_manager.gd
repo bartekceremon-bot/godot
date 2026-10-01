@@ -100,6 +100,7 @@ func on_win() -> void:
 	var gems := 2 + int(f / 5)
 	gm.add_gems(gems)
 	_run_gems += gems
+	gm.season.add_xp(10)
 	if f % 10 == 0:
 		gm.inventory.add("pet_egg", 1)
 		gm.notify("Wieża: jajo chowańca!", Color(1.0, 0.85, 0.4))

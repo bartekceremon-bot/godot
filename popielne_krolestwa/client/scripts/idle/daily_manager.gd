@@ -77,6 +77,7 @@ func claim(date := "") -> Array:
 	var st := _st()
 	st.day = day + 1
 	st.last = d
+	gm.season.add_xp(60)
 	gm.save.save_game()
 	gm.changed.emit("inventory")
 	return got

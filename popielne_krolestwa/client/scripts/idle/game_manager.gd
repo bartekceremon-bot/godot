@@ -59,6 +59,11 @@ var story: StoryManager
 var phoenix: PhoenixManager
 var events: EventManager
 var skins: SkinManager
+var premium: PremiumManager
+var season: SeasonManager
+## Płatności i reklamy (węzły; na Androidzie – wtyczki Google Play Billing i AdMob).
+var billing: BillingService
+var ads: AdsService
 var achievements: AchievementManager
 
 ## Wynik postępu offline z ostatniego uruchomienia (pokazywany w oknie „Witaj ponownie!”).
@@ -102,6 +107,12 @@ func _ready() -> void:
 	phoenix = PhoenixManager.new(self)
 	events = EventManager.new(self)
 	skins = SkinManager.new(self)
+	premium = PremiumManager.new(self)
+	season = SeasonManager.new(self)
+	billing = BillingService.new()
+	add_child(billing)
+	ads = AdsService.new()
+	add_child(ads)
 	achievements = AchievementManager.new(self)
 	set_process(false)
 
@@ -121,7 +132,7 @@ func new_state() -> Dictionary:
 		"quests": {"active": {}, "done": [], "tasks": [], "tasks_done": 0, "track": {}},
 		"prestige": {}, "boosts": {}, "craft_xp": 0.0, "craft_lvl": 1,
 		"market": {}, "stats": {"kills": 0, "taps": 0, "gold": 0.0, "bosses": 0, "crits": 0, "spells": 0},
-		"settings": {"sound": true, "music": true, "story": true, "auto_potion": true, "effects": true},
+		"settings": {"sound": true, "music": true, "story": true, "quality": 2 if not OS.has_feature("mobile") else 1, "auto_potion": true, "effects": true},
 		"daily": {"day": 0, "last": ""}, "talents": {}, "bestiary": {}, "exped": {"active": [], "done": 0},
 		"tower": {"best": 0, "attempts": 3, "day": ""}, "ach": {"claimed": {}, "best_stage": 1, "best_level": 1},
 	}
@@ -180,6 +191,7 @@ func tick(dt: float) -> void:
 	enemy.tick(dt)
 	spells.tick(dt)
 	progression.tick(dt)
+	premium.tick(dt)
 	stats.tick(dt)
 
 

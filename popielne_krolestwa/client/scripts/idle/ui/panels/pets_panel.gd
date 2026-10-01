@@ -88,6 +88,9 @@ func refresh() -> void:
 			ui.banner("WYKLUCIE!", txt, IdleDB.RARITY_COLORS[int(d.rarity) + 1])
 		request_refresh())
 	_list.add_child(hb)
+	var ob := IdleUI.button("Szanse wyklucia", Vector2(0, 64), 18)
+	ob.pressed.connect(func(): ui.show_odds("Jajo chowańca", gm.pets.egg_odds()))
+	_list.add_child(ob)
 	for d in PetManager.PETS:
 		_list.add_child(_card(d))
 

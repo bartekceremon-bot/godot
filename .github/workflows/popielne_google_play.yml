@@ -1,0 +1,134 @@
+# Popielne Królestwa – wydanie na Google Play (AAB) i testowe APK.
+# Uruchamianie: ręcznie (Actions → „Popielne Królestwa – Google Play” → Run workflow)
+# albo automatycznie przy zmianach w katalogu popielne_krolestwa/.
+#
+# Sekrety repozytorium (Settings → Secrets and variables → Actions), opis w popielne_krolestwa/docs/GOOGLE_PLAY.md:
+#   ANDROID_KEYSTORE_BASE64   – klucz przesyłania (upload key) w base64      (wymagany do wydania)
+#   ANDROID_KEYSTORE_PASSWORD – hasło klucza
+#   ANDROID_KEY_ALIAS         – alias klucza
+#   ADMOB_APP_ID              – identyfikator aplikacji AdMob (opcjonalnie – bez niego brak reklam)
+#   ADMOB_REWARDED_ID         – identyfikator jednostki reklamowej „z nagrodą” (opcjonalnie)
+#   PLAY_SERVICE_ACCOUNT_JSON – konto usługi Google Play (opcjonalnie: automatyczne wysyłanie na ścieżkę testów wewnętrznych)
+name: Popielne Królestwa – Google Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_internal:
+        description: "Wyślij AAB na ścieżkę testów wewnętrznych (wymaga PLAY_SERVICE_ACCOUNT_JSON)"
+        type: boolean
+        default: false
+  push:
+    paths:
+      - "popielne_krolestwa/client/**"
+      - "popielne_krolestwa/tools/ci_prepare_play.sh"
+      - ".github/workflows/popielne_google_play.yml"
+
+concurrency:
+  group: popielne-play-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GODOT_VERSION: "4.5.1"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            popielne_krolestwa
+            .github
+          fetch-depth: 1
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-36 build-tools;35.0.1"
+
+      - name: Godot ${{ env.GODOT_VERSION }} + szablony eksportu
+        run: |
+          set -e
+          cd /tmp
+          curl -sSLo godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip && sudo mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+          curl -sSLo tpl.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          unzip -q tpl.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          godot --version
+
+      - name: Wtyczki i ustawienia wydania
+        env:
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
+          VERSION_CODE: ${{ github.run_number }}
+          FORMAT: aab
+        run: bash popielne_krolestwa/tools/ci_prepare_play.sh
+
+      - name: Klucz podpisu
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -e
+          KS=$RUNNER_TEMP/upload.keystore
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$KS"
+            echo "SIGNED_FOR_PLAY=1" >> $GITHUB_ENV
+          else
+            echo "::warning::Brak sekretu ANDROID_KEYSTORE_BASE64 – budowanie z tymczasowym kluczem (nie do wysłania na Google Play)."
+            KS_PASS=android; KS_ALIAS=androiddebugkey
+            keytool -genkeypair -keystore "$KS" -storepass android -alias androiddebugkey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Popielne Test,O=Test,C=PL"
+          fi
+          echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$KS" >> $GITHUB_ENV
+          echo "GODOT_ANDROID_KEYSTORE_RELEASE_USER=$KS_ALIAS" >> $GITHUB_ENV
+          echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=$KS_PASS" >> $GITHUB_ENV
+
+      - name: Eksport AAB (Gradle)
+        run: |
+          set -e
+          cd popielne_krolestwa/client
+          godot --headless --quit || true
+          for EDS in ~/.config/godot/editor_settings-4*.tres; do
+            printf 'export/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\n' "$ANDROID_HOME" "$JAVA_HOME" >> "$EDS"
+          done
+          godot --headless --path . --import || true
+          godot --headless --path . --install-android-build-template
+          mkdir -p ../build
+          godot --headless --path . --export-release "Android" ../build/PopielneKrolestwa.aab
+          ls -la ../build
+
+      - name: Testowe APK (ten sam build, do instalacji na telefonie)
+        run: |
+          set -e
+          cd popielne_krolestwa/client
+          sed -i 's/^gradle_build\/export_format=.*/gradle_build\/export_format=0/' export_presets.cfg
+          godot --headless --path . --export-release "Android" ../build/PopielneKrolestwa.apk
+          ls -la ../build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: popielne-krolestwa-${{ github.run_number }}
+          path: |
+            popielne_krolestwa/build/PopielneKrolestwa.aab
+            popielne_krolestwa/build/PopielneKrolestwa.apk
+          retention-days: 30
+
+      - name: Wysyłka na Google Play (testy wewnętrzne)
+        if: ${{ inputs.upload_internal && env.SIGNED_FOR_PLAY == '1' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: pl.popielnekrolestwa.gra
+          releaseFiles: popielne_krolestwa/build/PopielneKrolestwa.aab
+          track: internal
+          status: draft

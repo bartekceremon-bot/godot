@@ -339,6 +339,52 @@ func _ready() -> void:
 	g.skins.select("")
 	check(not str(g.events.current().name).is_empty(), "wydarzenie tygodnia: %s" % g.events.current().name)
 
+	print("== sklep premium")
+	s.premium = {"tokens": [], "owned": {}, "first": {}, "monthly_until": 0.0, "monthly_claim": "", "history": [],
+		"ads": {"day": "", "count": 0, "chest_at": 0.0, "fury_until": 0.0, "tower_day": ""}}
+	var gp0 := int(s.gems)
+	var pr := g.premium
+	pr.grant("pk_gems_550", "tok-1")
+	check(int(s.gems) == gp0 + 1050, "pierwszy zakup Sakiewki: ×2 + bonus (1050)")
+	check(pr.grant("pk_gems_550", "tok-1").is_empty() and int(s.gems) == gp0 + 1050, "ten sam token nie jest przyznawany drugi raz")
+	pr.grant("pk_gems_550", "tok-2")
+	check(int(s.gems) == gp0 + 1050 + 550, "drugi zakup: zwykła ilość")
+	var st_got := pr.grant("pk_starter", "tok-3")
+	check(not st_got.is_empty() and pr.owns("starter") and not pr.can_buy("pk_starter"), "Pakiet Popielnika – jednorazowo")
+	check(pr.grant("pk_starter", "tok-4").is_empty(), "drugi Pakiet nic nie daje (przywrócenie)")
+	pr.grant("pk_monthly", "tok-5")
+	check(pr.monthly_active() and pr.monthly_days_left() == 30 and pr.claim_monthly() == 100 and pr.claim_monthly() == 0, "Przymierze Żaru: 30 dni, 100 dziennie raz na dzień")
+	var slots0 := g.expeditions.slots()
+	pr.grant("pk_purse", "tok-6")
+	check(pr.has_purse() and g.expeditions.slots() == slots0 + 1, "Mieszek Kupca: +1 slot wypraw")
+	g.stats.recalc()
+	var d_f := g.stats.dmg_mult
+	check(pr.ad_reward("fury") != "" and pr.fury_active(), "Zwój Furii aktywny")
+	g.stats.recalc()
+	check(g.stats.dmg_mult > d_f * 1.9, "Furia ×2 obrażeń")
+	check(pr.ad_reward("free_chest") != "" and not pr.ad_available("free_chest"), "darmowa skrzynia i odnowienie 4 h")
+	var att := g.tower.attempts()
+	check(pr.ad_reward("tower_attempt") != "" and g.tower.attempts() == att + 1 and not pr.ad_available("tower_attempt"), "dodatkowa próba w Wieży raz dziennie")
+	var odds := g.loot.chest_odds(4)
+	check(odds.size() >= 6, "szanse skrzyni ujawnione (%d pozycji)" % odds.size())
+	var tot := 0.0
+	for o in g.pets.egg_odds():
+		if str(o[1]).ends_with("%"):
+			tot += float(str(o[1]).trim_suffix("%"))
+	check(absf(tot - 100.0) < 0.5, "szanse jaja sumują się do 100%% (%.1f)" % tot)
+
+	print("== karnet popiołu")
+	s.season = {"id": SeasonManager.season_id(), "xp": 0, "premium": false, "free": [], "gold": [], "kills": 0}
+	g.season.add_xp(SeasonManager.XP_PER_LEVEL * 3)
+	check(g.season.level() == 3 and g.season.claimable(1, false) and not g.season.claimable(1, true), "poziom 3, złota ścieżka zablokowana")
+	check(not g.season.claim(1, false).is_empty() and not g.season.claimable(1, false), "odebrano nagrodę darmową")
+	pr.grant("pk_season", "tok-7")
+	check(g.season.premium() and g.season.claimable(1, true) and g.season.claimable(3, true), "Złoty Karnet działa wstecz")
+	check(g.season.claim_all().size() >= 4 and g.season.ready_count() == 0, "odbierz wszystko")
+	s.season.xp = SeasonManager.XP_PER_LEVEL * 30
+	g.season.claim(30, true)
+	check(g.skins.unlocked("ashprince"), "strój Popielny Książę z 30. poziomu")
+
 	print("== przebudzenie feniksa")
 	s.phoenix = {"feathers": 0, "total": 0, "count": 0, "upg": {}, "ash_base": 0}
 	s.ash_total = 50

@@ -220,6 +220,7 @@ func claim_task(index: int) -> bool:
 		return false
 	_give(task_reward(t))
 	qs.tasks_done = int(qs.tasks_done) + 1
+	gm.season.add_xp(15)
 	qs.tasks[index] = _new_task()
 	gm.notify("Zlecenie wykonane!", Color(1.0, 0.85, 0.4))
 	gm.changed.emit("quests")

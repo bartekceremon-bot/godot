@@ -157,6 +157,16 @@ func setup(main: IdleMain) -> void:
 	gm.changed.connect(_on_changed)
 	_refresh_all()
 	_on_spawn()
+	apply_quality()
+
+
+## Jakość grafiki (ustawienia): 0 – oszczędna (połowa rozdzielczości 3D, bez cieni),
+## 1 – zwykła (bez wygładzania krawędzi), 2 – wysoka (wygładzanie MSAA 2×).
+func apply_quality() -> void:
+	var q := int(gm.s.settings.get("quality", 1))
+	_vpc.stretch_shrink = 2 if q == 0 else 1
+	_vp.msaa_3d = Viewport.MSAA_2X if q == 2 else Viewport.MSAA_DISABLED
+	view.set_shadows(q > 0)
 
 
 func _build_header() -> void:
@@ -524,7 +534,7 @@ func refresh_badges() -> void:
 		n += 1
 	_team_dot.visible = n > 0
 	_team_dot.text = str(n)
-	var m := gm.achievements.ready_count() + (1 if gm.daily.available() else 0) + gm.expeditions.ready_count() + maxi(0, gm.talents.free_points())
+	var m := gm.achievements.ready_count() + gm.season.ready_count() + (1 if gm.daily.available() else 0) + gm.expeditions.ready_count() + maxi(0, gm.talents.free_points())
 	_menu_dot.visible = m > 0
 	_menu_dot.text = str(m)
 

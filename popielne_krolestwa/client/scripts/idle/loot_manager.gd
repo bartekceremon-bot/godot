@@ -144,6 +144,25 @@ func on_kill(e: Dictionary) -> void:
 
 # --- Skrzynie ---------------------------------------------------------------------
 
+## Zawartość i szanse skrzyni (ujawnianie szans – wymóg Google Play dla losowych nagród).
+func chest_odds(r: int) -> Array:
+	var out: Array = [
+		["Złoto (zależne od najdalszego etapu)", "100%"],
+		["Surowce krainy (%d %s)" % [1 + r / 2, "rodzaj" if r < 2 else "rodzaje"], "100%"],
+		["Przedmiot ekwipunku rzadkości „%s”" % IdleDB.RARITY_NAMES[r], "100%"],
+		["Żarokryształy: %d–%d" % [r * 2, r * 3], "100%"],
+	]
+	if r >= 2:
+		out.append(["Mikstury życia ×%d" % r, "100%"])
+	if r >= 4:
+		out.append(["Fragmenty wierzchowca (1–%d)" % (r - 1), "100%"])
+	elif r == 3:
+		out.append(["Fragmenty wierzchowca (1–2)", "30%"])
+	out.append(["Runa (losowy rodzaj; stopień zależny od skrzyni)", "%d%%" % mini(100, roundi(12.0 * r))])
+	out.append(["Narzędzie (siekiera, kilof, sierp)", "%d%%" % mini(100, roundi(15.0 * r))])
+	return out
+
+
 func chest_name(r: int) -> String:
 	return CHEST_NAMES[clampi(r, 1, 5)]
 

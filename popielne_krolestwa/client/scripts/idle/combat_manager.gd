@@ -141,6 +141,9 @@ func kill() -> void:
 	gm.quests.on_kill(str(e.monster))
 	gm.bestiary.on_kill(str(e.monster))
 	gm.quests.on_event("kills", 1)
+	gm.season.on_kill()
+	if kind > 0:
+		gm.season.add_xp(3 * kind)
 	gm.loot.on_kill(e)
 	clear_dots()
 	gm.enemy_killed.emit(info)

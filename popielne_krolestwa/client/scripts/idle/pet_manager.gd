@@ -104,6 +104,19 @@ func hatch() -> Dictionary:
 	return res
 
 
+## Szanse wyklucia każdego gatunku (ujawnianie szans).
+func egg_odds() -> Array:
+	var total := 0.0
+	for p in PETS:
+		total += float(RARITY_W[int(p.rarity)]) / _count_of_rarity(int(p.rarity))
+	var out: Array = []
+	for p in PETS:
+		var w := float(RARITY_W[int(p.rarity)]) / _count_of_rarity(int(p.rarity))
+		out.append(["%s (%s)" % [p.name, RARITY_NAMES[int(p.rarity)]], "%.1f%%" % (w / total * 100.0)])
+	out.append(["Gatunek już posiadany: +1 gwiazdka (przy 5 gwiazdkach: 60 żarokryształów)", ""])
+	return out
+
+
 func _count_of_rarity(r: int) -> float:
 	var n := 0
 	for p in PETS:

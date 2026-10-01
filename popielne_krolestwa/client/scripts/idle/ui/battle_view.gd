@@ -121,6 +121,10 @@ func _process(delta: float) -> void:
 	camera.look_at(_cam_target, Vector3.UP)
 
 
+func set_shadows(on: bool) -> void:
+	_sun.shadow_enabled = on
+
+
 func shake(amount: float) -> void:
 	_shake = clampf(maxf(_shake, amount), 0.0, 1.2)
 

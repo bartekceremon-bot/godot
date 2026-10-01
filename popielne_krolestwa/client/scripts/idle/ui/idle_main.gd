@@ -116,6 +116,7 @@ func _start_game() -> void:
 		return
 	_started = true
 	gm.start()
+	_setup_store()
 	music.set_enabled(bool(gm.s.settings.get("music", true)))
 	music.play("walka")
 	var ev := gm.events.current()
@@ -134,6 +135,81 @@ func _start_game() -> void:
 		_show_offline(gm.offline_report)
 	elif int(gm.s.stats.kills) == 0:
 		dialog("Witaj, Popielniku!", "Uderzaj przyciskiem ATAK! albo dotykając przeciwnika (przytrzymaj, by bić seriami). Za złoto wynajmuj najemników (DRUŻYNA pod portretem) – walczą za ciebie także wtedy, gdy nie grasz. Ulepszaj ekwipunek, ucz się czarów u kapłanów i odblokowuj kolejne krainy.", [["Do boju!", Callable()]])
+
+
+# --- Sklep premium i reklamy --------------------------------------------------------------
+
+## Płatności (Google Play albo tryb testowy poza Androidem) i reklamy z nagrodą.
+func _setup_store() -> void:
+	var android := OS.get_name() == "Android"
+	gm.billing.purchase_ok.connect(_on_purchase_ok)
+	gm.billing.purchase_failed.connect(func(_pid, reason): toast_msg(reason, IdleUI.BAD))
+	gm.billing.setup(gm.premium.catalog(), not android)
+	gm.ads.setup(self, not android, str(ProjectSettings.get_setting("popielne/admob_rewarded_id", "")))
+
+
+func buy_product(pid: String) -> void:
+	if not gm.premium.can_buy(pid):
+		toast_msg("Ten produkt już posiadasz.", IdleUI.BAD)
+		return
+	if gm.billing.is_sandbox():
+		var p := gm.premium.product(pid)
+		confirm("Tryb testowy", "Kupić „%s” (%s)? W tej wersji bez płatności – w aplikacji z Google Play zapłacisz przez Google Play." % [p.name, p.price_pln], func(): gm.billing.buy(pid))
+	else:
+		gm.billing.buy(pid)
+
+
+func _on_purchase_ok(pid: String, token: String) -> void:
+	var got := gm.premium.grant(pid, token)
+	gm.billing.finish(pid, token)
+	if got.is_empty() and gm.premium.product(pid).get("kind", "") in ["purse", "season"]:
+		got = [["gems", 0, 0]]
+	if got.is_empty():
+		return
+	gm.audio.play("levelup")
+	var p := gm.premium.product(pid)
+	var lines: Array = []
+	for it in got:
+		if int(it[1]) > 0:
+			lines.append("+%s %s" % [IdleDB.fmt(float(it[1])), IdleUI.item_name(gm.db, str(it[0]))])
+	banner("DZIĘKUJEMY!", str(p.get("name", "")), Color(1.0, 0.8, 0.35))
+	if not lines.is_empty():
+		dialog("Zakup udany", "\n".join(PackedStringArray(lines)), [["Super!", Callable()]])
+	if combat:
+		fly_coins(combat.enemy_global_pos(), 10)
+	for k in _panels:
+		_panels[k].request_refresh()
+
+
+## Nagroda za reklamę (dobrowolną): z Mieszkiem Kupca – od razu, bez reklamy.
+func ad_reward(place: String, done := Callable()) -> void:
+	if not gm.premium.ad_available(place):
+		toast_msg("Nagroda chwilowo niedostępna.", IdleUI.BAD)
+		return
+	var give := func():
+		var txt := gm.premium.ad_reward(place)
+		if txt != "":
+			gm.audio.play("rare")
+			toast_msg(txt, IdleUI.GOLD_COL)
+		if done.is_valid():
+			done.call()
+	if gm.premium.has_purse():
+		give.call()
+	elif not gm.ads.show_rewarded(give):
+		toast_msg("Reklama jeszcze się ładuje – spróbuj za chwilę.", IdleUI.DIM)
+
+
+## Okno szans (ujawnianie prawdopodobieństw losowych nagród).
+func show_odds(title_text: String, rows: Array) -> void:
+	var v := IdleUI.vbox(6)
+	v.add_child(IdleUI.label("Zawartość i szanse:", 20, UiTheme.ACCENT))
+	for r in rows:
+		var h := IdleUI.hbox(8)
+		var a := IdleUI.label(str(r[0]), 17, UiTheme.TEXT, true)
+		h.add_child(a)
+		h.add_child(IdleUI.label(str(r[1]), 18, IdleUI.GOLD_COL))
+		v.add_child(h)
+	modal("Szanse – " + title_text, v)
 
 
 ## Muzyka bossa przy bossach, elitach i w Wieży Popiołu, w pozostałych walkach – temat walki.
@@ -515,6 +591,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return PhoenixPanel.new()
 		"skins":
 			return SkinsPanel.new()
+		"season":
+			return SeasonPanel.new()
 		"raid":
 			return RaidPanel.new()
 	return null
@@ -524,6 +602,7 @@ func _open_menu() -> void:
 	# Kafle menu: [nazwa, ikona, zakładka, plakietka (liczba do odebrania / wolne punkty)].
 	var items := [["Codzienna nagroda", Sprites.icon("chest"), "daily", 1 if gm.daily.available() else 0],
 		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
+		["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count()],
 		["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers()],
 		["Wyprawy", IdleUI.ash_tex("nav_compass"), "expeditions", gm.expeditions.ready_count()],
 		["Chowańce", load("res://assets/ui/runes/egg.png"), "pets", gm.inventory.count("pet_egg")],
@@ -1012,11 +1091,25 @@ func _show_offline(r: Dictionary) -> void:
 			tw.tween_method(func(x: float): l.text = "%s %s" % [IdleDB.fmt(x), suffix], 0.0, target, 0.9).set_ease(Tween.EASE_OUT)
 			i += 1
 	var m: Control
+	var row := IdleUI.hbox(10)
+	v.add_child(row)
 	var ok := IdleUI.button("Odbierz", Vector2(0, 92), 28)
+	ok.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ok.pressed.connect(func():
 		close_modal(m)
 		if combat:
 			fly_coins(combat.enemy_global_pos(), 10))
-	v.add_child(ok)
+	row.add_child(ok)
+	# Podwojenie (reklama z nagrodą albo Mieszek Kupca) – tylko gdy było co podwajać.
+	if float(r.get("gold", 0.0)) > 0.0 and (gm.ads.available() or gm.premium.has_purse()):
+		var dbl := IdleUI.button("×2 " + ("(Mieszek)" if gm.premium.has_purse() else "▶ reklama"), Vector2(0, 92), 24)
+		dbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		dbl.pressed.connect(func():
+			ad_reward("offline_double", func():
+				gm.add_gold(float(r.gold))
+				gm.progression.add_xp(float(r.get("xp", 0.0)))
+				close_modal(m)
+				banner("PODWOJONO!", "+%s złota" % IdleDB.fmt(float(r.gold)), IdleUI.GOLD_COL)))
+		row.add_child(dbl)
 	m = modal("Witaj ponownie!", v, false)
 	Sfx.play("levelup")

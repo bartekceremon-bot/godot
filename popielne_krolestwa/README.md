@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 2.4.0)
+## Popielne Królestwa Idle (wersja 3.0.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
@@ -29,6 +29,10 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 | Opowieść (2.3) | 8 rozdziałów (`data/idle/story.json`): wstęp przy pierwszym wejściu do krainy, zakończenie po pierwszym pokonaniu jej bossa, epilog przy każdym Kręgu Popiołu. Mówią postacie miast MMO (Kapłanka Wiesława, Mistrz gildii Zawisza, Mistrzyni gildii Jaga, Kapłan Mieczysław…). Tekst pisany na bieżąco, scena czeka, aż ekran jest wolny; wszystko do ponownego przeczytania w menu → Opowieść; wyłącznik w ustawieniach. |
 | Przebudzenie Feniksa (menu, 2.3) | Druga warstwa odrodzenia: od 300 Popiołu Dusz zebranego od ostatniego przebudzenia i etapu 80. Zeruje to co odrodzenie oraz Popiół Dusz i Ołtarz; daje Pióra Feniksa na mnożniki (Płomień Feniksa ×obrażenia, Złote Pióra ×złoto, Popiół Odrodzeń, Pamięć Ognia – start dalej, Skrzydła Snu – offline, Mądrość Feniksa – punkty talentów). |
 | Żarzący się miecz (2.3) | Broń bohatera w scenie walki płonie (poświata, światło, iskry) – jak na projekcie ekranu. |
+| Skarbiec – sklep premium (3.0) | Zakupy Google Play (wtyczka GodotGooglePlayBilling): pakiety żarokryształów (×2 przy pierwszym zakupie), Pakiet Popielnika, Przymierze Żaru (30 dni po 100 żarokryształów), Mieszek Kupca, Złoty Karnet. Przyznawanie po tokenie transakcji (raz), zużywanie/potwierdzanie, przywracanie, zakupy oczekujące. Poza Google Play – wyraźnie oznaczony tryb testowy. Katalog: `data/idle/store.json`. |
+| Karnet Popiołu (menu, 3.0) | Sezony po 28 dni, 30 poziomów, ścieżka darmowa i złota (działa wstecz), strój „Popielny Książę” na 30. poziomie. |
+| Reklamy z nagrodą (3.0) | Tylko dobrowolne (darmowa skrzynia co 4 h, Zwój Furii ×2 na 5 min, próba w Wieży, ×2 nagroda offline), limit 12/dzień, zgoda RODO (Google UMP); wtyczka godot-admob dodawana w CI, gdy podano identyfikatory AdMob. Mieszek Kupca – nagrody bez reklam. |
+| Google Play (3.0) | AAB z Gradle w GitHub Actions (`.github/workflows/popielne_google_play.yml`), target SDK 36, polityka prywatności i regulamin (`/docs/popielne/`, GitHub Pages), ujawnianie szans losowych nagród, jakość grafiki dla słabszych telefonów, gotowe teksty i grafiki sklepu. **Instrukcja krok po kroku: [docs/GOOGLE_PLAY.md](docs/GOOGLE_PLAY.md).** |
 | Garderoba (menu, 2.4) | Stroje bohatera z podglądem 3D – sam wygląd, premie zostają z ekwipunku: Strażnik Popielgrodu (etap 10), Łowca Puszczy (15 stopni bestiariusza), Mag Szronogrodu (500 czarów), Rycerz Popiołu (20. piętro Wieży), Pogromca Smoka (Żarogniew), Feniks (przebudzenie). |
 | Tygodnie świąteczne (2.4) | Co tydzień inny modyfikator świata: Tydzień Złota (+50% złota), Tydzień Łowów (×2 surowce, +25% łupu), Tydzień Run (×2 runy i jaja), Tydzień Nauki (+50% XP, +25% siły czarów). Informacja przy starcie, na pasku walki i w panelu Bossa tygodnia. |
 | Muzyka (2.1) | Trzy pętle syntezowane w całości (`tools/audio/gen_music.py`: lutnia Karplus-Strong, pady, chór, dzwony FM, bębny, pogłos): temat menu, temat walki i temat bossa / Wieży; płynne przejścia, wyłącznik w ustawieniach. |

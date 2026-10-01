@@ -103,6 +103,7 @@ func on_end(reason: String) -> float:
 	var e := gm.enemy.cur
 	var dealt := maxf(0.0, _start_hp - maxf(0.0, float(e.get("hp", _start_hp))))
 	_st().damage = damage() + dealt
+	gm.season.add_xp(20)
 	gm.combat.heal_full()
 	gm.save.save_game()
 	gm.changed.emit("raid")

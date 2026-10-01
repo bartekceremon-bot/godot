@@ -11,6 +11,7 @@ const SKINS := [
 	{"id": "mage", "name": "Mag Szronogrodu", "eq": ["cloth_head_t6", "cloth_body_t6", "cloth_legs_t6", "cloth_feet_t6", "staff_t6", ""], "req": "spells:500", "text": "Rzuć 500 czarów"},
 	{"id": "ashknight", "name": "Rycerz Popiołu", "eq": ["plate_head_t7", "plate_body_t7", "plate_legs_t7", "plate_feet_t7", "sword_t7", "shield_t7"], "req": "tower:20", "text": "20. piętro Wieży Popiołu"},
 	{"id": "dragonslayer", "name": "Pogromca Smoka", "eq": ["plate_head_t8", "plate_body_t8", "plate_legs_t8", "plate_feet_t8", "sword_t8", "shield_t8"], "req": "story:outro:fire_temple", "text": "Pokonaj Żarogniewa"},
+	{"id": "ashprince", "name": "Popielny Książę", "eq": ["plate_head_t8", "leather_body_t8", "plate_legs_t8", "leather_feet_t8", "staff_t8", ""], "req": "owned:ashprince", "text": "Nagroda 30. poziomu Złotego Karnetu"},
 	{"id": "phoenix", "name": "Feniks", "eq": ["leather_head_t8", "leather_body_t8", "leather_legs_t8", "leather_feet_t8", "axe_t8", ""], "req": "phoenix:1", "text": "Przebudź się jako Feniks"},
 ]
 
@@ -47,7 +48,17 @@ func unlocked(id: String) -> bool:
 			return gm.story.seen().has(n)
 		"phoenix":
 			return gm.phoenix.count() >= int(n)
+		"owned":
+			return (gm.s.get("skins_owned", []) as Array).has(n)
 	return false
+
+
+func give(id: String) -> void:
+	if not gm.s.has("skins_owned"):
+		gm.s["skins_owned"] = []
+	if not gm.s.skins_owned.has(id):
+		gm.s.skins_owned.append(id)
+	gm.notify("Nowy strój: %s!" % def(id).name, Color(1.0, 0.8, 0.35))
 
 
 func current() -> String:

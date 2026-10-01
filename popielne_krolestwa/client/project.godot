@@ -6,7 +6,7 @@ config_version=5
 
 config/name="Popielne Królestwa"
 config/description="Popielne Królestwa – mobilna gra RPG idle/clicker (i klasyczne MMO online)."
-config/version="2.4.0"
+config/version="3.0.0"
 run/main_scene="res://scenes/idle_main.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.png"
