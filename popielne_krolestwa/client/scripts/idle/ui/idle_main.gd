@@ -507,6 +507,10 @@ func _make_panel(id: String) -> IdlePanel:
 			return RunesPanel.new()
 		"pets":
 			return PetsPanel.new()
+		"chronicle":
+			return ChroniclePanel.new()
+		"phoenix":
+			return PhoenixPanel.new()
 		"raid":
 			return RaidPanel.new()
 	return null
@@ -525,6 +529,8 @@ func _open_menu() -> void:
 		["Bestiariusz", IdleUI.ash_tex("nav_book"), "bestiary", 0],
 		["Drużyna", Sprites.icon("character"), "heroes", 0], ["Stajnia", Sprites.icon("mount"), "mounts", 0],
 		["Ołtarz Popiołu", Sprites.icon("prestige"), "prestige", 1 if gm.prestige.can_rebirth() else 0],
+		["Feniks", Sprites.icon("prestige"), "phoenix", 1 if gm.phoenix.can_awaken() else 0],
+		["Opowieść", Sprites.icon("book"), "chronicle", 0],
 		["Postać", IdleUI.ash_tex("portrait"), "stats", 0], ["Ustawienia", Sprites.icon("menu"), "settings", 0]]
 	var box := GridContainer.new()
 	box.columns = 3
@@ -561,6 +567,58 @@ func _open_menu() -> void:
 				show_tab(tab))
 		box.add_child(b)
 	m = modal("Menu", box)
+
+
+func _modals_open() -> int:
+	_modals = _modals.filter(func(x): return is_instance_valid(x) and not x.is_queued_for_deletion())
+	return _modals.size()
+
+
+## Scena fabuły: kolejne kwestie postaci (imię, tekst pisany na bieżąco), „Dalej”.
+func show_story(scene: String) -> void:
+	var lines := gm.story.lines(scene)
+	if lines.is_empty():
+		return
+	var v := IdleUI.vbox(12)
+	var head := IdleUI.hbox(14)
+	v.add_child(head)
+	var port := Panel.new()
+	port.add_theme_stylebox_override("panel", IdleUI.ash_box("slot", 18))
+	port.custom_minimum_size = Vector2(96, 96)
+	var face := IdleUI.icon_rect(Sprites.icon("character"), 70)
+	face.position = Vector2(13, 13)
+	port.add_child(face)
+	head.add_child(port)
+	var who := IdleUI.title("", 26)
+	who.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	who.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	head.add_child(who)
+	var txt := IdleUI.label("", 23, Color(0.95, 0.92, 0.86), true)
+	txt.custom_minimum_size = Vector2(0, 170)
+	v.add_child(txt)
+	var nxt := IdleUI.button("Dalej", Vector2(0, 84), 26)
+	v.add_child(nxt)
+	var idx := [0]
+	var m: Control
+	var show_line := func():
+		var ln: Array = lines[idx[0]]
+		who.text = str(ln[0])
+		txt.text = str(ln[1])
+		txt.visible_ratio = 0.0
+		txt.create_tween().tween_property(txt, "visible_ratio", 1.0, clampf(str(ln[1]).length() / 70.0, 0.4, 2.2))
+		nxt.text = "Dalej" if idx[0] < lines.size() - 1 else "Do boju!"
+	nxt.pressed.connect(func():
+		Sfx.play("click")
+		if txt.visible_ratio < 1.0:
+			txt.visible_ratio = 1.0
+			return
+		idx[0] += 1
+		if idx[0] >= lines.size():
+			close_modal(m)
+		else:
+			show_line.call())
+	m = modal(gm.story.title(scene), v, false)
+	show_line.call()
 
 
 ## Kafel menu po nazwie (testy automatyczne naciskają kafle jak przyciski z tekstem).
@@ -658,6 +716,9 @@ func _process(delta: float) -> void:
 		if _panels.has(_current) and _panel_host.visible:
 			_panels[_current].tick_ui()
 		_refresh_badges()
+		# Fabuła: scena czeka, aż nie ma okien ani wysuniętego panelu.
+		if gm.story.has_pending() and _modals_open() == 0 and not _panel_host.visible:
+			show_story(gm.story.pop())
 
 
 func _on_changed(what: String) -> void:

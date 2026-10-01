@@ -1,0 +1,95 @@
+{
+ "_opis": "Fabuła wersji idle: rozdział na krainę – wstęp przy pierwszym wejściu (intro) i zakończenie po pierwszym pokonaniu bossa krainy (outro). Mówią postacie z miast MMO (cities.json). Kręgi Popiołu mają epilog.",
+ "chapters": [
+  {"region": "meadow", "title": "Rozdział I – Popiół na progu",
+   "intro": [
+    ["Kapłanka Wiesława", "Obudziłeś się w popiele, wędrowcze. Tak rodzą się Popielnicy – z tego, co zostało po ogniu."],
+    ["Kapłanka Wiesława", "Sto lat temu smok Żarogniew spalił Pięć Królestw. Zostały trzy miasta i ziemia, która wciąż pamięta płomień."],
+    ["Mistrz gildii Zawisza", "Kapłanka mówi pięknie, ale szczury w spichrzach nie słuchają kazań. Weź miecz i oczyść łąki. Gildia płaci za każdy ogon."],
+    ["Mistrz gildii Zawisza", "A jak zarobisz – wynajmij ludzi. Sam nie wygrasz z tym, co idzie z Puszczy."]
+   ],
+   "outro": [
+    ["Mistrz gildii Zawisza", "Herszt Rozbójników leży w rowie. Dawno nikt mu tak nie przyłożył."],
+    ["Mistrz gildii Zawisza", "Przy nim znaleźliśmy mapę: rozbójnicy kryli się w Puszczy, ale uciekali przed czymś jeszcze głębiej w lesie."],
+    ["Kapłanka Wiesława", "Las się budzi, Popielniku. Drzewa pamiętają ogień najdłużej ze wszystkich."]
+   ]},
+  {"region": "forest", "title": "Rozdział II – Pamięć drzew",
+   "intro": [
+    ["Rzemieślniczka Jadwiga", "W Puszczy drewno jest twarde jak żelazo. I złe. Pająki przędą tam sieci grube jak liny."],
+    ["Rzemieślniczka Jadwiga", "Przynoś mi surowce, a zrobię z nich coś, co wytrzyma ugryzienie niedźwiedzia."],
+    ["Kapłanka Wiesława", "W sercu lasu śpi Pradawny Drzewiec. Pamięta czasy przed smokiem. Jeśli się obudził – coś go zraniło."]
+   ],
+   "outro": [
+    ["Kapłanka Wiesława", "Drzewiec upadł… a w jego korze tlił się żar. Ktoś karmi gniew tej ziemi ogniem."],
+    ["Kapłanka Wiesława", "Ślady prowadzą na bagna. Tam, gdzie mgła nigdy nie opada."]
+   ]},
+  {"region": "swamp", "title": "Rozdział III – Matka Moczarów",
+   "intro": [
+    ["Rafinator Zenon", "Moczary! Pół mojej rafinerii stoi na torfie stamtąd. Ale ostatnio ludzie nie wracają z wyprawy po torf."],
+    ["Rafinator Zenon", "Mówią o topielcach i o Matce, która woła ich z mgły. Ja tam w bajki nie wierzę. Ale z mgły nie wracają."],
+    ["Mistrz gildii Zawisza", "Weź mikstury. Dużo mikstur."]
+   ],
+   "outro": [
+    ["Rafinator Zenon", "Matka Moczarów… martwa? Z jej gardła wyjęliśmy kamień. Ciepły. Jak węgiel, który nigdy nie gaśnie."],
+    ["Kapłanka Wiesława", "To okruch żaru Żarogniewa. Smok nie zginął do końca – jego ogień rozszedł się po świecie i budzi potwory."],
+    ["Kapłanka Wiesława", "Kupcy ze Złotopiasku mówią o takich kamieniach w piasku. Idź na południe."]
+   ]},
+  {"region": "desert", "title": "Rozdział IV – Złote Piaski",
+   "intro": [
+    ["Kupiec Rustam", "Witaj w Złotopiasku, przyjacielu z północy! Tu wszystko ma cenę – woda, cień i życie."],
+    ["Mistrzyni gildii Jaga", "Piaski drżą od tygodni. Pod wydmami pełza Pustynny Czerw. Pożera karawany razem z wielbłądami."],
+    ["Mistrzyni gildii Jaga", "Gildia Złotopiasku zapłaci złotem. Wielbłądy – fragmentem z łba Czerwia. Lepszego wierzchowca na pustynię nie znajdziesz."]
+   ],
+   "outro": [
+    ["Mistrzyni gildii Jaga", "Czerw nie żyje! Karawany ruszą jutro o świcie."],
+    ["Kupiec Rustam", "W jego brzuchu było więcej żarzących się kamieni niż złota. A wierz mi – złota było dużo."],
+    ["Mistrzyni gildii Jaga", "Kamienie świecą mocniej, gdy kierujesz je ku górom. Coś tam je przyzywa."]
+   ]},
+  {"region": "mountain", "title": "Rozdział V – Góry Pogorzelne",
+   "intro": [
+    ["Kowal Kazimierz", "Góry Pogorzelne to kuźnia świata. Ruda tam leży na wierzchu – i trolle, które jej pilnują."],
+    ["Kowal Kazimierz", "Przynieś mi rudę, a zrobię ci ostrze, które przetnie łuskę. Bo na końcu tej drogi czeka łuska, wierz mi."],
+    ["Kapłanka Dobrosława", "Władca Gór zbiera okruchy żaru. Buduje z nich coś w sercu góry. Nie pozwól mu skończyć."]
+   ],
+   "outro": [
+    ["Kapłanka Dobrosława", "W sercu góry stał ołtarz z żarzących się kamieni. Ołtarz ku czci Żarogniewa."],
+    ["Kapłanka Dobrosława", "Ktoś chce przywrócić smoka do życia. Na północy, w Szronogrodzie, kapłani wiedzą o tym więcej."]
+   ]},
+  {"region": "snow", "title": "Rozdział VI – Król Szronu",
+   "intro": [
+    ["Kapłan Mieczysław", "Szronogród pamięta, Popielniku. Sto lat temu to nasz lód zatrzymał smoka na granicy Popieliska."],
+    ["Kapłan Mieczysław", "Ale Król Szronu, który wtedy nas bronił, oszalał. Okruchy żaru topią jego koronę, a on wpada w gniew."],
+    ["Mistrz gildii Wit", "Zabij go albo uwolnij – na jedno wychodzi. Jego łosie wrócą do nas, gdy zniknie mróz z jego serca."]
+   ],
+   "outro": [
+    ["Kapłan Mieczysław", "Król Szronu odszedł w spokoju. Przed śmiercią szepnął jedno słowo: Popielisko."],
+    ["Kapłan Mieczysław", "Tam, gdzie spadł smok, zbierają się jego wyznawcy – Rycerze Popiołu. Ich Czempion otwiera drogę do Świątyni Ognia."]
+   ]},
+  {"region": "ash", "title": "Rozdział VII – Popielisko",
+   "intro": [
+    ["Mistrz gildii Wit", "Popielisko. Ziemia, której nikt nie odbudował. Popiół po kostki, a w nim ślady żelaznych butów."],
+    ["Kapłan Mieczysław", "Rycerze Popiołu wierzą, że gdy Żarogniew powstanie, spłoną wszyscy prócz nich. Głupcy. Ogień nie wybiera."],
+    ["Kapłanka Wiesława", "Ty też narodziłeś się z popiołu, Popielniku. Może dlatego tylko ty możesz tam przejść."]
+   ],
+   "outro": [
+    ["Mistrz gildii Wit", "Czempion Popiołu leży w pyle. Jego zbroja jeszcze dymi."],
+    ["Kapłanka Wiesława", "Brama Świątyni Ognia stoi otworem. W środku bije serce – słyszysz? Serce smoka."]
+   ]},
+  {"region": "fire_temple", "title": "Rozdział VIII – Żarogniew",
+   "intro": [
+    ["Kapłanka Wiesława", "To tutaj. Świątynia, w której smok spłonął własnym ogniem sto lat temu – i z której teraz wraca."],
+    ["Mistrz gildii Zawisza", "Cała gildia stoi za tobą, Popielniku. I wszyscy najemnicy, jakich udało się zebrać trzem miastom."],
+    ["Kapłanka Wiesława", "Pamiętaj: z popiołu się rodzisz i w popiół możesz wrócić. Ale za każdym razem silniejszy."]
+   ],
+   "outro": [
+    ["Kapłanka Wiesława", "Żarogniew… padł. Słyszysz ciszę? Pierwszy raz od stu lat nic nie płonie."],
+    ["Kapłanka Wiesława", "Ale jego żar rozsypał się po świecie. Każdy okruch obudzi coś silniejszego niż przedtem."],
+    ["Mistrz gildii Zawisza", "Kręgi Popiołu – tak kapłani nazywają kolejne przebudzenia ziemi. Każdy krąg trudniejszy. Każdy bogatszy w łup."],
+    ["Mistrz gildii Zawisza", "Odpocznij chwilę, bohaterze. Potem ruszaj dalej. Ołtarz Popiołu czeka – a z nim twoje odrodzenie."]
+   ]}
+ ],
+ "circle": [
+  ["Kapłanka Wiesława", "Nowy Krąg Popiołu. Ziemia znów płonie mocniej – a ty płoniesz razem z nią."],
+  ["Mistrz gildii Zawisza", "Te same krainy, silniejsi wrogowie, lepszy łup. Gildia zna cię już z imienia, Popielniku."]
+ ]
+}

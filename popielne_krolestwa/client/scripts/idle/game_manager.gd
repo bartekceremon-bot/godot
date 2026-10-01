@@ -55,6 +55,8 @@ var tower: TowerManager
 var runes: RuneManager
 var pets: PetManager
 var raid: RaidManager
+var story: StoryManager
+var phoenix: PhoenixManager
 var achievements: AchievementManager
 
 ## Wynik postępu offline z ostatniego uruchomienia (pokazywany w oknie „Witaj ponownie!”).
@@ -62,6 +64,8 @@ var offline_report: Dictionary = {}
 var _autosave := 0.0
 ## Mnożnik czasu (testy i symulacja balansu).
 var time_scale := 1.0
+## Przegląd UI: sceny fabuły tylko na żądanie.
+var story_autotest := false
 
 
 func _ready() -> void:
@@ -92,6 +96,8 @@ func _ready() -> void:
 	runes = RuneManager.new(self)
 	pets = PetManager.new(self)
 	raid = RaidManager.new(self)
+	story = StoryManager.new(self)
+	phoenix = PhoenixManager.new(self)
 	achievements = AchievementManager.new(self)
 	set_process(false)
 
@@ -111,7 +117,7 @@ func new_state() -> Dictionary:
 		"quests": {"active": {}, "done": [], "tasks": [], "tasks_done": 0, "track": {}},
 		"prestige": {}, "boosts": {}, "craft_xp": 0.0, "craft_lvl": 1,
 		"market": {}, "stats": {"kills": 0, "taps": 0, "gold": 0.0, "bosses": 0, "crits": 0, "spells": 0},
-		"settings": {"sound": true, "music": true, "auto_potion": true, "effects": true},
+		"settings": {"sound": true, "music": true, "story": true, "auto_potion": true, "effects": true},
 		"daily": {"day": 0, "last": ""}, "talents": {}, "bestiary": {}, "exped": {"active": [], "done": 0},
 		"tower": {"best": 0, "attempts": 3, "day": ""}, "ach": {"claimed": {}, "best_stage": 1, "best_level": 1},
 	}
@@ -131,6 +137,8 @@ func start() -> void:
 	quests.refresh()
 	market.ensure_offers()
 	enemy.spawn()
+	if int(s.max_stage) == 1:
+		story.queue("intro:" + str(progression.region(1).id))
 	running = true
 	set_process(true)
 	changed.emit("all")

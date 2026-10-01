@@ -37,6 +37,7 @@ var mounts: Array = []
 var prestige: Dictionary = {}
 var crafting_idle: Array = []
 var tasks: Array = []
+var story: Dictionary = {}
 
 
 func load_all() -> void:
@@ -72,6 +73,7 @@ func load_all() -> void:
 	prestige = _json("idle/prestige.json")
 	crafting_idle = _json("idle/crafting_idle.json").list
 	tasks = _json("idle/tasks.json").list
+	story = _json("idle/story.json")
 
 
 func _json(path: String) -> Variant:

@@ -12,7 +12,7 @@ func refresh() -> void:
 		c.queue_free()
 	add_child(IdleUI.title("Ustawienia", 28))
 	var set: Dictionary = gm.s.settings
-	for opt in [["sound", "Dźwięk"], ["music", "Muzyka"], ["effects", "Efekty (liczby, cząsteczki, monety)"], ["auto_potion", "Automatyczne mikstury życia w walce z bossem"]]:
+	for opt in [["sound", "Dźwięk"], ["music", "Muzyka"], ["story", "Opowieść (dialogi postaci)"], ["effects", "Efekty (liczby, cząsteczki, monety)"], ["auto_potion", "Automatyczne mikstury życia w walce z bossem"]]:
 		var key := str(opt[0])
 		var b := CheckButton.new()
 		b.text = str(opt[1])

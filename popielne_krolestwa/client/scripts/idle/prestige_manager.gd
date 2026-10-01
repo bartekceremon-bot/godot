@@ -23,7 +23,7 @@ func ash_gain() -> int:
 	var ms := int(gm.s.max_stage)
 	if ms < min_stage():
 		return 0
-	return int(floor(3.0 * pow((ms - 30) / 10.0, 2.0)))
+	return int(floor(3.0 * pow((ms - 30) / 10.0, 2.0) * (1.0 + gm.phoenix.value("ash"))))
 
 
 func upg_def(id: String) -> Dictionary:
@@ -71,7 +71,7 @@ func totals() -> Dictionary:
 
 
 func start_stage() -> int:
-	return 1 + int(totals().get("start", 0.0))
+	return 1 + int(totals().get("start", 0.0)) + int(gm.phoenix.value("memory"))
 
 
 func rebirth() -> bool:

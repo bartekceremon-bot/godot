@@ -319,6 +319,37 @@ func _ready() -> void:
 	check(g.raid.ready_tiers() == 2 and not g.raid.claim().is_empty() and not g.raid.claim().is_empty(), "odebrano 2 progi")
 	check(g.raid.ready_tiers() == 0 and g.raid.attempts() == 4, "progi odebrane, 4 próby zostały")
 
+	print("== fabuła")
+	s.story = {"seen": [], "pending": []}
+	g.story.on_new_stage(11)
+	check(g.story.has_pending() and g.story.pop() == "intro:forest", "wejście do Puszczy – wstęp rozdziału II")
+	g.story.on_region_boss(20)
+	check(g.story.pop() == "outro:forest" and not g.story.has_pending(), "boss Puszczy – zakończenie rozdziału")
+	g.story.on_new_stage(11)
+	check(not g.story.has_pending(), "obejrzana scena nie wraca")
+	g.story.on_new_stage(81)
+	check(g.story.pop() == "circle:1", "nowy Krąg Popiołu – epilog")
+	for c in g.db.story.chapters:
+		check(not g.story.lines("intro:" + str(c.region)).is_empty() and not g.story.lines("outro:" + str(c.region)).is_empty(), "rozdział %s kompletny" % c.title)
+
+	print("== przebudzenie feniksa")
+	s.phoenix = {"feathers": 0, "total": 0, "count": 0, "upg": {}, "ash_base": 0}
+	s.ash_total = 50
+	s.max_stage = 90
+	check(not g.phoenix.can_awaken(), "za mało popiołu na przebudzenie")
+	s.ash_total = 900
+	var fg := g.phoenix.feather_gain()
+	check(fg > 0 and g.phoenix.can_awaken(), "pióra do zdobycia: %d" % fg)
+	var tal0 := g.talents.earned()
+	check(g.phoenix.awaken() and g.phoenix.feathers() >= fg and int(s.ash) == 0 and s.prestige.is_empty(), "przebudzenie: pióra, reset popiołu i ołtarza")
+	check(not g.phoenix.can_awaken(), "liczy się popiół od ostatniego przebudzenia")
+	var d0 := g.stats.dmg_mult
+	check(g.phoenix.buy("flame"), "Płomień Feniksa")
+	check(g.stats.dmg_mult > d0 * 1.4, "mnożnik obrażeń ×1,5")
+	if g.phoenix.feathers() >= g.phoenix.cost("wisdom"):
+		g.phoenix.buy("wisdom")
+		check(g.talents.earned() == tal0 + 3, "Mądrość Feniksa: +3 punkty talentów")
+
 	g.save.delete_save()
 	print("== wynik: %s (%d błędów)" % ["OK" if fails == 0 else "BŁĘDY", fails])
 	get_tree().quit(1 if fails > 0 else 0)

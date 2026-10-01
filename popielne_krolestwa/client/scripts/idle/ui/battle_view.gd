@@ -444,11 +444,13 @@ func set_hero(eq: Array) -> void:
 	if hero:
 		hero.equipment = eq
 		hero._refresh_model()
+		_ember_blade.call_deferred()
 		return
 	hero = _entity({"i": 1, "k": "p", "n": "Bohater", "l": "3", "h": 100, "eq": eq}, HERO_TILE, PI / 2.0 - 0.1)
 	hero._to = HERO_POS
 	hero._from = HERO_POS
 	hero.position = HERO_POS
+	_ember_blade.call_deferred()
 
 
 ## Najemnicy (do 3 najsilniejszych) stoją za bohaterem.
@@ -473,6 +475,53 @@ func set_mercs(list: Array) -> void:
 		ent._from = MERC_POS[i]
 		ent.position = MERC_POS[i]
 		mercs.append(ent)
+
+
+## Żarzące się ostrze bohatera (jak na projekcie ekranu): poświata wokół broni, światło i iskry.
+func _ember_blade() -> void:
+	if not hero or not hero.model or not hero.model.parts.has("weapon"):
+		return
+	var w: Node3D = hero.model.parts["weapon"]
+	if w.has_node("ember"):
+		return
+	var root := Node3D.new()
+	root.name = "ember"
+	w.add_child(root)
+	var bow := hero.model.weapon_kind == "bow"
+	var aura := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.07, 0.7, 0.05) if not bow else Vector3(0.05, 0.9, 0.05)
+	aura.mesh = bm
+	aura.position = Vector3(0, 0.5, 0)
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	mat.albedo_color = Color(1.0, 0.45, 0.1, 0.55)
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	aura.material_override = mat
+	aura.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(aura)
+	var core := MeshInstance3D.new()
+	var cm := BoxMesh.new()
+	cm.size = Vector3(0.025, 0.66, 0.02)
+	core.mesh = cm
+	core.position = Vector3(0, 0.5, 0.0)
+	var cmat := mat.duplicate()
+	cmat.albedo_color = Color(1.0, 0.85, 0.5, 0.9)
+	core.material_override = cmat
+	root.add_child(core)
+	var light := OmniLight3D.new()
+	light.light_color = Color(1.0, 0.5, 0.15)
+	light.light_energy = 1.4
+	light.omni_range = 1.8
+	light.position = Vector3(0, 0.5, 0)
+	root.add_child(light)
+	var sp := _particles(Color(1.0, 0.6, 0.2, 0.95), Vector3(0, 0.5, 0), 14, 0.7, 0.012, 1.0)
+	sp.position = Vector3(0, 0.5, 0)
+	sp.emission_box_extents = Vector3(0.03, 0.3, 0.03)
+	sp.local_coords = false
+	root.add_child(sp)
 
 
 ## Aktywne chowańce (wygląd potworów MMO w pomniejszeniu).

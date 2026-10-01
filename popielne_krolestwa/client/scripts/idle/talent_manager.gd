@@ -53,7 +53,7 @@ func rank(id: String) -> int:
 
 
 func earned() -> int:
-	return int(gm.achievements.value("best_level") / 2.0) + int(gm.tower.best() / 5)
+	return int(gm.achievements.value("best_level") / 2.0) + int(gm.tower.best() / 5) + int(gm.phoenix.value("wisdom"))
 
 
 func spent() -> int:

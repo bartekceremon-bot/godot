@@ -146,6 +146,7 @@ func _on_new_max_stage() -> void:
 		gm.notify("Nowy region: %s!" % region_title(int(s.max_stage)), Color(1.0, 0.85, 0.4))
 		gm.audio.play("levelup")
 	gm.crafting.check_unlocks()
+	gm.story.on_new_stage(int(s.max_stage))
 	gm.quests.on_event("stage", 1)
 	gm.quests.refresh()
 
@@ -154,6 +155,8 @@ func on_boss_kill(kind: int) -> void:
 	var s := gm.s
 	s.farm_mode = false
 	s.stats.bosses = int(s.stats.bosses) + 1
+	if kind == 2:
+		gm.story.on_region_boss(int(s.stage))
 	gm.quests.on_event("bosses", 1)
 	advance()
 

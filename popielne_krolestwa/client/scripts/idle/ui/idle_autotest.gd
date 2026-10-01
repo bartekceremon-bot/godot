@@ -19,6 +19,8 @@ func _ready() -> void:
 	var g: IdleGame = Idle
 	g.save.path = "user://autotest_idle.save"
 	g.save.delete_save()
+	# Sceny fabuły pokazujemy ręcznie (nie mogą zasłaniać sprawdzanych okien).
+	g.story_autotest = true
 	_steps = [
 		func(): return 4.0,
 		func(): print("idle-autotest: menu ", ui._menu_screen.size, " vp ", ui._menu_screen.view.get_viewport().size); await _shot("00_menu"); ui._start_game(); return 1.0,
@@ -78,7 +80,9 @@ func _ready() -> void:
 			return 1.8,
 		func(): await _shot("12k_chowance"); ui.show_tab("raid"); return 0.8,
 		func(): await _shot("12l_boss_tygodnia"); _press("Walcz z bossem tygodnia"); return 2.5,
-		func(): await _shot("12m_rajd_walka"); g.raid.leave(); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
+		func(): await _shot("12m_rajd_walka"); g.raid.leave(); ui.show_story("intro:meadow"); return 1.5,
+		func(): await _shot("12n_opowiesc"); _close_modals(); g.s.ash_total = 600; g.s.max_stage = 85; ui.show_tab("phoenix"); return 0.8,
+		func(): await _shot("12o_feniks"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
 			g.spells.cast("fireball")
