@@ -1,0 +1,23 @@
+{
+ "_opis": "Czary MMO jako umiejętności clickera. power – mnożnik bazy czaru (obrażenia kliknięcia + 1 s DPS), cd – odnowienie (s), mana – koszt, dur – czas działania (s). Poziom ulepszenia: +25% mocy i -3% odnowienia na poziom.",
+ "list": {
+  "heal": {"kind": "heal", "power": 0.25, "cd": 8, "mana": 20, "text": "Leczy 25% zdrowia."},
+  "heal_great": {"kind": "heal", "power": 0.6, "cd": 20, "mana": 60, "text": "Leczy 60% zdrowia."},
+  "heal_area": {"kind": "blessing", "power": 0.25, "cd": 60, "mana": 110, "dur": 20, "text": "Krąg światła: regeneracja 5%/s i +25% obrażeń przez 20 s."},
+  "purify": {"kind": "reset", "power": 0, "cd": 180, "mana": 60, "text": "Odnawia wszystkie pozostałe czary."},
+  "holy": {"kind": "strike", "power": 8, "cd": 12, "mana": 40, "undead": 2, "text": "800% obrażeń, podwójne przeciw nieumarłym."},
+  "fireball": {"kind": "burn", "power": 5, "cd": 8, "mana": 25, "dur": 4, "dot": 1.0, "text": "500% obrażeń i podpalenie (100%/s przez 4 s)."},
+  "firestorm": {"kind": "dot", "power": 0, "cd": 30, "mana": 85, "dur": 5, "dot": 4.0, "text": "Burza ognia: 400% obrażeń na sekundę przez 5 s."},
+  "meteor": {"kind": "meteor", "power": 50, "cd": 60, "mana": 150, "text": "5000% obrażeń – nadmiar przechodzi na kolejnych wrogów."},
+  "icebolt": {"kind": "chill", "power": 4, "cd": 10, "mana": 30, "extra": 3, "text": "400% obrażeń, czas walki z bossem +3 s."},
+  "frost_nova": {"kind": "freeze", "power": 3, "cd": 45, "mana": 80, "dur": 6, "text": "300% obrażeń; boss zamarza na 6 s (stoi czas i jego ataki)."},
+  "ice_armor": {"kind": "shield", "power": 0.5, "cd": 40, "mana": 60, "dur": 20, "text": "Lodowa zbroja pochłania obrażenia równe 50% zdrowia."},
+  "lightning": {"kind": "strike", "power": 7, "cd": 10, "mana": 35, "text": "700% obrażeń."},
+  "chain": {"kind": "chain", "power": 5, "cd": 15, "mana": 50, "extra": 2, "text": "500% obrażeń w cel i 2 kolejnych wrogów."},
+  "storm": {"kind": "storm", "power": 3, "cd": 45, "mana": 120, "dur": 5, "extra": 10, "text": "Nawałnica: 10 piorunów po 300% przez 5 s."},
+  "haste": {"kind": "haste", "power": 1.0, "cd": 30, "mana": 40, "dur": 10, "text": "+100% szybkości ataku przez 10 s."},
+  "drain": {"kind": "drain", "power": 25, "cd": 90, "mana": 100, "extra": 0.3, "text": "Niszczycielskie 2500% obrażeń i leczenie 30% zdrowia."},
+  "curse": {"kind": "curse", "power": 0.5, "cd": 40, "mana": 60, "dur": 15, "text": "Wróg otrzymuje +50% obrażeń przez 15 s."},
+  "poison_cloud": {"kind": "poison", "power": 0.015, "cd": 60, "mana": 110, "dur": 10, "text": "1,5% maks. zdrowia wroga na sekundę przez 10 s (zabójcze dla bossów)."}
+ }
+}

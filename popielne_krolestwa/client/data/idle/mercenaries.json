@@ -1,0 +1,22 @@
+{
+ "_opis": "Najemnicy – główne źródło obrażeń na sekundę (DPS). Koszt poziomu = koszt × 1,07^poziom, DPS = bazowe × poziom × kamienie milowe (×2 na poziomach z listy). Imiona z NPC i świata MMO.",
+ "cost_growth": 1.07,
+ "milestones": [25, 50, 100, 200, 300, 400, 500, 750, 1000],
+ "list": [
+  {"id": "guard", "name": "Strażnik Popielgrodu", "look": "npc_guild", "eq": ["plate_head_t1", "plate_body_t1", "plate_legs_t1", "plate_feet_t1", "sword_t1", "shield_t1"], "cost": 50, "dps": 5, "text": "Tani, wierny i zawsze na posterunku."},
+  {"id": "archer", "name": "Łucznik gildii", "look": "4", "eq": ["leather_head_t2", "leather_body_t2", "leather_legs_t2", "leather_feet_t2", "bow_t2", ""], "cost": 250, "dps": 22, "text": "Strzela szybciej, niż ty mrugasz."},
+  {"id": "priest", "name": "Kapłanka Wiesława", "look": "npc_priest", "eq": [], "cost": 1000, "dps": 74, "text": "Błogosławi twoje ostrze świętym ogniem."},
+  {"id": "smith", "name": "Kowal Gerwazy", "look": "npc_smith", "eq": [], "cost": 4000, "dps": 245, "text": "Młotem kuje stal i czaszki."},
+  {"id": "hunter", "name": "Łowczyni z Puszczy", "look": "7", "eq": ["leather_head_t3", "leather_body_t3", "leather_legs_t3", "leather_feet_t3", "bow_t4", ""], "cost": 20000, "dps": 976, "text": "Zna każdy trop w Puszczy."},
+  {"id": "guildmaster", "name": "Mistrz gildii Zawisza", "look": "npc_guild", "eq": ["plate_head_t4", "plate_body_t4", "plate_legs_t4", "plate_feet_t4", "sword_t4", "shield_t4"], "cost": 100000, "dps": 3725, "text": "Weteran stu zleceń."},
+  {"id": "frost_mage", "name": "Mag Szronogrodu", "look": "2", "eq": ["cloth_head_t5", "cloth_body_t5", "cloth_legs_t5", "cloth_feet_t5", "staff_t5", ""], "cost": 400000, "dps": 10859, "text": "Zamraża krew wrogów jednym słowem."},
+  {"id": "desert_blade", "name": "Najemnik ze Złotopiaska", "look": "5", "eq": ["leather_head_t5", "leather_body_t5", "leather_legs_t5", "leather_feet_t5", "axe_t5", ""], "cost": 2500000, "dps": 47143, "text": "Walczy za złoto i za nic więcej."},
+  {"id": "troll", "name": "Oswojony troll", "look": "troll", "eq": [], "cost": 15000000, "dps": 186000, "text": "Nie pytaj, czym go karmimy."},
+  {"id": "renegade", "name": "Popielny renegat", "look": "ash_knight", "eq": [], "cost": 100000000, "dps": 782000, "text": "Dawny rycerz Popiołu, dziś po twojej stronie."},
+  {"id": "dragon_hunter", "name": "Łowca smoków", "look": "1", "eq": ["plate_head_t7", "plate_body_t7", "plate_legs_t7", "plate_feet_t7", "sword_t7", "shield_t7"], "cost": 800000000, "dps": 3721000, "text": "Ma na koncie trzy smoki. Podobno."},
+  {"id": "champion", "name": "Czempion Popiołu", "look": "ash_knight", "eq": [], "cost": 6500000000, "dps": 16200000, "text": "Jego ostrze pamięta upadek bogów."},
+  {"id": "treant", "name": "Pradawny drzewiec", "look": "treant", "eq": [], "cost": 50000000000, "dps": 72300000, "text": "Las przyszedł walczyć razem z tobą."},
+  {"id": "dragon_spirit", "name": "Duch Żarogniewa", "look": "fire_elemental", "eq": [], "cost": 450000000000, "dps": 434000000, "text": "Ogień, który przetrwał śmierć smoka."},
+  {"id": "ash_god", "name": "Echo upadłego boga", "look": "demon", "eq": [], "cost": 4000000000000, "dps": 1800000000, "text": "Popiół pamięta. Popiół się mści."}
+ ]
+}

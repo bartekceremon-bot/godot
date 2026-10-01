@@ -1,0 +1,4 @@
+Czcionki (SIL Open Font License 1.1 – wolne do użycia i rozpowszechniania, także komercyjnie):
+- Cinzel-Bold.ttf, CinzelDecorative-Bold.ttf – Natanael Gama (https://github.com/google/fonts/tree/main/ofl/cinzel), OFL-Cinzel.txt
+- Exo2-SemiBold.ttf, Exo2-ExtraBold.ttf – Natanael Gama (https://github.com/google/fonts/tree/main/ofl/exo2), OFL-Exo2.txt
+Statyczne odmiany z wersji zmiennych (fonttools instancer, bez nakładających się konturów), okrojone (pyftsubset) do znaków łacińskich i polskich.

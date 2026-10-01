@@ -1,0 +1,99 @@
+<title>Popielne Królestwa</title>
+<style>
+/* Jeden ekran gry: płótno Godota na całą stronę, ciemny „spalony” świat. */
+:root {
+  --bg: #120c0b;
+  --panel: #1e1614;
+  --ember: #f07a2a;
+  --gold: #e2c460;
+  --text: #efe6da;
+  --muted: #9c8f84;
+  --font-display: "Cinzel", "Palatino Linotype", Georgia, serif;
+  --font-body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); overflow: hidden; }
+#canvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+#loader {
+  position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1.1rem; padding-inline: 16px; background: radial-gradient(ellipse at 50% 60%, #2a1510 0%, var(--bg) 70%);
+  font-family: var(--font-body); text-align: center;
+}
+#loader img { width: min(220px, 50vw); image-rendering: pixelated; filter: drop-shadow(0 0 18px rgba(240, 122, 42, .45)); }
+#loader h1 { margin: 0; font-family: var(--font-display); font-weight: 700; letter-spacing: .08em; color: var(--ember); font-size: clamp(1.6rem, 5vw, 2.6rem); text-wrap: balance; }
+#loader p { margin: 0; color: var(--muted); font-size: 1rem; max-width: 34rem; }
+.bar { width: min(420px, 80vw); height: 12px; border: 2px solid #8a5c2c; background: #0c0808; }
+.bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, #a82020, var(--ember), var(--gold)); transition: width .2s; }
+#status { font-variant-numeric: tabular-nums; color: var(--gold); font-size: .95rem; }
+#error { color: #ff8a70; max-width: 34rem; }
+@media (prefers-reduced-motion: reduce) { .bar > div { transition: none; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Alegreya+Sans:wght@400;700&display=swap">
+
+<canvas id="canvas" tabindex="0">Twoja przeglądarka nie obsługuje WebGL.</canvas>
+<div id="loader">
+  <img alt="Logo Popielnych Królestw – płonąca korona" src="data:image/png;base64,%LOGO%">
+  <h1>POPIELNE KRÓLESTWA</h1>
+  <p>Świat spłonął. Odbuduj go. Gra działa w całości w przeglądarce – serwer świata uruchamia się w tej karcie, a postać zapisuje się na tym urządzeniu.</p>
+  <div class="bar" role="progressbar" aria-label="Ładowanie gry"><div id="bar"></div></div>
+  <div id="status">Ładowanie silnika…</div>
+  <div id="error" hidden></div>
+</div>
+
+<script>%PK_JS%</script>
+<script>%GODOT_JS%</script>
+<script>
+(function () {
+  // WebAssembly silnika jest skompresowany gzipem (limit rozmiaru plików) – rozpakowujemy w locie.
+  const realFetch = window.fetch.bind(window);
+  window.fetch = async function (input, init) {
+    const url = typeof input === "string" ? input : input.url;
+    // Hosting serwuje tylko wybrane typy plików – spakowany silnik i paczka gry mają rozszerzenie .wasm.
+    if (url.endsWith("index.pck")) {
+      return realFetch(url.replace(/index\.pck$/, "game-pck.wasm"), init);
+    }
+    if (url.endsWith("index.wasm")) {
+      const res = await realFetch(url.replace(/index\.wasm$/, "engine-gz.wasm"), init);
+      if (!res.ok) throw new Error("Nie udało się pobrać silnika gry (" + res.status + ").");
+      const stream = res.body.pipeThrough(new DecompressionStream("gzip"));
+      return new Response(stream, { status: 200, headers: { "Content-Type": "application/wasm" } });
+    }
+    return realFetch(input, init);
+  };
+
+  const bar = document.getElementById("bar");
+  const status = document.getElementById("status");
+  const errorBox = document.getElementById("error");
+  const loader = document.getElementById("loader");
+  const fail = (err) => {
+    console.error(err);
+    errorBox.hidden = false;
+    errorBox.textContent = "Nie udało się uruchomić gry: " + (err && err.message ? err.message : err) +
+      ". Spróbuj w aktualnym Chrome, Edge lub Firefox (wymagany WebGL 2).";
+    status.textContent = "";
+  };
+
+  const missing = Engine.getMissingFeatures({ threads: false });
+  if (missing.length) return fail(new Error("brakuje: " + missing.join(", ")));
+
+  const engine = new Engine({
+    args: %ARGS%,
+    canvasResizePolicy: 2,
+    executable: "index",
+    experimentalVK: true,
+    fileSizes: %SIZES%,
+    focusCanvas: true,
+    gdextensionLibs: [],
+    onProgress: (cur, total) => {
+      if (total > 0) {
+        bar.style.width = Math.round((cur / total) * 100) + "%";
+        status.textContent = "Ładowanie świata… " + Math.round(cur / 1048576) + " / " + Math.round(total / 1048576) + " MB";
+      }
+    },
+  });
+  engine.startGame().then(() => {
+    status.textContent = "Gotowe";
+    loader.remove();
+  }, fail);
+})();
+</script>

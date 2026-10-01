@@ -1,0 +1,1246 @@
+[
+ {
+  "id": "rat",
+  "name": "Szczur",
+  "look": "rat",
+  "tier": 1,
+  "hp": 26,
+  "maxDamage": 8,
+  "exp": 10,
+  "boss": false,
+  "biomes": [
+   "meadow",
+   "forest",
+   "swamp",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 2,
+    "max": 4
+   },
+   {
+    "item": "meat",
+    "chance": 0.25
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "snow_fox",
+  "name": "Śnieżny lis",
+  "look": "snow_fox",
+  "tier": 1,
+  "hp": 30,
+  "maxDamage": 9,
+  "exp": 10,
+  "boss": false,
+  "biomes": [
+   "snow"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 2,
+    "max": 4
+   },
+   {
+    "item": "meat",
+    "chance": 0.3
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "scarab",
+  "name": "Skarabeusz",
+  "look": "scarab",
+  "tier": 1,
+  "hp": 33,
+  "maxDamage": 9,
+  "exp": 10,
+  "boss": false,
+  "biomes": [
+   "desert"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 2,
+    "max": 4
+   },
+   {
+    "item": "stone_t1",
+    "chance": 0.3
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "boar",
+  "name": "Dzik",
+  "look": "boar",
+  "tier": 2,
+  "hp": 47,
+  "maxDamage": 13,
+  "exp": 20,
+  "boss": false,
+  "biomes": [
+   "meadow",
+   "forest",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 2,
+    "max": 6
+   },
+   {
+    "item": "meat",
+    "chance": 0.6,
+    "min": 1,
+    "max": 2
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "toad",
+  "name": "Ropucha błotna",
+  "look": "toad",
+  "tier": 2,
+  "hp": 55,
+  "maxDamage": 14,
+  "exp": 20,
+  "boss": false,
+  "biomes": [
+   "swamp"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 2,
+    "max": 6
+   },
+   {
+    "item": "fiber_t2",
+    "chance": 0.3
+   }
+  ],
+  "poison": 2,
+  "ranged": false
+ },
+ {
+  "id": "scorpion",
+  "name": "Skorpion",
+  "look": "scorpion",
+  "tier": 3,
+  "hp": 90,
+  "maxDamage": 18,
+  "exp": 32,
+  "boss": false,
+  "biomes": [
+   "desert"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 4,
+    "max": 10
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "ore_t3",
+    "chance": 0.2
+   }
+  ],
+  "poison": 3,
+  "ranged": false
+ },
+ {
+  "id": "wolf",
+  "name": "Wilk",
+  "look": "wolf",
+  "tier": 3,
+  "hp": 68,
+  "maxDamage": 18,
+  "exp": 32,
+  "boss": false,
+  "biomes": [
+   "meadow",
+   "forest",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 4,
+    "max": 10
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "meat",
+    "chance": 0.4,
+    "min": 1,
+    "max": 2
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "snow_wolf",
+  "name": "Szronowy wilk",
+  "look": "snow_wolf",
+  "tier": 3,
+  "hp": 90,
+  "maxDamage": 20,
+  "exp": 32,
+  "boss": false,
+  "biomes": [
+   "snow"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 4,
+    "max": 10
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "meat",
+    "chance": 0.4,
+    "min": 1,
+    "max": 2
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "spider",
+  "name": "Olbrzymi pająk",
+  "look": "spider",
+  "tier": 3,
+  "hp": 90,
+  "maxDamage": 17,
+  "exp": 32,
+  "boss": false,
+  "biomes": [
+   "forest",
+   "swamp"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 4,
+    "max": 10
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "fiber_t3",
+    "chance": 0.35,
+    "min": 1,
+    "max": 2
+   }
+  ],
+  "poison": 3,
+  "ranged": false
+ },
+ {
+  "id": "bandit",
+  "name": "Rozbójnik",
+  "look": "bandit",
+  "tier": 4,
+  "hp": 160,
+  "maxDamage": 30,
+  "exp": 70,
+  "boss": false,
+  "biomes": [
+   "meadow",
+   "forest",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 9,
+    "max": 25
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "mp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "hide_t3",
+    "chance": 0.2
+   },
+   {
+    "item": "leather_body_t3",
+    "chance": 0.03
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "bandit_archer",
+  "name": "Łucznik rozbójników",
+  "look": "bandit_archer",
+  "tier": 4,
+  "hp": 128,
+  "maxDamage": 18,
+  "exp": 70,
+  "boss": false,
+  "biomes": [
+   "meadow",
+   "forest",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 9,
+    "max": 25
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "mp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "wood_t4",
+    "chance": 0.25
+   },
+   {
+    "item": "bow_t3",
+    "chance": 0.03
+   }
+  ],
+  "poison": 0,
+  "ranged": true
+ },
+ {
+  "id": "bear",
+  "name": "Niedźwiedź",
+  "look": "bear",
+  "tier": 4,
+  "hp": 208,
+  "maxDamage": 33,
+  "exp": 70,
+  "boss": false,
+  "biomes": [
+   "forest",
+   "snow",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 9,
+    "max": 25
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "mp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "meat",
+    "chance": 0.8,
+    "min": 2,
+    "max": 4
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "lizard",
+  "name": "Jaszczuroczłek",
+  "look": "lizard",
+  "tier": 4,
+  "hp": 160,
+  "maxDamage": 30,
+  "exp": 70,
+  "boss": false,
+  "biomes": [
+   "swamp",
+   "desert"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 9,
+    "max": 25
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "mp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "fiber_t4",
+    "chance": 0.25
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "skeleton",
+  "name": "Popielny szkielet",
+  "look": "skeleton",
+  "tier": 4,
+  "hp": 160,
+  "maxDamage": 30,
+  "exp": 70,
+  "boss": false,
+  "biomes": [
+   "ash",
+   "mountain",
+   "desert"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 9,
+    "max": 25
+   },
+   {
+    "item": "hp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "mp_potion",
+    "chance": 0.09
+   },
+   {
+    "item": "bone",
+    "chance": 0.5,
+    "min": 1,
+    "max": 2
+   },
+   {
+    "item": "ore_t4",
+    "chance": 0.25,
+    "min": 1,
+    "max": 2
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "orc",
+  "name": "Ork wojownik",
+  "look": "orc",
+  "tier": 5,
+  "hp": 260,
+  "maxDamage": 45,
+  "exp": 130,
+  "boss": false,
+  "biomes": [
+   "meadow",
+   "forest",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 15,
+    "max": 45
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "ore_t5",
+    "chance": 0.25,
+    "min": 1,
+    "max": 2
+   },
+   {
+    "item": "axe_t4",
+    "chance": 0.02
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "orc_shaman",
+  "name": "Ork szaman",
+  "look": "orc_shaman",
+  "tier": 5,
+  "hp": 208,
+  "maxDamage": 23,
+  "exp": 130,
+  "boss": false,
+  "biomes": [
+   "forest",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 15,
+    "max": 45
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "fiber_t5",
+    "chance": 0.3
+   }
+  ],
+  "poison": 0,
+  "ranged": true
+ },
+ {
+  "id": "mummy",
+  "name": "Mumia",
+  "look": "mummy",
+  "tier": 5,
+  "hp": 312,
+  "maxDamage": 45,
+  "exp": 130,
+  "boss": false,
+  "biomes": [
+   "desert"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 15,
+    "max": 45
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "fiber_t5",
+    "chance": 0.35,
+    "min": 1,
+    "max": 2
+   },
+   {
+    "item": "bone",
+    "chance": 0.4
+   }
+  ],
+  "poison": 6,
+  "ranged": false
+ },
+ {
+  "id": "zombie",
+  "name": "Topielec",
+  "look": "zombie",
+  "tier": 5,
+  "hp": 338,
+  "maxDamage": 41,
+  "exp": 130,
+  "boss": false,
+  "biomes": [
+   "swamp"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 15,
+    "max": 45
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "wood_t5",
+    "chance": 0.3
+   }
+  ],
+  "poison": 5,
+  "ranged": false
+ },
+ {
+  "id": "troll",
+  "name": "Troll górski",
+  "look": "troll",
+  "tier": 5,
+  "hp": 364,
+  "maxDamage": 50,
+  "exp": 130,
+  "boss": false,
+  "biomes": [
+   "mountain",
+   "snow"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 15,
+    "max": 45
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.1
+   },
+   {
+    "item": "stone_t5",
+    "chance": 0.4,
+    "min": 1,
+    "max": 3
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "hound",
+  "name": "Żarowy ogar",
+  "look": "hound",
+  "tier": 6,
+  "hp": 340,
+  "maxDamage": 62,
+  "exp": 220,
+  "boss": false,
+  "biomes": [
+   "ash",
+   "desert",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 27,
+    "max": 80
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.12
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "meat",
+    "chance": 0.5,
+    "min": 1,
+    "max": 3
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "yeti",
+  "name": "Yeti",
+  "look": "yeti",
+  "tier": 6,
+  "hp": 520,
+  "maxDamage": 68,
+  "exp": 220,
+  "boss": false,
+  "biomes": [
+   "snow"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 27,
+    "max": 80
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.12
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "meat",
+    "chance": 0.7,
+    "min": 2,
+    "max": 4
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "treant",
+  "name": "Pradawny drzewiec",
+  "look": "treant",
+  "tier": 6,
+  "hp": 600,
+  "maxDamage": 62,
+  "exp": 220,
+  "boss": false,
+  "biomes": [
+   "forest",
+   "swamp"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 27,
+    "max": 80
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.12
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "wood_t6",
+    "chance": 0.5,
+    "min": 1,
+    "max": 3
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "golem",
+  "name": "Kamienny golem",
+  "look": "golem",
+  "tier": 6,
+  "hp": 560,
+  "maxDamage": 62,
+  "exp": 220,
+  "boss": false,
+  "biomes": [
+   "mountain",
+   "desert"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 27,
+    "max": 80
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.12
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.11
+   },
+   {
+    "item": "stone_t6",
+    "chance": 0.5,
+    "min": 1,
+    "max": 3
+   },
+   {
+    "item": "ore_t6",
+    "chance": 0.3,
+    "min": 1,
+    "max": 2
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "ice_wraith",
+  "name": "Lodowa zjawa",
+  "look": "ice_wraith",
+  "tier": 7,
+  "hp": 464,
+  "maxDamage": 57,
+  "exp": 340,
+  "boss": false,
+  "biomes": [
+   "snow",
+   "mountain"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 44,
+    "max": 130
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.13
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.12000000000000001
+   },
+   {
+    "item": "fiber_t7",
+    "chance": 0.35
+   }
+  ],
+  "poison": 0,
+  "ranged": true
+ },
+ {
+  "id": "basilisk",
+  "name": "Bazyliszek",
+  "look": "basilisk",
+  "tier": 7,
+  "hp": 696,
+  "maxDamage": 82,
+  "exp": 340,
+  "boss": false,
+  "biomes": [
+   "desert",
+   "swamp"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 44,
+    "max": 130
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.13
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.12000000000000001
+   }
+  ],
+  "poison": 10,
+  "ranged": false
+ },
+ {
+  "id": "fire_elemental",
+  "name": "Żywiołak ognia",
+  "look": "fire_elemental",
+  "tier": 7,
+  "hp": 522,
+  "maxDamage": 49,
+  "exp": 340,
+  "boss": false,
+  "biomes": [
+   "ash"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 44,
+    "max": 130
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.13
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.12000000000000001
+   },
+   {
+    "item": "stone_t7",
+    "chance": 0.35
+   }
+  ],
+  "poison": 0,
+  "ranged": true
+ },
+ {
+  "id": "ash_knight",
+  "name": "Popielny rycerz",
+  "look": "ash_knight",
+  "tier": 7,
+  "hp": 696,
+  "maxDamage": 82,
+  "exp": 340,
+  "boss": false,
+  "biomes": [
+   "ash"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 44,
+    "max": 130
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.13
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.12000000000000001
+   },
+   {
+    "item": "ore_t7",
+    "chance": 0.4,
+    "min": 1,
+    "max": 2
+   },
+   {
+    "item": "plate_body_t6",
+    "chance": 0.02
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "demon",
+  "name": "Demon żaru",
+  "look": "demon",
+  "tier": 8,
+  "hp": 1066,
+  "maxDamage": 105,
+  "exp": 520,
+  "boss": false,
+  "biomes": [
+   "ash"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 67,
+    "max": 200
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.14
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.13
+   },
+   {
+    "item": "ore_t8",
+    "chance": 0.35,
+    "min": 1,
+    "max": 2
+   },
+   {
+    "item": "stone_t8",
+    "chance": 0.3
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "ash_champion",
+  "name": "Czempion Popiołu",
+  "look": "ash_knight",
+  "tier": 8,
+  "hp": 820,
+  "maxDamage": 105,
+  "exp": 520,
+  "boss": false,
+  "biomes": [
+   "ash"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 0.75,
+    "min": 67,
+    "max": 200
+   },
+   {
+    "item": "great_hp_potion",
+    "chance": 0.14
+   },
+   {
+    "item": "great_mp_potion",
+    "chance": 0.13
+   },
+   {
+    "item": "wood_t8",
+    "chance": 0.3
+   },
+   {
+    "item": "fiber_t8",
+    "chance": 0.3
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "frost_king",
+  "name": "Król Szronu",
+  "look": "frost_king",
+  "tier": 7,
+  "hp": 12000,
+  "maxDamage": 150,
+  "exp": 9000,
+  "boss": true,
+  "biomes": [
+   "snow"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 1,
+    "min": 2000,
+    "max": 4000
+   },
+   {
+    "item": "frost_crown",
+    "chance": 0.5
+   },
+   {
+    "item": "hide_t6",
+    "chance": 1,
+    "min": 4,
+    "max": 8
+   },
+   {
+    "item": "ore_t7",
+    "chance": 0.8,
+    "min": 3,
+    "max": 6
+   },
+   {
+    "item": "plate_head_t7",
+    "chance": 0.25
+   },
+   {
+    "item": "mount_elk",
+    "chance": 0.2
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "sand_worm",
+  "name": "Pustynny Czerw",
+  "look": "sand_worm",
+  "tier": 7,
+  "hp": 11000,
+  "maxDamage": 160,
+  "exp": 8500,
+  "boss": true,
+  "biomes": [
+   "desert"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 1,
+    "min": 2000,
+    "max": 4000
+   },
+   {
+    "item": "worm_fang",
+    "chance": 1,
+    "min": 1,
+    "max": 2
+   },
+   {
+    "item": "hide_t7",
+    "chance": 1,
+    "min": 3,
+    "max": 6
+   },
+   {
+    "item": "stone_t7",
+    "chance": 0.8,
+    "min": 3,
+    "max": 6
+   },
+   {
+    "item": "bow_t7",
+    "chance": 0.2
+   },
+   {
+    "item": "mount_camel",
+    "chance": 0.2
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ },
+ {
+  "id": "bog_mother",
+  "name": "Matka Moczarów",
+  "look": "bog_mother",
+  "tier": 7,
+  "hp": 10000,
+  "maxDamage": 140,
+  "exp": 8000,
+  "boss": true,
+  "biomes": [
+   "swamp"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 1,
+    "min": 2000,
+    "max": 3500
+   },
+   {
+    "item": "bog_heart",
+    "chance": 0.6
+   },
+   {
+    "item": "fiber_t7",
+    "chance": 1,
+    "min": 4,
+    "max": 8
+   },
+   {
+    "item": "wood_t7",
+    "chance": 0.8,
+    "min": 3,
+    "max": 6
+   },
+   {
+    "item": "cloth_body_t7",
+    "chance": 0.2
+   }
+  ],
+  "poison": 25,
+  "ranged": false
+ },
+ {
+  "id": "ash_dragon",
+  "name": "Żarogniew, Popielny Smok",
+  "look": "ash_dragon",
+  "tier": 8,
+  "hp": 30000,
+  "maxDamage": 200,
+  "exp": 30000,
+  "boss": true,
+  "biomes": [
+   "ash"
+  ],
+  "loot": [
+   {
+    "item": "gold",
+    "chance": 1,
+    "min": 6000,
+    "max": 12000
+   },
+   {
+    "item": "dragon_scale",
+    "chance": 1,
+    "min": 2,
+    "max": 5
+   },
+   {
+    "item": "hide_t8",
+    "chance": 1,
+    "min": 5,
+    "max": 10
+   },
+   {
+    "item": "ore_t8",
+    "chance": 1,
+    "min": 4,
+    "max": 8
+   },
+   {
+    "item": "sword_t8",
+    "chance": 0.15
+   },
+   {
+    "item": "plate_body_t8",
+    "chance": 0.12
+   },
+   {
+    "item": "mount_drake",
+    "chance": 0.15
+   }
+  ],
+  "poison": 0,
+  "ranged": false
+ }
+]

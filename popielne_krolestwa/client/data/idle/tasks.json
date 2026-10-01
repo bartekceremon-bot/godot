@@ -1,0 +1,15 @@
+{
+ "_opis": "Zlecenia – krótkie, odnawiane cele (zawsze 3 aktywne). need – bazowa liczba (skalowana), reward – mnożnik nagrody (złoto = złoto za wroga × 25 × reward).",
+ "list": [
+  {"type": "kills", "text": "Pokonaj %d przeciwników", "need": 50, "reward": 1.0},
+  {"type": "taps", "text": "Zadaj %d ciosów", "need": 300, "reward": 0.8},
+  {"type": "gold", "text": "Zdobądź %s złota", "need": 0, "reward": 1.0},
+  {"type": "spells", "text": "Użyj %d czarów", "need": 5, "reward": 1.0},
+  {"type": "upgrades", "text": "Ulepsz ekwipunek %d razy", "need": 3, "reward": 1.5},
+  {"type": "crafts", "text": "Wytwórz %d przedmiotów", "need": 5, "reward": 1.2},
+  {"type": "materials", "text": "Zbierz %d surowców", "need": 40, "reward": 1.0},
+  {"type": "bosses", "text": "Pokonaj %d bossa (elita lub boss regionu)", "need": 1, "reward": 2.0},
+  {"type": "crits", "text": "Zadaj %d trafień krytycznych", "need": 40, "reward": 0.8},
+  {"type": "mercs", "text": "Kup %d poziomów najemników", "need": 10, "reward": 1.0}
+ ]
+}

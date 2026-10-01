@@ -1,0 +1,344 @@
+[
+ {
+  "id": "banker",
+  "name": "Bankier Oskar",
+  "look": "npc_banker",
+  "city": "popielgrod",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "market",
+  "name": "Rynkowa Wanda",
+  "look": "npc_market",
+  "city": "popielgrod",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "priest",
+  "name": "Kapłanka Wiesława",
+  "look": "npc_priest",
+  "city": "popielgrod",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "guild",
+  "name": "Mistrz gildii Zawisza",
+  "look": "npc_guild",
+  "city": "popielgrod",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "refiner",
+  "name": "Rafinator Zenon",
+  "look": "npc_refiner",
+  "city": "popielgrod",
+  "sells": [],
+  "station": "refinery"
+ },
+ {
+  "id": "smith",
+  "name": "Kowal Gerwazy",
+  "look": "npc_smith",
+  "city": "popielgrod",
+  "sells": [],
+  "station": "forge"
+ },
+ {
+  "id": "crafter",
+  "name": "Rzemieślniczka Jadwiga",
+  "look": "npc_crafter",
+  "city": "popielgrod",
+  "sells": [],
+  "station": "workshop"
+ },
+ {
+  "id": "trader",
+  "name": "Kupiec Borys",
+  "look": "npc_trader",
+  "city": "popielgrod",
+  "sells": [
+   {
+    "item": "woodaxe_t1",
+    "price": 30
+   },
+   {
+    "item": "pickaxe_t1",
+    "price": 30
+   },
+   {
+    "item": "sickle_t1",
+    "price": 25
+   },
+   {
+    "item": "hp_potion",
+    "price": 40
+   },
+   {
+    "item": "mp_potion",
+    "price": 45
+   },
+   {
+    "item": "great_hp_potion",
+    "price": 160
+   },
+   {
+    "item": "great_mp_potion",
+    "price": 170
+   },
+   {
+    "item": "meat",
+    "price": 4
+   }
+  ],
+  "station": ""
+ },
+ {
+  "id": "stable",
+  "name": "Stajenny Maciej",
+  "look": "npc_stable",
+  "city": "popielgrod",
+  "sells": [
+   {
+    "item": "mount_horse",
+    "price": 900
+   },
+   {
+    "item": "mount_warwolf",
+    "price": 9000
+   }
+  ],
+  "station": ""
+ },
+ {
+  "id": "szronogrod_banker",
+  "name": "Bankier Ignacy",
+  "look": "npc_banker_snow",
+  "city": "szronogrod",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "szronogrod_market",
+  "name": "Rynkowa Halina",
+  "look": "npc_market_snow",
+  "city": "szronogrod",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "szronogrod_priest",
+  "name": "Kapłan Mieczysław",
+  "look": "npc_priest_snow",
+  "city": "szronogrod",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "szronogrod_guild",
+  "name": "Mistrz gildii Wit",
+  "look": "npc_guild_snow",
+  "city": "szronogrod",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "szronogrod_refiner",
+  "name": "Rafinator Leon",
+  "look": "npc_refiner_snow",
+  "city": "szronogrod",
+  "sells": [],
+  "station": "refinery"
+ },
+ {
+  "id": "szronogrod_smith",
+  "name": "Kowal Bogdan",
+  "look": "npc_smith_snow",
+  "city": "szronogrod",
+  "sells": [],
+  "station": "forge"
+ },
+ {
+  "id": "szronogrod_crafter",
+  "name": "Rzemieślniczka Zofia",
+  "look": "npc_crafter_snow",
+  "city": "szronogrod",
+  "sells": [],
+  "station": "workshop"
+ },
+ {
+  "id": "szronogrod_trader",
+  "name": "Kupiec Stefan",
+  "look": "npc_trader_snow",
+  "city": "szronogrod",
+  "sells": [
+   {
+    "item": "woodaxe_t1",
+    "price": 30
+   },
+   {
+    "item": "pickaxe_t1",
+    "price": 30
+   },
+   {
+    "item": "sickle_t1",
+    "price": 25
+   },
+   {
+    "item": "hp_potion",
+    "price": 40
+   },
+   {
+    "item": "mp_potion",
+    "price": 45
+   },
+   {
+    "item": "great_hp_potion",
+    "price": 160
+   },
+   {
+    "item": "great_mp_potion",
+    "price": 170
+   },
+   {
+    "item": "meat",
+    "price": 4
+   }
+  ],
+  "station": ""
+ },
+ {
+  "id": "szronogrod_stable",
+  "name": "Stajenny Olaf",
+  "look": "npc_stable_snow",
+  "city": "szronogrod",
+  "sells": [
+   {
+    "item": "mount_horse",
+    "price": 900
+   },
+   {
+    "item": "mount_elk",
+    "price": 3500
+   }
+  ],
+  "station": ""
+ },
+ {
+  "id": "zlotopiask_banker",
+  "name": "Bankier Tadeusz",
+  "look": "npc_banker_desert",
+  "city": "zlotopiask",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "zlotopiask_market",
+  "name": "Rynkowa Jaśmina",
+  "look": "npc_market_desert",
+  "city": "zlotopiask",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "zlotopiask_priest",
+  "name": "Kapłanka Dobrosława",
+  "look": "npc_priest_desert",
+  "city": "zlotopiask",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "zlotopiask_guild",
+  "name": "Mistrzyni gildii Jaga",
+  "look": "npc_guild_desert",
+  "city": "zlotopiask",
+  "sells": [],
+  "station": ""
+ },
+ {
+  "id": "zlotopiask_refiner",
+  "name": "Rafinator Ziemowit",
+  "look": "npc_refiner_desert",
+  "city": "zlotopiask",
+  "sells": [],
+  "station": "refinery"
+ },
+ {
+  "id": "zlotopiask_smith",
+  "name": "Kowal Kazimierz",
+  "look": "npc_smith_desert",
+  "city": "zlotopiask",
+  "sells": [],
+  "station": "forge"
+ },
+ {
+  "id": "zlotopiask_crafter",
+  "name": "Rzemieślniczka Aniela",
+  "look": "npc_crafter_desert",
+  "city": "zlotopiask",
+  "sells": [],
+  "station": "workshop"
+ },
+ {
+  "id": "zlotopiask_trader",
+  "name": "Kupiec Rustam",
+  "look": "npc_trader_desert",
+  "city": "zlotopiask",
+  "sells": [
+   {
+    "item": "woodaxe_t1",
+    "price": 30
+   },
+   {
+    "item": "pickaxe_t1",
+    "price": 30
+   },
+   {
+    "item": "sickle_t1",
+    "price": 25
+   },
+   {
+    "item": "hp_potion",
+    "price": 40
+   },
+   {
+    "item": "mp_potion",
+    "price": 45
+   },
+   {
+    "item": "great_hp_potion",
+    "price": 160
+   },
+   {
+    "item": "great_mp_potion",
+    "price": 170
+   },
+   {
+    "item": "meat",
+    "price": 4
+   }
+  ],
+  "station": ""
+ },
+ {
+  "id": "zlotopiask_stable",
+  "name": "Stajenny Radomir",
+  "look": "npc_stable_desert",
+  "city": "zlotopiask",
+  "sells": [
+   {
+    "item": "mount_horse",
+    "price": 900
+   },
+   {
+    "item": "mount_camel",
+    "price": 3000
+   }
+  ],
+  "station": ""
+ }
+]

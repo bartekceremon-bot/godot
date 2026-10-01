@@ -1,0 +1,4 @@
+/build/
+/data/
+# .gitignore silnika Godot wyklucza katalogi "debug/" – tu to kod gry.
+!client/scripts/debug/

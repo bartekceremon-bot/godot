@@ -1,0 +1,10 @@
+{
+ "_opis": "Wierzchowce MMO jako stałe premie. bonus – premia na poziomie 1, każdy kolejny poziom +50% premii bazowej. Odblokowanie: fragmenty (frag) lub zakup. Fragmenty wypadają z bossów i skrzyń.",
+ "list": [
+  {"id": "mount_horse", "stat": "gold", "bonus": 0.1, "unlock_frags": 5, "buy_gold_stage": 8, "text": "+10% złota"},
+  {"id": "mount_elk", "stat": "xp", "bonus": 0.1, "unlock_frags": 10, "boss": "frost_king", "text": "+10% doświadczenia"},
+  {"id": "mount_camel", "stat": "offline", "bonus": 0.2, "unlock_frags": 10, "boss": "sand_worm", "text": "+20% postępu offline"},
+  {"id": "mount_warwolf", "stat": "damage", "bonus": 0.15, "unlock_frags": 15, "buy_gems": 150, "text": "+15% obrażeń"},
+  {"id": "mount_drake", "stat": "damage", "bonus": 0.3, "unlock_frags": 25, "boss": "ash_dragon", "text": "+30% obrażeń"}
+ ]
+}

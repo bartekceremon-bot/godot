@@ -1,0 +1,83 @@
+[
+ {
+  "id": "popielgrod",
+  "name": "Popielgród",
+  "biome": "meadow",
+  "bonusText": "Rafineria Popielgrodu zwraca 25% materiałów (inne stacje 15%).",
+  "npcNames": {
+   "banker": "Bankier Oskar",
+   "market": "Rynkowa Wanda",
+   "trader": "Kupiec Borys",
+   "smith": "Kowal Gerwazy",
+   "crafter": "Rzemieślniczka Jadwiga",
+   "refiner": "Rafinator Zenon",
+   "priest": "Kapłanka Wiesława",
+   "stable": "Stajenny Maciej",
+   "guild": "Mistrz gildii Zawisza"
+  },
+  "mounts": [
+   {
+    "item": "mount_horse",
+    "price": 900
+   },
+   {
+    "item": "mount_warwolf",
+    "price": 9000
+   }
+  ]
+ },
+ {
+  "id": "szronogrod",
+  "name": "Szronogród",
+  "biome": "snow",
+  "bonusText": "Kuźnia Szronogrodu zwraca 25% materiałów i częściej daje lepszą jakość.",
+  "npcNames": {
+   "banker": "Bankier Ignacy",
+   "market": "Rynkowa Halina",
+   "trader": "Kupiec Stefan",
+   "smith": "Kowal Bogdan",
+   "crafter": "Rzemieślniczka Zofia",
+   "refiner": "Rafinator Leon",
+   "priest": "Kapłan Mieczysław",
+   "stable": "Stajenny Olaf",
+   "guild": "Mistrz gildii Wit"
+  },
+  "mounts": [
+   {
+    "item": "mount_horse",
+    "price": 900
+   },
+   {
+    "item": "mount_elk",
+    "price": 3500
+   }
+  ]
+ },
+ {
+  "id": "zlotopiask",
+  "name": "Złotopiask",
+  "biome": "desert",
+  "bonusText": "Pracownia Złotopiasku zwraca 25% materiałów i częściej daje lepszą jakość.",
+  "npcNames": {
+   "banker": "Bankier Tadeusz",
+   "market": "Rynkowa Jaśmina",
+   "trader": "Kupiec Rustam",
+   "smith": "Kowal Kazimierz",
+   "crafter": "Rzemieślniczka Aniela",
+   "refiner": "Rafinator Ziemowit",
+   "priest": "Kapłanka Dobrosława",
+   "stable": "Stajenny Radomir",
+   "guild": "Mistrzyni gildii Jaga"
+  },
+  "mounts": [
+   {
+    "item": "mount_horse",
+    "price": 900
+   },
+   {
+    "item": "mount_camel",
+    "price": 3000
+   }
+  ]
+ }
+]

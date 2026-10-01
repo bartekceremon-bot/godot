@@ -1,0 +1,169 @@
+/**
+ * Serwer WebSocket: przyjmuje połączenia, obsługuje logowanie/rejestrację
+ * i przekazuje wiadomości zalogowanych graczy do świata.
+ *
+ * Protokół: każda wiadomość to obiekt JSON z polem `t` (typ).
+ * Opis wszystkich wiadomości: popielne_krolestwa/PROTOKOL.md
+ */
+import { WebSocketServer, WebSocket } from 'ws';
+import type { IncomingMessage } from 'node:http';
+import { config } from '../config';
+import { World } from '../game/world';
+import { Player, Connection } from '../game/entities';
+import { createAccountWithCharacter, playerFromRow } from '../game/session';
+import { hashPassword, verifyPassword, validateName, validatePassword } from '../auth';
+
+/** Tyle czasu po ostatniej walce postać zostaje w świecie po rozłączeniu. */
+const COMBAT_LOGOUT_MS = 30_000;
+
+class WsConnection implements Connection {
+  constructor(private ws: WebSocket) {}
+  send(msg: object | string) {
+    if (this.ws.readyState === WebSocket.OPEN) this.ws.send(typeof msg === 'string' ? msg : JSON.stringify(msg));
+  }
+  close(reason?: string) {
+    this.ws.close(1000, reason);
+  }
+}
+
+export class GameServer {
+  private wss: WebSocketServer | null = null;
+  /** Zamykanie serwera – gracze są wylogowywani (i zapisywani) natychmiast. */
+  private closing = false;
+
+  constructor(private world: World) {}
+
+  /** Uruchamia nasłuch. Zwraca faktyczny port (przydatne w testach z portem 0). */
+  listen(port = config.port, host = config.host): Promise<number> {
+    return new Promise((resolve) => {
+      this.wss = new WebSocketServer({ port, host, maxPayload: 8 * 1024 });
+      this.wss.on('connection', (ws, req) => this.onConnection(ws, req));
+      this.wss.on('listening', () => {
+        const addr = this.wss!.address();
+        resolve(addr && typeof addr === 'object' ? addr.port : port);
+      });
+    });
+  }
+
+  /** Zamyka serwer i czeka, aż wszyscy gracze zostaną wylogowani (i zapisani). */
+  async close(): Promise<void> {
+    const wss = this.wss;
+    if (!wss) return;
+    this.closing = true;
+    const closed = [...wss.clients].map((c) => new Promise<void>((r) => c.once('close', () => r())));
+    for (const c of wss.clients) c.terminate();
+    await Promise.all(closed);
+    await new Promise<void>((r) => wss.close(() => r()));
+    this.wss = null;
+  }
+
+  private onConnection(ws: WebSocket, req: IncomingMessage) {
+    const conn = new WsConnection(ws);
+    let player: Player | null = null;
+    let msgCount = 0;
+    let windowStart = Date.now();
+    const ip = req.socket.remoteAddress ?? '?';
+
+    ws.on('message', (data) => {
+      // Ochrona przed floodem.
+      const now = Date.now();
+      if (now - windowStart > 1000) {
+        windowStart = now;
+        msgCount = 0;
+      }
+      if (++msgCount > config.maxMessagesPerSecond) {
+        console.warn(`[net] flood z ${ip} – rozłączam`);
+        ws.close(1008, 'flood');
+        return;
+      }
+
+      let msg: Record<string, unknown>;
+      try {
+        msg = JSON.parse(data.toString());
+      } catch {
+        return;
+      }
+      if (typeof msg !== 'object' || msg === null || typeof msg.t !== 'string') return;
+
+      if (msg.t === 'ping') {
+        conn.send({ t: 'pong', ts: msg.ts });
+        return;
+      }
+      if (!player) {
+        if (msg.t === 'login' || msg.t === 'register') {
+          player = this.authenticate(conn, msg);
+          if (player) {
+            console.log(`[auth] ${player.name} zalogowany (${ip})`);
+            this.world.addPlayer(player);
+          }
+        }
+        return;
+      }
+      try {
+        this.world.handle(player, msg);
+      } catch (e) {
+        console.error('[world] błąd obsługi wiadomości', msg.t, e);
+      }
+    });
+
+    ws.on('close', () => {
+      if (player) {
+        console.log(`[auth] ${player.name} wylogowany`);
+        // Postać mogła zostać już przejęta przez nowe logowanie.
+        const p = player;
+        if (this.world.players.get(p.id) !== p) return;
+        // Ucieczka z walki: postać zostaje w świecie jeszcze do 30 s od ostatniej walki.
+        const left = this.closing ? 0 : COMBAT_LOGOUT_MS - (Date.now() - p.lastCombatAt);
+        if (left > 0) {
+          console.log(`[auth] ${p.name} wylogował się w walce – zostaje w świecie ${Math.ceil(left / 1000)} s`);
+          setTimeout(() => {
+            if (this.world.players.get(p.id) === p) this.world.removePlayer(p);
+          }, left);
+        } else {
+          this.world.removePlayer(p);
+        }
+      }
+    });
+    ws.on('error', () => {});
+  }
+
+  /** Logowanie lub rejestracja. Zwraca gracza albo null (błąd wysłany do klienta). */
+  private authenticate(conn: Connection, msg: Record<string, unknown>): Player | null {
+    const fail = (text: string) => {
+      conn.send({ t: 'auth_error', text });
+      return null;
+    };
+    if (Number(msg.v) !== config.protocolVersion)
+      return fail('Nieaktualna wersja klienta – zaktualizuj grę.');
+    const name = typeof msg.name === 'string' ? msg.name.trim() : '';
+    const pass = msg.pass;
+    const nameErr = validateName(name);
+    if (nameErr) return fail(nameErr);
+    const passErr = validatePassword(pass);
+    if (passErr) return fail(passErr);
+    const db = this.world.db;
+
+    let account = db.findAccount(name);
+    if (msg.t === 'register') {
+      if (account) return fail('Ta nazwa jest już zajęta.');
+      createAccountWithCharacter(db, name, hashPassword(pass as string), this.world.map.temple);
+      account = db.findAccount(name)!;
+      console.log(`[auth] nowe konto: ${name}`);
+    } else if (!account || !verifyPassword(pass as string, account.pass_hash)) {
+      return fail('Błędna nazwa lub hasło.');
+    }
+
+    const row = db.findCharacterByAccount(account.id);
+    if (!row) return fail('Brak postaci na koncie.');
+
+    // Podwójne logowanie – wyrzucamy starą sesję.
+    const existing = this.world.findPlayerByCharId(row.id);
+    if (existing) {
+      this.world.sendSystem(existing, 'Zalogowano z innego urządzenia.');
+      this.world.removePlayer(existing);
+      existing.conn.close('relog');
+    }
+
+    return playerFromRow(row, conn);
+  }
+}
