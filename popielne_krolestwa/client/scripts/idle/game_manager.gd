@@ -52,6 +52,7 @@ var talents: TalentManager
 var bestiary: BestiaryManager
 var expeditions: ExpeditionManager
 var tower: TowerManager
+var runes: RuneManager
 var achievements: AchievementManager
 
 ## Wynik postępu offline z ostatniego uruchomienia (pokazywany w oknie „Witaj ponownie!”).
@@ -86,6 +87,7 @@ func _ready() -> void:
 	bestiary = BestiaryManager.new(self)
 	expeditions = ExpeditionManager.new(self)
 	tower = TowerManager.new(self)
+	runes = RuneManager.new(self)
 	achievements = AchievementManager.new(self)
 	set_process(false)
 
@@ -105,7 +107,7 @@ func new_state() -> Dictionary:
 		"quests": {"active": {}, "done": [], "tasks": [], "tasks_done": 0, "track": {}},
 		"prestige": {}, "boosts": {}, "craft_xp": 0.0, "craft_lvl": 1,
 		"market": {}, "stats": {"kills": 0, "taps": 0, "gold": 0.0, "bosses": 0, "crits": 0, "spells": 0},
-		"settings": {"sound": true, "auto_potion": true, "effects": true},
+		"settings": {"sound": true, "music": true, "auto_potion": true, "effects": true},
 		"daily": {"day": 0, "last": ""}, "talents": {}, "bestiary": {}, "exped": {"active": [], "done": 0},
 		"tower": {"best": 0, "attempts": 3, "day": ""}, "ach": {"claimed": {}, "best_stage": 1, "best_level": 1},
 	}

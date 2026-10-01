@@ -272,6 +272,25 @@ func _ready() -> void:
 	check(g.tower.attempts() == 2, "zostały 2 próby")
 	check(g.tower.boss_hp(20) > g.tower.boss_hp(10) * 100.0, "piętra rosną wykładniczo")
 
+	print("== runy")
+	g.inventory.add("rune_fire_1", 3)
+	g.inventory.add("rune_blood_2", 1)
+	var dmg_r := g.stats.dmg_mult
+	check(g.runes.socket("weapon", 0, "rune_fire_1"), "runa Ognia w gnieździe broni")
+	g.stats.recalc()
+	check(g.stats.dmg_mult > dmg_r * 1.04, "runa zwiększa obrażenia")
+	check(g.inventory.count("rune_fire_1") == 2, "runa zdjęta z plecaka")
+	g.add_gold(g.runes.combine_cost(1) * 2.0)
+	check(not g.runes.combine("fire", 1), "za mało run do połączenia (2)")
+	g.runes.unsocket("weapon", 0)
+	check(g.runes.combine("fire", 1) and g.inventory.count("rune_fire_2") == 1, "3 okruchy → Runa Ognia")
+	check(g.runes.socket("weapon", 1, "rune_blood_2") and g.runes.totals().has("crit"), "runa Krwi daje krytyk")
+	s.max_stage = 60
+	g.prestige.rebirth()
+	check(g.runes.totals().has("crit") and g.inventory.count("rune_fire_2") == 1, "runy zostają po odrodzeniu")
+	var rn := g.runes.random_rune(1.0)
+	check(rn.begins_with("rune_") and RuneManager.value(rn) > 0.0, "losowa runa: %s" % RuneManager.rune_name(rn))
+
 	g.save.delete_save()
 	print("== wynik: %s (%d błędów)" % ["OK" if fails == 0 else "BŁĘDY", fails])
 	get_tree().quit(1 if fails > 0 else 0)

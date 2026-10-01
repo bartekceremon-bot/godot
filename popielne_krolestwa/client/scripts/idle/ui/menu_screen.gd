@@ -200,6 +200,9 @@ func _build_ui() -> void:
 	var snd := IdleUI.button("Dźwięk: wł." if Config.sound_enabled else "Dźwięk: wył.", Vector2(190, 72), 18)
 	snd.pressed.connect(func():
 		Config.sound_enabled = not Config.sound_enabled
+		var main := get_parent()
+		if main is IdleMain and main.music:
+			main.music.set_enabled(Config.sound_enabled)
 		snd.text = "Dźwięk: wł." if Config.sound_enabled else "Dźwięk: wył.")
 	row.add_child(snd)
 	var chips := IdleUI.hbox(8)

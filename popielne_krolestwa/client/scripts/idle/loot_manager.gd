@@ -121,6 +121,11 @@ func on_kill(e: Dictionary) -> void:
 		var r := roll_rarity(kind)
 		gm.inventory.add("chest_%d" % r, 1)
 		got.append(["chest_%d" % r, 1, r])
+	# Runy: boss 30%, elita 8% (od etapu 10).
+	if kind > 0 and stage >= 10 and _rng.randf() < [0.0, 0.08, 0.3][kind] * lm:
+		var rn := gm.runes.random_rune(clampf(stage / 120.0, 0.0, 1.0) + (0.1 if kind == 2 else 0.0))
+		gm.inventory.add(rn, 1)
+		got.append([rn, 1, 4])
 	# Boss świata z MMO: fragmenty jego wierzchowca (łoś – Król Szronu, wielbłąd – Czerw, drake – Żarogniew).
 	if kind == 2:
 		for md in gm.db.mounts:
@@ -168,6 +173,10 @@ func open_chest(r: int) -> Array:
 		var fr := _rng.randi_range(1, r - 1)
 		gm.inventory.add("frag_" + str(md.id), fr)
 		got.append(["frag_" + str(md.id), fr, 4])
+	if _rng.randf() < 0.12 * r:
+		var rn := gm.runes.random_rune(r / 6.0)
+		gm.inventory.add(rn, 1)
+		got.append([rn, 1, 4])
 	if _rng.randf() < 0.15 * r:
 		var tool := random_gear(stage, maxi(1, r - 1), ["woodaxe", "pickaxe", "sickle"])
 		if not tool.is_empty():

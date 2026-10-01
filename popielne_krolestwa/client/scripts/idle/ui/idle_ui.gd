@@ -146,6 +146,8 @@ static func item_tex(db: IdleDB, id: String) -> Texture2D:
 		return Sprites.icon("book")
 	if id.begins_with("chest_"):
 		return Sprites.icon("chest")
+	if id.begins_with("rune_"):
+		return load("res://assets/ui/runes/%s.png" % str(RuneManager.parse(id)[0]))
 	if id.begins_with("frag_"):
 		var d := db.item(id.substr(5))
 		return Sprites.item_icon_for(d)
@@ -161,6 +163,8 @@ static func item_name(db: IdleDB, id: String) -> String:
 		return "Wzmocnienie"
 	if id.begins_with("chest_"):
 		return LootManager.CHEST_NAMES[clampi(int(id.substr(6)), 1, 5)]
+	if id.begins_with("rune_"):
+		return RuneManager.rune_name(id)
 	if id.begins_with("frag_"):
 		return "Fragment: %s" % db.item_name(id.substr(5))
 	return db.item_name(id)

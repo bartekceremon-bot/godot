@@ -60,7 +60,17 @@ func _ready() -> void:
 		func(): await _shot("12f_wyprawy"); ui.show_tab("bestiary"); return 0.8,
 		func(): await _shot("12g_bestiariusz"); ui.show_tab("tower"); return 0.8,
 		func(): await _shot("12h_wieza"); _press("Wejdź do Wieży"); return 2.5,
-		func(): await _shot("12i_wieza_walka"); g.tower.leave(); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
+		func():
+			await _shot("12i_wieza_walka")
+			g.tower.leave()
+			g.inventory.add("rune_fire_2", 2)
+			g.inventory.add("rune_wind_1", 4)
+			g.inventory.add("rune_gold_3", 1)
+			g.runes.socket("weapon", 0, "rune_fire_2")
+			g.runes.socket("body", 0, "rune_gold_3")
+			ui.show_tab("runes")
+			return 0.8,
+		func(): await _shot("12j_runy"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
 			g.spells.cast("fireball")

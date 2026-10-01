@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 2.0.0)
+## Popielne Królestwa Idle (wersja 2.1.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
@@ -23,6 +23,8 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 | Wyprawy (menu, 2.0) | Zwiad 15 min, Patrol 1 h, Wyprawa 4 h, Wielka wyprawa 12 h do dowolnej odkrytej krainy – czas rzeczywisty, także przy zamkniętej grze. Łup: złoto, surowce krainy, skrzynie, żarokryształy, fragmenty wierzchowców. Sloty: 1 + etap 20 + etap 50 + 10. piętro Wieży. Natychmiastowy powrót za żarokryształy. |
 | Bestiariusz (menu, 2.0) | 33 gatunki krain; progi 10 / 100 / 1000 / 10 000 zabitych – każdy stopień na stałe +1% obrażeń i +1% złota. |
 | Wieża Popiołu (menu, 2.0) | Niekończące się piętra z bossami i elitami wszystkich krain (30 s na piętro, zwycięstwo = od razu wyżej). 3 próby dziennie, kolejne za 40 żarokryształów. Nagrody: żarokryształy za piętro, skrzynia co 5 pięter, punkt talentu za każde 5 pięter rekordu, slot wyprawy za 10. piętro. |
+| Runy (menu, 2.1) | 6 rodzajów (Ognia – obrażenia, Krwi – krytyk, Żaru – obrażenia krytyczne, Złota, Mądrości – XP, Wichru – szybkość) × 5 stopni (Okruch … Popielna runa). Po 2 gniazda w każdym slocie ekwipunku (trzecie za 150 żarokryształów) – gniazda zostają przy zmianie przedmiotów i po odrodzeniu. 3 runy łączą się w wyższy stopień za złoto. Źródła: bossowie i elity od etapu 10, Wieża Popiołu, wyprawy 4 h+, skrzynie. Ikony: `tools/textures/gen_runes.py`. |
+| Muzyka (2.1) | Trzy pętle syntezowane w całości (`tools/audio/gen_music.py`: lutnia Karplus-Strong, pady, chór, dzwony FM, bębny, pogłos): temat menu, temat walki i temat bossa / Wieży; płynne przejścia, wyłącznik w ustawieniach. |
 | Rozmiar (2.0) | Bez limitu rozmiaru: pełna, bezstratna jakość grafik, APK z bibliotekami arm64-v8a i armeabi-v7a (~57 MB). |
 | Codzienna nagroda (menu) | Seria 7 dni: złoto, mikstury, żarokryształy, skrzynie; 7. dnia epicka skrzynia i 100 żarokryształów. Opuszczony dzień zaczyna serię od nowa. Okno pojawia się samo przy starcie gry. |
 | Osiągnięcia (menu) | 8 osiągnięć po 4–5 stopni (Łowca, Pogromca bossów, Wędrowiec, Weteran, Niezmordowana pięść, Ostrze losu, Adept magii, Feniks); liczą całe dzieje bohatera, także sprzed odrodzeń; nagrody w żarokryształach. Kropka na przycisku MENU pokazuje, co czeka na odbiór. |

@@ -32,6 +32,7 @@ var _gem_badge: Control
 var _lvl_badge: Control
 var _sheet_close: Button
 var _banner_box: Control
+var music: IdleMusic
 var _menu_screen: Control
 var _ui_t := 0.0
 var _started := false
@@ -77,7 +78,10 @@ func _ready() -> void:
 	resized.connect(_layout)
 	get_tree().root.size_changed.connect(_layout)
 	_layout()
+	music = IdleMusic.new()
+	add_child(music)
 	_show_menu()
+	music.play("menu")
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--idle-shots="):
 			var t = load("res://scripts/idle/ui/idle_autotest.gd").new()
@@ -112,6 +116,10 @@ func _start_game() -> void:
 		return
 	_started = true
 	gm.start()
+	music.set_enabled(bool(gm.s.settings.get("music", true)))
+	music.play("walka")
+	gm.enemy_spawned.connect(_update_music)
+	gm.changed.connect(func(w): if w == "tower": _update_music())
 	if _menu_screen.has_method("leave"):
 		_menu_screen.leave()
 	else:
@@ -126,8 +134,16 @@ func _start_game() -> void:
 		dialog("Witaj, Popielniku!", "Uderzaj przyciskiem ATAK! albo dotykając przeciwnika (przytrzymaj, by bić seriami). Za złoto wynajmuj najemników (DRUŻYNA pod portretem) – walczą za ciebie także wtedy, gdy nie grasz. Ulepszaj ekwipunek, ucz się czarów u kapłanów i odblokowuj kolejne krainy.", [["Do boju!", Callable()]])
 
 
+## Muzyka bossa przy bossach, elitach i w Wieży Popiołu, w pozostałych walkach – temat walki.
+func _update_music() -> void:
+	var e := gm.enemy.cur
+	music.play("boss" if gm.tower.active or (not e.is_empty() and int(e.kind) > 0) else "walka")
+
+
 ## Przejście do klasycznej wersji MMO (poziomy ekran, logowanie na serwer).
 func open_classic() -> void:
+	if music:
+		music.set_enabled(false)
 	if gm.running:
 		gm.save.save_game()
 		gm.running = false
@@ -487,6 +503,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return BestiaryPanel.new()
 		"tower":
 			return TowerPanel.new()
+		"runes":
+			return RunesPanel.new()
 	return null
 
 
@@ -497,6 +515,7 @@ func _open_menu() -> void:
 		["Wyprawy", IdleUI.ash_tex("nav_compass"), "expeditions", gm.expeditions.ready_count()],
 		["Talenty", Sprites.icon("attack"), "talents", maxi(0, gm.talents.free_points())],
 		["Osiągnięcia", Sprites.icon("quest"), "achievements", gm.achievements.ready_count()],
+		["Runy", load("res://assets/ui/runes/fire.png"), "runes", 0],
 		["Bestiariusz", IdleUI.ash_tex("nav_book"), "bestiary", 0],
 		["Drużyna", Sprites.icon("character"), "heroes", 0], ["Stajnia", Sprites.icon("mount"), "mounts", 0],
 		["Ołtarz Popiołu", Sprites.icon("prestige"), "prestige", 1 if gm.prestige.can_rebirth() else 0],

@@ -100,6 +100,10 @@ func on_win() -> void:
 	var gems := 2 + int(f / 5)
 	gm.add_gems(gems)
 	_run_gems += gems
+	if randf() < 0.35:
+		var rn := gm.runes.random_rune(f / 60.0)
+		gm.inventory.add(rn, 1)
+		gm.notify("Wieża: %s!" % RuneManager.rune_name(rn), Color(1.0, 0.7, 0.35))
 	if f % 5 == 0:
 		var r := clampi(1 + int(f / 10), 1, 5)
 		gm.inventory.add("chest_%d" % r, 1)

@@ -126,6 +126,10 @@ func claim(i: int, t := -1.0) -> Array:
 	if int(p.gems) > 0:
 		gm.add_gems(int(p.gems))
 		got.append(["gems", int(p.gems), 0])
+	if int(e.dur) >= 2:
+		var rn := gm.runes.random_rune(0.15 * int(e.dur) + float(region_stage(reg)) / 150.0)
+		gm.inventory.add(rn, 1)
+		got.append([rn, 1, 4])
 	if _rng.randf() < float(p.frag):
 		var f: String = MOUNT_FRAGS[_rng.randi() % MOUNT_FRAGS.size()]
 		var n := _rng.randi_range(1, 2 + int(e.dur))

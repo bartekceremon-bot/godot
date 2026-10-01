@@ -12,7 +12,7 @@ func refresh() -> void:
 		c.queue_free()
 	add_child(IdleUI.title("Ustawienia", 28))
 	var set: Dictionary = gm.s.settings
-	for opt in [["sound", "Dźwięk"], ["effects", "Efekty (liczby, cząsteczki, monety)"], ["auto_potion", "Automatyczne mikstury życia w walce z bossem"]]:
+	for opt in [["sound", "Dźwięk"], ["music", "Muzyka"], ["effects", "Efekty (liczby, cząsteczki, monety)"], ["auto_potion", "Automatyczne mikstury życia w walce z bossem"]]:
 		var key := str(opt[0])
 		var b := CheckButton.new()
 		b.text = str(opt[1])
@@ -23,6 +23,8 @@ func refresh() -> void:
 			set[key] = on
 			if key == "sound":
 				Config.sound_enabled = on
+			if key == "music":
+				ui.music.set_enabled(on)
 			gm.save.save_game())
 		add_child(b)
 	var sv := IdleUI.button("Zapisz grę teraz", Vector2(0, 80), 22)

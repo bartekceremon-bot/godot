@@ -100,7 +100,7 @@ func rebirth() -> bool:
 	# Surowce, mikstury i skrzynie przepadają; zostają fragmenty wierzchowców i trofea bossów.
 	var keep := {}
 	for id in s.inv:
-		if str(id).begins_with("frag_") or str(gm.db.item(str(id)).get("category", "")) == "misc":
+		if str(id).begins_with("frag_") or str(id).begins_with("rune_") or str(gm.db.item(str(id)).get("category", "")) == "misc":
 			keep[id] = s.inv[id]
 	keep["hp_potion"] = 3
 	s.inv = keep
