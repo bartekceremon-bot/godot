@@ -125,6 +125,8 @@ func _item_popup(it: Dictionary) -> void:
 		info.add_child(IdleUI.label("Narzędzie zbierackie – najlepsze narzędzie każdego rodzaju działa samo z plecaka.", 16, IdleUI.DIM, true))
 	for line in gm.equipment.describe(it):
 		v.add_child(IdleUI.label("• " + str(line), 21, IdleUI.GOOD))
+	if it.has("ench"):
+		v.add_child(IdleUI.label(gm.equipment.enchant_text(it), 20, EquipmentManager.ENCHANT_GRADES[EquipmentManager.enchant_grade(float(it.ench.q))][1], true))
 	var cur := gm.equipment.equipped(slot) if slot != "" else {}
 	var equipped := gm.equipment.is_equipped(int(it.uid))
 	if not cur.is_empty() and not equipped:
@@ -161,6 +163,22 @@ func _item_popup(it: Dictionary) -> void:
 			ui.close_modal(m)
 			_item_popup(it))
 	row.add_child(ub)
+	if gm.equipment.can_enchant_item(it):
+		var ec := gm.equipment.enchant_cost(it)
+		var etxt := "%s\n%s zł%s" % ["Przekuj zaklęcie" if it.has("ench") else "Zaczaruj", IdleDB.fmt(float(ec.gold)), (" + %d odł." % int(ec.shards)) if int(ec.shards) > 0 else ""]
+		var enb := IdleUI.button(etxt, Vector2(0, 84), 18)
+		enb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		IdleUI.set_affordable(enb, gm.equipment.can_enchant(it))
+		enb.pressed.connect(func():
+			var e := gm.equipment.enchant(int(it.uid))
+			if not e.is_empty():
+				var gr := EquipmentManager.enchant_grade(float(e.q))
+				ui.toast_msg(gm.equipment.enchant_text(it), EquipmentManager.ENCHANT_GRADES[gr][1])
+				if gr == 3:
+					ui.banner("LEGENDARNE ZAKLĘCIE!", gm.equipment.enchant_text(it), Color(1.0, 0.65, 0.2))
+				ui.close_modal(m)
+				_item_popup(it))
+		row.add_child(enb)
 	if not equipped:
 		var sb := IdleUI.button("Sprzedaj\n%s zł" % IdleDB.fmt(gm.shop.sell_price_gear(it)), Vector2(0, 84), 18)
 		sb.size_flags_horizontal = Control.SIZE_EXPAND_FILL

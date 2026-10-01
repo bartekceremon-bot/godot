@@ -3,6 +3,23 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 3.4.0
+
+```
+<pl-PL>
+• Klasy bohatera: Wojownik, Łowca i Mag z umiejętnościami ostatecznymi
+• Zaklęcia ekwipunku: zaczaruj broń i zbroję losową premią (do legendarnej)
+• Kopia zapisu: przenieś grę na nowy telefon kodem z Ustawień
+• Wibracje przy krytykach i bossach
+</pl-PL>
+<en-US>
+• Hero classes: Warrior, Hunter and Mage with ultimate abilities
+• Gear enchantments: enchant weapons and armor with random bonuses (up to legendary)
+• Save code: move your game to a new phone with a code from Settings
+• Vibration on crits and bosses
+</en-US>
+```
+
 ## 3.3.0
 
 ```

@@ -537,6 +537,74 @@ func _ready() -> void:
 		hits[int(rr[0])] = int(hits.get(int(rr[0]), 0)) + 1
 	check(int(hits.get(0, 0)) > int(hits.get(7, 0)), "pole złota częstsze niż wielka wygrana (%d vs %d)" % [int(hits.get(0, 0)), int(hits.get(7, 0))])
 
+	print("== zaklęcia ekwipunku")
+	s.ach.best_stage = maxi(int(s.ach.best_stage), EquipmentManager.ENCHANT_STAGE)
+	var en_it: Dictionary = g.inventory.add_gear("sword_t3", 3)
+	check(g.equipment.can_enchant_item(en_it), "miecz można zaczarować")
+	s.gold = float(g.equipment.enchant_cost(en_it).gold) * 100.0
+	var sc0 := g.equipment.score(en_it)
+	var rng_e := RandomNumberGenerator.new()
+	rng_e.seed = 7
+	var ench := g.equipment.enchant(int(en_it.uid), rng_e)
+	check(not ench.is_empty() and en_it.has("ench") and int(en_it.rr) == 1, "zaklęcie: %s" % g.equipment.enchant_text(en_it))
+	check(g.equipment.score(en_it) >= sc0 and g.equipment.item_stats(en_it).has(str(ench.stat)), "zaklęcie dodaje premię")
+	check(int(g.equipment.enchant_cost(en_it).shards) == 1, "przekucie kosztuje odłamek relikwii")
+	s.relics.shards = 0
+	check(not g.equipment.can_enchant(en_it), "bez odłamka nie da się przekuć")
+	s.relics.shards = 5
+	check(not g.equipment.enchant(int(en_it.uid), rng_e).is_empty() and g.relics.shards() == 4 and int(en_it.rr) == 2, "przekucie zaklęcia")
+	var tool_it: Dictionary = g.inventory.add_gear("pickaxe_t2", 2)
+	check(not g.equipment.can_enchant_item(tool_it), "narzędzi nie zaczarujesz")
+	g.shop.sell_junk(5)
+	check(not g.inventory.gear_by_uid(int(en_it.uid)).is_empty(), "zaczarowany przedmiot chroniony przed hurtową sprzedażą")
+
+	print("== kod zapisu")
+	var code := g.save.export_code()
+	check(code.begins_with("PK1-") and code.length() > 100, "eksport: kod %d znaków" % code.length())
+	var back := SaveManager.parse_code(code)
+	check(int(back.max_stage) == int(s.max_stage) and back.gear.size() == s.gear.size(), "kod odtwarza stan gry")
+	var bad_code := code.substr(0, 10) + ("x" if code[10] != "x" else "y") + code.substr(11)
+	check(SaveManager.parse_code(bad_code).is_empty() and SaveManager.parse_code("bzdura").is_empty(), "uszkodzony kod odrzucony")
+	var gold_kod := float(s.gold)
+	s.gold = 1.0
+	check(g.import_state(back) and absf(float(g.s.gold) - gold_kod) < 1.0, "import przywraca grę")
+	s = g.s
+
+	print("== klasy bohatera")
+	var hc := g.hero
+	s.erase("hero_class")
+	s.ach.best_stage = maxi(int(s.ach.best_stage), ClassManager.UNLOCK_STAGE)
+	g.stats.recalc()
+	var hc_click0 := g.stats.click
+	var hc_crit0 := g.stats.crit_chance
+	check(hc.unlocked() and hc.current() == "" and hc.change_cost() == 0, "klasy odblokowane, pierwszy wybór darmowy")
+	var hc_gems := int(s.gems)
+	check(hc.choose("warrior") and int(s.gems) == hc_gems, "wybór Wojownika")
+	g.stats.recalc()
+	check(g.stats.click > hc_click0 * 1.25 and g.stats.crit_chance > hc_crit0, "Wojownik: +30% ciosu, +krytyk")
+	check(not hc.ready() and not hc.activate(), "bez Żaru brak umiejętności")
+	for i in 200:
+		hc.add_charge(0.6)
+	check(hc.ready(), "Żar pełny po ciosach")
+	var hc_click1 := g.stats.click
+	check(hc.activate() and hc.ult_active(), "Furia Żaru aktywna")
+	g.stats.recalc()
+	check(g.stats.click > hc_click1 * 3.5, "Furia: ×4 obrażenia ciosu")
+	s.hero_class.ult_until = 0.0
+	g.tick(0.05)
+	g.stats.recalc()
+	check(absf(g.stats.click - hc_click1) < hc_click1 * 0.01, "koniec Furii")
+	s.gems = 1000
+	check(hc.change_cost() == ClassManager.CHANGE_COST and hc.choose("mage") and int(s.gems) == 1000 - ClassManager.CHANGE_COST, "zmiana klasy za żarokryształy")
+	s.hero_class.charge = ClassManager.CHARGE_MAX
+	g.enemy.spawn()
+	var hc_hp := float(g.enemy.cur.hp)
+	g.spells.cooldowns["heal"] = 50.0
+	check(hc.activate() and g.spells.cd_left("heal") == 0.0, "Kataklizm: odnowienie czarów")
+	check(float(g.enemy.cur.get("hp", 0.0)) < hc_hp or g.enemy.cur.get("monster", "") != "", "Kataklizm zadaje obrażenia")
+	s.erase("hero_class")
+	g.stats.recalc()
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

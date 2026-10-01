@@ -12,7 +12,7 @@ func refresh() -> void:
 		c.queue_free()
 	add_child(IdleUI.title("Ustawienia", 28))
 	var set: Dictionary = gm.s.settings
-	for opt in [["sound", "Dźwięk"], ["music", "Muzyka"], ["story", "Opowieść (dialogi postaci)"], ["effects", "Efekty (liczby, cząsteczki, monety)"], ["auto_potion", "Automatyczne mikstury życia w walce z bossem"]]:
+	for opt in [["sound", "Dźwięk"], ["music", "Muzyka"], ["vibration", "Wibracje (krytyki, bossowie)"], ["story", "Opowieść (dialogi postaci)"], ["effects", "Efekty (liczby, cząsteczki, monety)"], ["auto_potion", "Automatyczne mikstury życia w walce z bossem"]]:
 		var key := str(opt[0])
 		var b := CheckButton.new()
 		b.text = str(opt[1])
@@ -96,6 +96,20 @@ func refresh() -> void:
 		gm.save.save_game()
 		ui.toast_msg("Zapisano.", IdleUI.GOOD))
 	add_child(sv)
+	# Kopia zapasowa: kod zapisu do przeniesienia gry na inny telefon (bez konta i serwera).
+	var brow := IdleUI.hbox(8)
+	add_child(brow)
+	var ex := IdleUI.button("Kopiuj kod zapisu", Vector2(0, 76), 19)
+	ex.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ex.pressed.connect(func():
+		gm.save.save_game()
+		DisplayServer.clipboard_set(gm.save.export_code())
+		ui.toast_msg("Kod zapisu skopiowany – wklej go na nowym telefonie (Ustawienia → Wczytaj z kodu).", IdleUI.GOOD))
+	brow.add_child(ex)
+	var im := IdleUI.button("Wczytaj z kodu", Vector2(0, 76), 19)
+	im.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	im.pressed.connect(_import_dialog)
+	brow.add_child(im)
 	var mmo := IdleUI.button("Klasyczne Popielne Królestwa (MMO online)", Vector2(0, 80), 20)
 	mmo.pressed.connect(func(): ui.open_classic())
 	add_child(mmo)
@@ -105,4 +119,32 @@ func refresh() -> void:
 			gm.wipe()
 			ui.toast_msg("Nowa gra rozpoczęta.")))
 	add_child(wipe)
-	add_child(IdleUI.label("Gra zapisuje się sama co 15 s i przy wyjściu. Nie wymaga logowania ani internetu.", 17, IdleUI.DIM, true))
+	add_child(IdleUI.label("Gra zapisuje się sama co 15 s i przy wyjściu. Nie wymaga logowania ani internetu. Zmieniasz telefon? Skopiuj kod zapisu i wczytaj go na nowym urządzeniu.", 17, IdleUI.DIM, true))
+
+
+func _import_dialog() -> void:
+	var v := IdleUI.vbox(10)
+	v.add_child(IdleUI.label("Wklej kod zapisu (zaczyna się od „PK1-”). Obecna gra na tym urządzeniu zostanie zastąpiona.", 18, UiTheme.TEXT, true))
+	var te := TextEdit.new()
+	te.custom_minimum_size = Vector2(0, 220)
+	te.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	te.add_theme_font_size_override("font_size", 16)
+	te.placeholder_text = "PK1-…"
+	v.add_child(te)
+	var paste := IdleUI.button("Wklej ze schowka", Vector2(0, 68), 19)
+	paste.pressed.connect(func(): te.text = DisplayServer.clipboard_get())
+	v.add_child(paste)
+	var go := IdleUI.button("Wczytaj grę", Vector2(0, 80), 22)
+	var m: Control
+	go.pressed.connect(func():
+		var d := SaveManager.parse_code(te.text)
+		if d.is_empty():
+			ui.toast_msg("Nieprawidłowy kod zapisu.", IdleUI.BAD)
+			return
+		ui.confirm("Wczytać grę z kodu?", "Etap %d, poziom %d. Obecny postęp na tym urządzeniu zostanie zastąpiony." % [int(d.get("max_stage", 1)), int(d.get("level", 1))], func():
+			if gm.import_state(d):
+				ui.close_modal(m)
+				ui.toast_msg("Gra wczytana!", IdleUI.GOOD)
+				request_refresh()))
+	v.add_child(go)
+	m = ui.modal("Wczytaj z kodu", v)

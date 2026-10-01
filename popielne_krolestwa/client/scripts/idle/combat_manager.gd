@@ -43,7 +43,8 @@ func tap() -> void:
 	s.stats.taps = int(s.stats.taps) + 1
 	gm.quests.on_event("taps", 1)
 	var dmg := gm.stats.click * _rng.randf_range(0.92, 1.08)
-	var crit := _rng.randf() < gm.stats.crit_chance
+	var crit := _rng.randf() < gm.stats.crit_chance or gm.hero.ult_mults().has("crit")
+	gm.hero.add_charge(0.6)
 	if crit:
 		dmg *= gm.stats.crit_mult
 		s.stats.crits = int(s.stats.crits) + 1
@@ -135,6 +136,7 @@ func kill() -> void:
 	var s := gm.s
 	var kind := int(e.kind)
 	var stage := int(e.stage)
+	gm.hero.add_charge(3.0 + kind * 7.0)
 	var st := gm.stats
 	var gold := ProgressionManager.gold_for(stage) * ProgressionManager.boss_hp_mult(kind) * st.gold_mult
 	var xp := ProgressionManager.xp_for(stage) * (1.0 + kind * 4.0) * st.xp_mult

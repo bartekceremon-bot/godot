@@ -62,6 +62,7 @@ var arena: ArenaManager
 var relics: RelicManager
 var path: PathManager
 var wheel: WheelManager
+var hero: ClassManager
 var story: StoryManager
 var phoenix: PhoenixManager
 var events: EventManager
@@ -115,6 +116,7 @@ func _ready() -> void:
 	relics = RelicManager.new(self)
 	path = PathManager.new(self)
 	wheel = WheelManager.new(self)
+	hero = ClassManager.new(self)
 	story = StoryManager.new(self)
 	phoenix = PhoenixManager.new(self)
 	events = EventManager.new(self)
@@ -205,6 +207,7 @@ func tick(dt: float) -> void:
 	spells.tick(dt)
 	progression.tick(dt)
 	premium.tick(dt)
+	hero.tick(dt)
 	stats.tick(dt)
 
 
@@ -259,6 +262,28 @@ func spend_gems(n: int) -> bool:
 
 func notify(text: String, color := Color(0.96, 0.8, 0.48)) -> void:
 	toast.emit(text, color)
+
+
+## Wczytanie stanu z kodu zapisu (przeniesienie gry z innego telefonu).
+func import_state(d: Dictionary) -> bool:
+	if d.is_empty():
+		return false
+	tower.active = false
+	raid.active = false
+	dungeon.active = false
+	arena.active = false
+	s = d
+	_migrate()
+	if s.gear.is_empty():
+		equipment.give_starter_gear()
+	stats.recalc()
+	combat.reset_player()
+	quests.refresh()
+	market.ensure_offers()
+	enemy.spawn()
+	save.save_game()
+	changed.emit("all")
+	return true
 
 
 ## Wyczyszczenie całej gry (ustawienia – „Zacznij od nowa”).

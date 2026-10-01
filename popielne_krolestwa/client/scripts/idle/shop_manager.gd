@@ -119,7 +119,7 @@ func sell_junk(max_rarity: int) -> Array:
 	var gold := 0.0
 	for it in gm.s.gear.duplicate():
 		var uid := int(it.uid)
-		if gm.equipment.is_equipped(uid) or int(it.q) > max_rarity or int(it.lvl) > 0 or gm.equipment.is_tool(str(it.id)):
+		if gm.equipment.is_equipped(uid) or int(it.q) > max_rarity or int(it.lvl) > 0 or it.has("ench") or gm.equipment.is_tool(str(it.id)):
 			continue
 		gold += sell_price_gear(it)
 		gm.inventory.remove_gear(uid)

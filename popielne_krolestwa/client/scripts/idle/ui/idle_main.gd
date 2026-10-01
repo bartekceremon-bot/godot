@@ -607,6 +607,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return RelicsPanel.new()
 		"wheel":
 			return WheelPanel.new()
+		"class":
+			return ClassPanel.new()
 	return null
 
 
@@ -616,6 +618,7 @@ func _open_menu() -> void:
 		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
 		["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count()],
 		["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers()],
+		["Klasa bohatera", load("res://assets/ui/runes/fire.png"), "class", 1 if gm.hero.unlocked() and gm.hero.current() == "" else 0],
 		["Koło Żaru", IdleUI.ash_tex("nav_gem"), "wheel", gm.wheel.free_spins()],
 		["Lochy Żaru", load("res://assets/ui/modes/dungeon.png"), "dungeon", gm.dungeon.total_keys() if gm.dungeon.unlocked() else 0],
 		["Arena", load("res://assets/ui/modes/arena.png"), "arena", (gm.arena.tickets() + (1 if gm.arena.weekly_ready() else 0)) if gm.arena.unlocked() else 0],

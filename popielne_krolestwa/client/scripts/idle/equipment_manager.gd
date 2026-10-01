@@ -30,6 +30,14 @@ const UPGRADE_MATS := {
 	"shield": ["wood", "ore"], "plate": ["ore", "stone"], "leather": ["hide", "fiber"], "cloth": ["fiber", "hide"],
 	"woodaxe": ["wood", "ore"], "pickaxe": ["ore", "stone"], "sickle": ["fiber", "ore"],
 }
+## Zaklęcia (Kuźnia Runiczna): jedna losowa premia na przedmiot; [min, maks] przed mnożnikami.
+const ENCHANTS := {
+	"dmg": [0.03, 0.10], "gold": [0.04, 0.12], "xp": [0.04, 0.12], "crit": [0.01, 0.03],
+	"critdmg": [0.08, 0.25], "speed": [0.02, 0.06], "merc": [0.04, 0.12], "spell": [0.05, 0.15],
+}
+const ENCHANT_GRADES := [["zwykłe", Color(0.85, 0.85, 0.85)], ["rzadkie", Color(0.4, 0.7, 1.0)], ["epickie", Color(0.8, 0.45, 1.0)], ["legendarne", Color(1.0, 0.65, 0.2)]]
+## Zaklinanie od etapu 20.
+const ENCHANT_STAGE := 20
 ## Narzędzia zbierackie: premia do zdobywanych surowców (+10% na tier najlepszego narzędzia).
 const TOOLS := {"woodaxe": ["wood"], "pickaxe": ["ore", "stone"], "sickle": ["fiber"]}
 
@@ -92,9 +100,67 @@ func item_stats(it: Dictionary) -> Dictionary:
 			out[k] = float(fam[k]) * r * r
 		else:
 			out[k] = float(fam[k]) * r
+	if it.has("ench"):
+		var e: Dictionary = it.ench
+		out[str(e.stat)] = float(out.get(str(e.stat), 0.0)) + float(e.v)
 	if out.has("crit"):
 		out["crit"] = minf(0.2, out["crit"])
 	return out
+
+
+# --- Zaklęcia --------------------------------------------------------------------
+
+func can_enchant_item(it: Dictionary) -> bool:
+	return not is_tool(str(it.id)) and int(gm.achievements.value("best_stage")) >= ENCHANT_STAGE
+
+
+## Koszt zaczarowania / przekucia: złoto (rośnie z liczbą przekuć) i 1 odłamek relikwii od 2. przekucia.
+func enchant_cost(it: Dictionary) -> Dictionary:
+	var t := clampi(IdleDB.tier_of(str(it.id)), 1, 8)
+	var rr := int(it.get("rr", 0))
+	var gold := ProgressionManager.gold_for(gm.progression.tier_stage(t)) * 20.0 * float(IdleDB.QUALITY_MULT[int(it.q)]) * (1.0 + 0.5 * rr)
+	return {"gold": ceilf(gold), "shards": 1 if rr >= 1 else 0}
+
+
+func can_enchant(it: Dictionary) -> bool:
+	var c := enchant_cost(it)
+	return can_enchant_item(it) and float(gm.s.gold) >= float(c.gold) and gm.relics.shards() >= int(c.shards)
+
+
+static func enchant_grade(q: float) -> int:
+	return 3 if q >= 0.95 else (2 if q >= 0.8 else (1 if q >= 0.5 else 0))
+
+
+## Nowe losowe zaklęcie (zastępuje poprzednie). Zwraca zaklęcie albo {}.
+func enchant(uid: int, rng: RandomNumberGenerator = null) -> Dictionary:
+	var it := gm.inventory.gear_by_uid(uid)
+	if it.is_empty() or not can_enchant(it):
+		return {}
+	var c := enchant_cost(it)
+	gm.spend_gold(float(c.gold))
+	if int(c.shards) > 0:
+		gm.relics.add_shards(-int(c.shards))
+	var r := rng if rng else RandomNumberGenerator.new()
+	if rng == null:
+		r.randomize()
+	var keys := ENCHANTS.keys()
+	var stat: String = keys[r.randi() % keys.size()]
+	var q := r.randf()
+	var t := clampi(IdleDB.tier_of(str(it.id)), 1, 8)
+	var rng_v: Array = ENCHANTS[stat]
+	var v := lerpf(float(rng_v[0]), float(rng_v[1]), q) * (1.0 + 0.12 * (t - 1)) * (0.8 + 0.1 * int(it.q))
+	it["ench"] = {"stat": stat, "q": q, "v": v}
+	it["rr"] = int(it.get("rr", 0)) + 1
+	gm.audio.play("rare" if enchant_grade(q) >= 2 else "craft")
+	gm.changed.emit("gear")
+	return it.ench
+
+
+func enchant_text(it: Dictionary) -> String:
+	if not it.has("ench"):
+		return ""
+	var e: Dictionary = it.ench
+	return "✦ +%s%% %s (zaklęcie %s)" % [_pct(float(e.v)), STAT_NAMES[str(e.stat)], ENCHANT_GRADES[enchant_grade(float(e.q))][0]]
 
 
 ## Suma premii założonego ekwipunku i najlepszych narzędzi.
@@ -130,6 +196,12 @@ func totals() -> Dictionary:
 func describe(it: Dictionary) -> Array:
 	var out: Array = []
 	var st := item_stats(it)
+	# Zaklęcie ma osobny wiersz (enchant_text).
+	if it.has("ench"):
+		var ek := str(it.ench.stat)
+		st[ek] = float(st.get(ek, 0.0)) - float(it.ench.v)
+		if float(st[ek]) <= 0.00001:
+			st.erase(ek)
 	for k in ["click", "dmg", "crit", "critdmg", "merc", "speed", "spell", "hp", "def", "mp", "gold", "xp", "materials"]:
 		if not st.has(k):
 			continue

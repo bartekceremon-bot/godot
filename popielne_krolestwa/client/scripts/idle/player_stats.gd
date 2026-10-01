@@ -98,6 +98,19 @@ func recalc() -> void:
 	spell_power = 1.0 + eq.get("spell", 0.0) + tl.get("spell", 0.0) + arch + ru.get("spell", 0.0) + gm.events.bonus("spell")
 	offline_eff = minf(2.5, 0.5 + mt.get("offline", 0.0) + pr.get("offline", 0.0) + tl.get("offline", 0.0) + gm.phoenix.value("wings") + float(gm.premium.bonuses().offline))
 	offline_cap_h = 12.0 + pr.get("offline_h", 0.0) + 2.0 * gm.phoenix.level("wings")
+	# Klasa bohatera: stałe premie i umiejętność ostateczna (Furia Żaru, Deszcz Strzał).
+	var cl: Dictionary = gm.hero.totals()
+	var ul: Dictionary = gm.hero.ult_mults()
+	if not cl.is_empty() or not ul.is_empty():
+		merc_dps *= (1.0 + float(cl.get("merc", 0.0))) * float(ul.get("merc", 1.0))
+		dps = merc_dps * dmg_mult * atk_speed
+		click = ((1.0 + train + level + eq.get("click", 0.0)) * dmg_mult * (1.0 + boost.get("click", 0.0) + tl.get("click", 0.0)) + dps * click_dps_share) \
+			* (1.0 + float(cl.get("click", 0.0))) * float(ul.get("click", 1.0))
+		crit_chance = minf(0.75, crit_chance + float(cl.get("crit", 0.0)))
+		gold_mult *= 1.0 + float(cl.get("gold", 0.0))
+		spell_power += float(cl.get("spell", 0.0))
+		max_mp *= 1.0 + float(cl.get("mp", 0.0))
+		mp_regen = 1.0 + max_mp * 0.02
 	parts = {"eq": eq, "mounts": mt, "prestige": pr, "buffs": bo, "boosts": boost, "talents": tl, "bestiary": best, "runes": ru}
 	gm.changed.emit("stats")
 

@@ -49,6 +49,10 @@ var _edge_tw: Tween
 var _auto_btn: Button
 var _goals_box: VBoxContainer
 var _menu_btn: Button
+## Umiejętność ostateczna klasy (obok ATAK!): ikona, pasek Żaru, napis.
+var _ult_btn: Button
+var _ult_fill: ColorRect
+var _ult_l: Label
 var _path_btn: Button
 ## Samouczek: łapka wskazująca, co nacisnąć (cele początkowe Ścieżki Popielnika).
 var _hand: TextureRect
@@ -425,6 +429,50 @@ func _build_bottom() -> void:
 		_atk_held = 0.0
 		_attack_press())
 	_atk_btn.button_up.connect(func(): _atk_held = -1.0)
+	_ult_btn = IdleUI.ash_button("slot", 18)
+	_ult_btn.custom_minimum_size = Vector2(118, 150)
+	_ult_btn.clip_contents = true
+	_ult_fill = ColorRect.new()
+	_ult_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ult_fill.anchor_left = 0.0
+	_ult_fill.anchor_right = 1.0
+	_ult_fill.anchor_top = 1.0
+	_ult_fill.anchor_bottom = 1.0
+	_ult_fill.offset_left = 6
+	_ult_fill.offset_right = -6
+	_ult_fill.offset_bottom = -6
+	_ult_btn.add_child(_ult_fill)
+	var uic := TextureRect.new()
+	uic.name = "icon"
+	uic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	uic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	uic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	uic.anchor_left = 0.5
+	uic.anchor_right = 0.5
+	uic.offset_left = -36
+	uic.offset_right = 36
+	uic.offset_top = 14
+	uic.offset_bottom = 86
+	_ult_btn.add_child(uic)
+	_ult_l = IdleUI.hud_label("", 15, Color(1.0, 0.9, 0.7), 5)
+	_ult_l.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_ult_l.offset_top = -50
+	_ult_l.offset_bottom = -8
+	_ult_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_ult_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_ult_btn.add_child(_ult_l)
+	_ult_btn.pressed.connect(func():
+		if gm.hero.activate():
+			var d := gm.hero.def()
+			ui.banner(str(d.ult).to_upper(), str(d.ult_text), d.color)
+			view.shake(0.8)
+			_buzz(120, true)
+		else:
+			Sfx.play("miss"))
+	atk_row.add_theme_constant_override("separation", 8)
+	atk_row.add_child(_ult_btn)
+	_hud_buttons.append(_ult_btn)
+	_update_ult()
 	# Umiejętności: auto-klik, 4 czary, mikstury.
 	var sp := IdleUI.pass_through(IdleUI.hbox(6))
 	sp.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -629,6 +677,7 @@ func _process(delta: float) -> void:
 		_ui_t = 0.0
 		_update_player()
 		_update_spells()
+		_update_ult()
 		if _path_btn and is_instance_valid(_path_btn):
 			var was := str(_path_btn.text)
 			_update_path_card(_path_btn)
@@ -670,6 +719,8 @@ func _on_changed(what: String) -> void:
 			_refresh_stage()
 		"path":
 			_refresh_goals()
+		"class":
+			_update_ult()
 		"pets":
 			_refresh_pets()
 
@@ -893,6 +944,42 @@ func _update_guide(delta: float) -> void:
 	_hand.rotation = -0.35
 
 
+const ULT_ICONS := {"warrior": "res://assets/ui/runes/fire.png", "hunter": "res://assets/ui/runes/wind.png", "mage": "res://assets/ui/runes/mind.png"}
+
+
+func _update_ult() -> void:
+	if _ult_btn == null:
+		return
+	var h := gm.hero
+	var on := h.current() != ""
+	_ult_btn.visible = on
+	_atk_btn.custom_minimum_size.x = 450 if on else 560
+	if not on:
+		return
+	var ic: TextureRect = _ult_btn.get_node("icon")
+	var path: String = ULT_ICONS[h.current()]
+	if ic.texture == null or ic.texture.resource_path != path:
+		ic.texture = load(path)
+	var col: Color = h.def().color
+	var frac := h.charge() / ClassManager.CHARGE_MAX
+	if h.ult_active():
+		frac = h.ult_left() / maxf(1.0, float(h.def().ult_sec))
+		_ult_l.text = "%.0f s" % h.ult_left()
+	elif h.ready():
+		_ult_l.text = "GOTOWE!"
+	else:
+		_ult_l.text = "ŻAR %d%%" % roundi(frac * 100.0)
+	_ult_fill.color = Color(col.r, col.g, col.b, 0.75 if h.ready() or h.ult_active() else 0.4)
+	_ult_fill.offset_top = -6.0 - (150.0 - 12.0) * clampf(frac, 0.0, 1.0)
+	_ult_btn.modulate = Color(1, 1, 1, 1) if h.ready() or h.ult_active() else Color(0.85, 0.85, 0.85, 1)
+	if h.ready():
+		var p := 1.0 + 0.06 * sin(Time.get_ticks_msec() / 160.0)
+		_ult_btn.scale = Vector2(p, p)
+		_ult_btn.pivot_offset = _ult_btn.size / 2.0
+	else:
+		_ult_btn.scale = Vector2.ONE
+
+
 func _refresh_spell_icons() -> void:
 	for i in 4:
 		var b: Button = _spell_btns[i]
@@ -1001,8 +1088,22 @@ func _on_spawn() -> void:
 
 # --- Efekty -----------------------------------------------------------------------
 
+## Krótka wibracja telefonu (ustawienie „Wibracje”); krytyki najwyżej co 0,25 s.
+var _buzz_at := 0
+func _buzz(ms: int, force := false) -> void:
+	if not bool(gm.s.settings.get("vibration", true)) or not OS.has_feature("mobile"):
+		return
+	var now := Time.get_ticks_msec()
+	if not force and now - _buzz_at < 250:
+		return
+	_buzz_at = now
+	Input.vibrate_handheld(ms)
+
+
 func _on_hit(amount: float, crit: bool, source: String) -> void:
 	view.on_hit(crit, source)
+	if crit and source == "tap":
+		_buzz(18)
 	if not bool(gm.s.settings.get("effects", true)) and not crit:
 		return
 	var pos := _enemy_pos() + Vector2(randf_range(-120, 120), randf_range(-70, 90))
@@ -1025,6 +1126,8 @@ func _on_hit(amount: float, crit: bool, source: String) -> void:
 
 
 func _on_killed(info: Dictionary) -> void:
+	if int(info.get("boss", 0)) > 0:
+		_buzz(70, true)
 	var boss := int(info.boss)
 	view.on_kill(boss)
 	gm.audio.play("death")

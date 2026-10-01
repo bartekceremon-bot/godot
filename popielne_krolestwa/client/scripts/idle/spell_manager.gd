@@ -100,6 +100,12 @@ func mana_of(id: String) -> float:
 	return float(idle_def(id).get("mana", 20))
 
 
+## Odnowienie wszystkich czarów (Kataklizm maga).
+func reset_cooldowns() -> void:
+	cooldowns.clear()
+	gm.changed.emit("spells")
+
+
 func cd_left(id: String) -> float:
 	return float(cooldowns.get(id, 0.0))
 

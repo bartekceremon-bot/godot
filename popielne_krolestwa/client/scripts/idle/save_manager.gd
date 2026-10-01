@@ -64,6 +64,34 @@ func _read(p: String) -> Dictionary:
 	return d if d is Dictionary else {}
 
 
+## Kod zapisu do przeniesienia gry na inny telefon (bez serwera): PK1-<base64(gzip(JSON))>-<suma>.
+func export_code() -> String:
+	if gm.s.is_empty():
+		return ""
+	var raw := JSON.stringify(gm.s).to_utf8_buffer()
+	var packed := raw.compress(FileAccess.COMPRESSION_GZIP)
+	var b64 := Marshalls.raw_to_base64(packed)
+	return "PK1-%s-%s" % [b64, b64.sha256_text().left(8)]
+
+
+## Odczyt kodu zapisu; pusty słownik przy błędnym kodzie.
+static func parse_code(code: String) -> Dictionary:
+	var c := code.strip_edges().replace("\n", "").replace(" ", "")
+	if not c.begins_with("PK1-"):
+		return {}
+	var parts := c.substr(4).rsplit("-", true, 1)
+	if parts.size() != 2 or parts[0].sha256_text().left(8) != parts[1]:
+		return {}
+	var packed := Marshalls.base64_to_raw(parts[0])
+	if packed.is_empty():
+		return {}
+	var raw := packed.decompress_dynamic(64 * 1024 * 1024, FileAccess.COMPRESSION_GZIP)
+	var d = JSON.parse_string(raw.get_string_from_utf8())
+	if not (d is Dictionary) or not d.has("stage") or not d.has("gold") or not d.has("gear"):
+		return {}
+	return d
+
+
 func has_save() -> bool:
 	return FileAccess.file_exists(path) or FileAccess.file_exists(path + ".bak")
 
