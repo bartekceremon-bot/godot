@@ -97,10 +97,12 @@ jobs:
         run: |
           set -e
           cd popielne_krolestwa/client
-          godot --headless --quit || true
-          for EDS in ~/.config/godot/editor_settings-4*.tres; do
-            printf 'export/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\n' "$ANDROID_HOME" "$JAVA_HOME" >> "$EDS"
-          done
+          # Ustawienia edytora ze ścieżkami Android SDK i JDK (eksport Androida ich wymaga).
+          mkdir -p ~/.config/godot
+          printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\nexport/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\n' "$ANDROID_HOME" "$JAVA_HOME" > ~/.config/godot/editor_settings-4.5.tres
+          cat ~/.config/godot/editor_settings-4.5.tres
+          # Import zasobów (pierwszy raz trwa dłużej; drugi przebieg domyka klasy globalne wtyczek).
+          godot --headless --path . --import || true
           godot --headless --path . --import || true
           godot --headless --path . --install-android-build-template
           mkdir -p ../build
