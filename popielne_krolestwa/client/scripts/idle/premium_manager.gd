@@ -15,6 +15,7 @@ const PLACEMENTS := {
 	"fury": {"name": "Zwój Furii: ×2 obrażenia i złoto na 5 min"},
 	"tower_attempt": {"name": "Dodatkowa próba w Wieży (raz dziennie)"},
 	"wheel_spin": {"name": "Dodatkowy obrót Koła Żaru (raz dziennie)"},
+	"build_speed": {"name": "Pomocnicy: −30 min budowy w Twierdzy (raz dziennie)"},
 	"garden_grow": {"name": "Nawóz Żaru: wszystkie zioła od razu gotowe (raz dziennie)"},
 }
 
@@ -182,6 +183,8 @@ func ad_available(place: String) -> bool:
 			return str(a.tower_day) != DailyManager.today()
 		"wheel_spin":
 			return str(a.get("wheel_day", "")) != DailyManager.today()
+		"build_speed":
+			return str(a.get("build_day", "")) != DailyManager.today() and not gm.stronghold.queue().is_empty()
 		"garden_grow":
 			return str(a.get("garden_day", "")) != DailyManager.today() and gm.garden.growing_count() > 0
 		"fury":
@@ -221,6 +224,10 @@ func ad_reward(place: String) -> String:
 			a.wheel_day = DailyManager.today()
 			gm.wheel.add_free_spin()
 			return "+1 obrót Koła Żaru"
+		"build_speed":
+			a.build_day = DailyManager.today()
+			gm.stronghold.ad_speedup()
+			return "Pomocnicy: −30 min budowy!"
 		"garden_grow":
 			a.garden_day = DailyManager.today()
 			gm.garden.grow_all()

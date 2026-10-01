@@ -3,6 +3,31 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.4.0
+
+```
+<pl-PL>
+• Twierdza Popielników – sześć budynków ze stałymi premiami
+• Budowa trwa także przy zamkniętej grze
+</pl-PL>
+<en-US>
+• Ashborn Stronghold – six buildings with permanent bonuses
+• Construction continues even while the game is closed
+</en-US>
+<es-ES>
+• Fortaleza de los Renacidos: seis edificios con bonificaciones permanentes
+• La construcción sigue incluso con el juego cerrado
+</es-ES>
+<pt-BR>
+• Fortaleza dos Renascidos – seis construções com bônus permanentes
+• A obra continua mesmo com o jogo fechado
+</pt-BR>
+<de-DE>
+• Festung der Aschgeborenen – sechs Gebäude mit dauerhaften Boni
+• Der Bau läuft auch bei geschlossenem Spiel weiter
+</de-DE>
+```
+
 ## 4.3.0
 
 ```

@@ -826,6 +826,31 @@ func _ready() -> void:
 	g.enemy.spawn()
 	g.stats.mark_dirty()
 
+	# --- Twierdza Popielników ---
+	var shd := g.stronghold
+	s.erase("stronghold")
+	check(shd.unlocked() and shd.free_builders() == 1, "twierdza: 1 budowniczy")
+	g.add_gold(shd.cost("treasury") * 5.0 + shd.cost("library") * 5.0)
+	check(shd.build("treasury") and shd.in_queue("treasury") and shd.free_builders() == 0, "budowa Skarbca")
+	check(not shd.build("library"), "brak wolnego budowniczego")
+	check(shd.check_done() == 0 and shd.level("treasury") == 0, "budowa trwa")
+	s.stronghold.queue[0].done_at = StrongholdManager.now() - 1.0
+	g.stats.recalc()
+	var gold_s0 := g.stats.gold_mult
+	check(shd.check_done() == 1 and shd.level("treasury") == 1 and shd.queue().is_empty(), "Skarbiec poziom 1")
+	g.stats.recalc()
+	check(g.stats.gold_mult > gold_s0, "Skarbiec zwiększa złoto")
+	check(shd.build_time("treasury") > 120.0 and shd.cost("treasury") > 0.0, "kolejny poziom droższy i dłuższy")
+	var gems_s := int(s.gems)
+	check(shd.build("library") and shd.rush_cost(0) >= 1, "koszt przyspieszenia %d" % shd.rush_cost(0))
+	var rc_s := shd.rush_cost(0)
+	check(shd.rush(0) and shd.level("library") == 1 and int(s.gems) == gems_s - rc_s, "przyspieszenie budowy")
+	g.add_gems(StrongholdManager.BUILDER_COST)
+	check(shd.buy_builder() and shd.builders() == 2 and not shd.buy_builder(), "drugi budowniczy raz")
+	check(g.achievements.value("stronghold_levels") == 2.0, "osiągnięcie Twierdzy")
+	s.erase("stronghold")
+	g.stats.mark_dirty()
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

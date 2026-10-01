@@ -17,6 +17,7 @@ const LIST := [
 	["relic_levels", "Kolekcjoner relikwii", "Suma poziomów relikwii: %s", [1, 12, 40, 120]],
 	["harvests", "Zielarz", "Zebrane plony: %s", [1, 25, 100, 500]],
 	["mastery_levels", "Mistrz oręża", "Suma poziomów mistrzostwa broni: %s", [5, 25, 75, 200]],
+	["stronghold_levels", "Budowniczy", "Suma poziomów budynków Twierdzy: %s", [5, 30, 90, 180]],
 	["goblins", "Łowca skarbów", "Pokonane Złote Gobliny: %s", [1, 10, 50, 200]],
 ]
 
@@ -50,6 +51,8 @@ func value(key: String) -> float:
 			return float(gm.s.get("arena", {}).get("wins", 0))
 		"mastery_levels":
 			return float(gm.mastery.total_levels())
+		"stronghold_levels":
+			return float(gm.stronghold.total_levels())
 		"harvests":
 			return float(gm.s.get("garden", {}).get("harvests", 0))
 		"relic_levels":

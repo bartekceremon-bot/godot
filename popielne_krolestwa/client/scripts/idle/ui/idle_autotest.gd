@@ -149,7 +149,8 @@ func _ready() -> void:
 		func(): await _shot("12s33_smok_wykluty"); g.s.garden.herbs["dragon_pepper"] = 12; g.dragon.feed_herb("dragon_pepper", -1); ui.show_tab("dragon"); return 0.8,
 		func(): await _shot("12s34_smok_panel"); _close_modals(); ui.show_tab("fight"); g.s.farm_mode = true; g.enemy.spawn(); return 1.5,
 		func(): g.dragon.tick(DragonManager.BREATH_CD); return 0.25,
-		func(): await _shot("12s35_smok_walka"); g.s.farm_mode = false; ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s35_smok_walka"); g.s.farm_mode = false; g.s.erase("stronghold"); g.add_gold(g.stronghold.cost("forge") * 50.0); g.stronghold.build("treasury"); g.s.stronghold.queue[0].done_at = 0.0; g.stronghold.check_done(); g.stronghold.build("forge"); ui.show_tab("stronghold"); return 0.8,
+		func(): await _shot("12s36_twierdza"); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0

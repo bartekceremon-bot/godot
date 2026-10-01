@@ -20,6 +20,7 @@ const POOL := [
 	["crits", "Zadaj %d trafień krytycznych", 2000],
 	["harvest", "Zbierz plony z grządek %d razy", 12],
 	["goblins", "Pokonaj Złotego Goblina %d razy", 3],
+	["build", "Ukończ %d rozbudowy w Twierdzy", 5],
 ]
 const COUNT := 7
 const GOAL_REWARDS := [{"gems": 40}, {"chest": 3}, {"gems": 40}, {"shards": 3}, {"gems": 50}, {"chest": 3}, {"gems": 60}]
