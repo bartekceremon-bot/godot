@@ -104,9 +104,9 @@ jobs:
           # Import zasobów (pierwszy raz trwa dłużej; drugi przebieg domyka klasy globalne wtyczek).
           godot --headless --path . --import || true
           godot --headless --path . --import || true
-          godot --headless --path . --install-android-build-template
           mkdir -p ../build
-          godot --headless --path . --export-release "Android" ../build/PopielneKrolestwa.aab
+          # Szablon Gradle instaluje się razem z eksportem (sam przełącznik zostawia działający edytor).
+          godot --headless --path . --install-android-build-template --export-release "Android" ../build/PopielneKrolestwa.aab
           ls -la ../build
 
       - name: Testowe APK (ten sam build, do instalacji na telefonie)
