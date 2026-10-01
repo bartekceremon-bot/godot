@@ -15,6 +15,7 @@ const PLACEMENTS := {
 	"fury": {"name": "Zwój Furii: ×2 obrażenia i złoto na 5 min"},
 	"tower_attempt": {"name": "Dodatkowa próba w Wieży (raz dziennie)"},
 	"wheel_spin": {"name": "Dodatkowy obrót Koła Żaru (raz dziennie)"},
+	"garden_grow": {"name": "Nawóz Żaru: wszystkie zioła od razu gotowe (raz dziennie)"},
 }
 
 var gm: IdleGame
@@ -181,6 +182,8 @@ func ad_available(place: String) -> bool:
 			return str(a.tower_day) != DailyManager.today()
 		"wheel_spin":
 			return str(a.get("wheel_day", "")) != DailyManager.today()
+		"garden_grow":
+			return str(a.get("garden_day", "")) != DailyManager.today() and gm.garden.growing_count() > 0
 		"fury":
 			return now() >= float(a.fury_until)
 	return true
@@ -218,6 +221,10 @@ func ad_reward(place: String) -> String:
 			a.wheel_day = DailyManager.today()
 			gm.wheel.add_free_spin()
 			return "+1 obrót Koła Żaru"
+		"garden_grow":
+			a.garden_day = DailyManager.today()
+			gm.garden.grow_all()
+			return "Nawóz Żaru: zioła gotowe do zbioru!"
 	gm.changed.emit("premium")
 	return "ok"
 

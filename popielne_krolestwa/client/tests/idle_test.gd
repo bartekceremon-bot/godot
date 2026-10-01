@@ -701,11 +701,53 @@ func _ready() -> void:
 	s.erase("mail")
 	check(g.mail.unread() == MailManager.MESSAGES.size(), "poczta: %d nieprzeczytanych" % g.mail.unread())
 	var gems_m := int(s.gems)
-	check(g.mail.has_gift(0) and g.mail.claim(0).size() == 1 and int(s.gems) == gems_m + 50, "prezent za aktualizację")
+	check(g.mail.has_gift(0) and g.mail.claim(0).size() == 1 and int(s.gems) == gems_m + 100, "prezent za aktualizację")
 	check(not g.mail.has_gift(0) and g.mail.claim(0).is_empty(), "prezent raz")
-	check(not g.mail.has_gift(2), "starsze wiadomości bez prezentów")
+	check(not g.mail.has_gift(3), "starsze wiadomości bez prezentów")
 	var last := MailManager.MESSAGES.size() - 1
 	check(g.mail.has_gift(last), "powitanie z prezentem")
+
+	# --- Ogród Alchemika ---
+	var gd := g.garden
+	s.erase("garden")
+	var ms_keep := int(s.max_stage)
+	var bs_keep := int(s.ach.best_stage)
+	s.max_stage = 30
+	s.ach.best_stage = 30
+	check(gd.unlocked() and gd.plot_count() == 3, "ogród: 3 grządki od etapu 20 (%d)" % gd.plot_count())
+	check(gd.herb_unlocked("goldbloom") and not gd.herb_unlocked("frost_lily"), "zioła odblokowane wg etapu")
+	g.add_gold(gd.herb_cost("goldbloom") * 10.0)
+	check(gd.plant(0, "ember_root") and gd.state(0) == "growing", "posadzono Korzeń Żaru")
+	check(not gd.plant(0, "ember_root"), "zajęta grządka")
+	check(not gd.plant(4, "ember_root") and gd.state(4) == "locked", "zablokowana grządka")
+	var left0 := gd.time_left(0)
+	check(gd.water(0) and gd.time_left(0) < left0 * 0.75 and not gd.water(0), "podlewanie raz: −30%")
+	check(gd.plant_all("goldbloom") == 2 and gd.empty_count() == 0, "posadź wszędzie")
+	check(gd.harvest(0).is_empty(), "nie można zebrać rosnącego")
+	gd.plot(0).ready = GardenManager.now() - 1.0
+	check(gd.ready_count() == 1, "gotowa grządka")
+	var hv := gd.harvest(0)
+	check(hv.size() == 3 and gd.herbs("ember_root") >= 3 and gd.state(0) == "empty", "zbiór: %s" % str(hv))
+	check(g.achievements.value("harvests") == 1.0, "osiągnięcie zbiorów")
+	check(gd.grow_all() == 2 and gd.harvest_all().has("goldbloom"), "nawóz i zbiór wszystkiego")
+	gd._st().herbs["ember_root"] = 10
+	gd._st().herbs["goldbloom"] = 10
+	check(gd.can_brew("wealth") and gd.brew("wealth") and gd.elixirs("wealth") == 1 and gd.herbs("goldbloom") <= 8, "uwarzono Napar Złota")
+	check(not gd.can_brew("dragon"), "brak składników na Smoczy Eliksir")
+	s.boosts.clear()
+	g.stats.recalc()
+	var gm_before := g.stats.gold_mult
+	check(gd.drink("wealth") and gd.elixirs("wealth") == 0, "wypito eliksir")
+	g.stats.recalc()
+	check(g.stats.gold_mult > gm_before * 1.4, "eliksir zwiększa złoto: %.2f → %.2f" % [gm_before, g.stats.gold_mult])
+	check(not gd.drink("wealth"), "brak eliksiru")
+	gd._st().xp = 0
+	gd._st().lvl = 1
+	gd._add_xp(30)
+	check(gd.level() == 3 and gd.grow_time("ember_root") < 600.0, "poziom zielarstwa: %d" % gd.level())
+	s.boosts.clear()
+	s.max_stage = ms_keep
+	s.ach.best_stage = bs_keep
 
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()

@@ -15,6 +15,7 @@ const LIST := [
 	["dungeon_clears", "Grotołaz", "Oczyszczone lochy: %s", [1, 10, 50, 200]],
 	["arena_wins", "Gladiator", "Wygrane pojedynki na Arenie: %s", [1, 10, 50, 250]],
 	["relic_levels", "Kolekcjoner relikwii", "Suma poziomów relikwii: %s", [1, 12, 40, 120]],
+	["harvests", "Zielarz", "Zebrane plony: %s", [1, 25, 100, 500]],
 ]
 
 var gm: IdleGame
@@ -45,6 +46,8 @@ func value(key: String) -> float:
 			return float(gm.s.get("dungeon", {}).get("clears", 0))
 		"arena_wins":
 			return float(gm.s.get("arena", {}).get("wins", 0))
+		"harvests":
+			return float(gm.s.get("garden", {}).get("harvests", 0))
 		"relic_levels":
 			var n := 0
 			for id in gm.s.get("relics", {}).get("owned", {}):

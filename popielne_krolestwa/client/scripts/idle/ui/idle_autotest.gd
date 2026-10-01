@@ -137,7 +137,10 @@ func _ready() -> void:
 		func(): await _shot("12s22_wyzwania"); ui.show_tab("mail"); return 0.8,
 		func(): await _shot("12s23_poczta"); ui.show_tab("records"); return 0.8,
 		func(): await _shot("12s24_rekordy"); _close_modals(); ui._open_menu(); return 0.8,
-		func(): await _shot("12s25_menu_sekcje"); _close_modals(); ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s25_menu_sekcje"); _close_modals(); _garden_setup(); ui.show_tab("garden"); return 0.8,
+		func(): await _shot("12s26_ogrod"); _press("Zbierz wszystko"); return 0.6,
+		func(): await _shot("12s27_ogrod_zbior"); _scroll_bottom(ui); return 0.6,
+		func(): await _shot("12s28_kociol"); _close_modals(); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
@@ -194,6 +197,30 @@ func _open_first_item() -> void:
 
 
 ## Naciska przycisk o podanym tekście w otwartym oknie (jak palec gracza).
+func _garden_setup() -> void:
+	var g: IdleGame = ui.gm
+	g.s.ach.best_stage = maxi(int(g.s.ach.best_stage), 60)
+	g.s.erase("garden")
+	var gd := g.garden
+	g.add_gold(gd.herb_cost("dragon_pepper") * 4.0)
+	gd.plant(0, "ember_root")
+	gd.plant(1, "goldbloom")
+	gd.plant(2, "frost_lily")
+	gd.water(2)
+	gd.plant(3, "moon_sage")
+	gd.plot(1).ready = GardenManager.now() - 1.0
+	gd.plot(3).ready = GardenManager.now() - 1.0
+	gd._st().herbs = {"ember_root": 7, "moon_sage": 2, "goldbloom": 3, "frost_lily": 1}
+	gd._st().elixirs = {"might": 2}
+
+
+func _scroll_bottom(n: Node) -> void:
+	for c in n.get_children():
+		if c is ScrollContainer and c.is_visible_in_tree():
+			c.scroll_vertical = 100000
+		_scroll_bottom(c)
+
+
 func _press(text: String) -> void:
 	var b := _find_button(ui, text)
 	if b == null:

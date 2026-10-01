@@ -3,6 +3,36 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.0.0
+
+```
+<pl-PL>
+• Ogród Alchemika: sadź zioła i warz eliksiry
+• Nowe osiągnięcie i wyzwanie tygodnia
+• Prezent od Gildii w Poczcie
+</pl-PL>
+<en-US>
+• Alchemist's Garden: grow herbs and brew elixirs
+• New achievement and weekly challenge
+• A gift from the Guild in your Mail
+</en-US>
+<es-ES>
+• Jardín del Alquimista: cultiva hierbas y prepara elixires
+• Nuevo logro y desafío semanal
+• Un regalo del Gremio en el Correo
+</es-ES>
+<pt-BR>
+• Jardim do Alquimista: cultive ervas e prepare elixires
+• Nova conquista e desafio semanal
+• Um presente da Guilda no Correio
+</pt-BR>
+<de-DE>
+• Garten des Alchemisten: Kräuter anbauen und Elixiere brauen
+• Neuer Erfolg und Wochen-Herausforderung
+• Ein Geschenk der Gilde in der Post
+</de-DE>
+```
+
 ## 3.9.0
 
 ```

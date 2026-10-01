@@ -622,6 +622,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return MailPanel.new()
 		"records":
 			return RecordsPanel.new()
+		"garden":
+			return GardenPanel.new()
 	return null
 
 
@@ -640,6 +642,7 @@ func _open_menu() -> void:
 			["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers(), 0],
 			["Sen Popielnika", load("res://assets/ui/runes/mind.png"), "dream", gm.dream.free_runs() if gm.dream.unlocked() else 0, DreamManager.UNLOCK_STAGE],
 			["Wyprawy", IdleUI.ash_tex("nav_compass"), "expeditions", gm.expeditions.ready_count(), 0]]],
+		["Ogród i alchemia", [["Ogród Alchemika", load("res://assets/ui/modes/garden.png"), "garden", gm.garden.ready_count() + gm.garden.empty_count() if gm.garden.unlocked() else 0, GardenManager.UNLOCK_STAGE]]],
 		["Rozwój bohatera", [["Klasa bohatera", load("res://assets/ui/runes/fire.png"), "class", 1 if gm.hero.unlocked() and gm.hero.current() == "" else 0, ClassManager.UNLOCK_STAGE],
 			["Talenty", Sprites.icon("attack"), "talents", maxi(0, gm.talents.free_points()), 0],
 			["Relikwie", load("res://assets/ui/modes/relics.png"), "relics", int(gm.relics.shards() / RelicManager.PULL_COST), 0],

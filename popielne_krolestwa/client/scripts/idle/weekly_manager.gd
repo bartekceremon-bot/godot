@@ -18,6 +18,7 @@ const POOL := [
 	["expeditions", "Ukończ %d wypraw", 5],
 	["tower", "Pokonaj %d pięter Wieży Popiołu", 10],
 	["crits", "Zadaj %d trafień krytycznych", 2000],
+	["harvest", "Zbierz plony z grządek %d razy", 12],
 ]
 const COUNT := 7
 const GOAL_REWARDS := [{"gems": 40}, {"chest": 3}, {"gems": 40}, {"shards": 3}, {"gems": 50}, {"chest": 3}, {"gems": 60}]
