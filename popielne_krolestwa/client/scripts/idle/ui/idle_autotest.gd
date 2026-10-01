@@ -23,7 +23,7 @@ func _ready() -> void:
 	g.story_autotest = true
 	_steps = [
 		func(): return 4.0,
-		func(): print("idle-autotest: menu ", ui._menu_screen.size, " vp ", ui._menu_screen.view.get_viewport().size); await _shot("00_menu"); ui._start_game(); return 1.0,
+		func(): print("idle-autotest: menu ", ui._menu_screen.size); await _shot("00_menu"); ui._start_game(); return 1.0,
 		func(): await _shot("01_start"); _press("Do boju!"); return 0.5,
 		func(): await _expect_no_modal("Do boju!"); return 0.3,
 		func(): ui._open_menu(); return 0.5,

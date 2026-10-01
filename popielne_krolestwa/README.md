@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 4.9.0)
+## Popielne Królestwa Idle (wersja 4.9.1)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 

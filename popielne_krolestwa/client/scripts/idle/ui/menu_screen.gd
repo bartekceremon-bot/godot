@@ -1,8 +1,8 @@
 class_name IdleMenuScreen
 extends Control
-## Ekran tytułowy: żywa scena 3D (Świątynia Ognia, Żarogniew, bohater z drużyną, czary, żar,
-## kamera okrążająca scenę), kute logo z przelatującym refleksem, szklane panele, żarzący się
-## przycisk, unoszące się iskry i płynne wejście. Wszystko z assetów gry.
+## Ekran tytułowy: grafika tytułowa (Żarogniew nad spalonym królestwem) z powolnym
+## przybliżaniem, kute logo z przelatującym refleksem, żarzący się przycisk, unoszące się
+## iskry i płynne wejście.
 
 signal play_pressed
 signal classic_pressed
@@ -22,16 +22,12 @@ void fragment() {
 	COLOR = c;
 }
 """
-const SPELLS := ["fireball", "lightning", "icebolt", "holy", "chain", "fireball", "meteor", "frost_nova"]
 
 var gm: IdleGame
-var view: BattleView
 var _logo: TextureRect
 var _play: Button
 var _fade: ColorRect
 var _t := 0.0
-var _fx_t := 1.5
-var _spell_i := 0
 var _content: VBoxContainer
 
 
@@ -44,41 +40,47 @@ func setup(g: IdleGame) -> void:
 	_intro()
 
 
+## Grafika tytułowa (key art): Żarogniew nad spalonym królestwem i Popielnik na skale.
+## Lekko podniesiona (bohater nad przyciskami) i powoli przybliżana.
+const ART_SHIFT := 0.1
+
+var _art: TextureRect
+
+
 func _build_scene() -> void:
-	var vpc := SubViewportContainer.new()
-	vpc.stretch = true
-	vpc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	vpc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(vpc)
-	var vp := SubViewport.new()
-	vp.own_world_3d = true
-	vp.msaa_3d = Viewport.MSAA_2X
-	vpc.add_child(vp)
-	view = BattleView.new()
-	vp.add_child(view)
-	view.set_region(gm.db.regions[7])
-	view.set_hero(["plate_head_t8", "plate_body_t8", "plate_legs_t8", "plate_feet_t8", "sword_t8", "shield_t8"])
-	var party: Array = []
-	for id in ["dragon_hunter", "frost_mage", "guildmaster"]:
-		party.append(gm.db.merc_def(id))
-	view.set_mercs(party)
-	view.spawn_enemy({"name": "Żarogniew", "look": "ash_dragon", "kind": 2})
-	view.orbit = true
-	view.orbit_focus = Vector3(0.0, 1.6, 0.3)
-	view.orbit_radius = 9.5
-	view.orbit_height = 1.4
-	view.camera.position = Vector3(2.0, 7.0, 16.0)
+	var bg := ColorRect.new()
+	bg.color = Color(0.02, 0.012, 0.012)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg)
+	_art = TextureRect.new()
+	_art.texture = load("res://assets/ui/menu_keyart.jpg")
+	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_art)
+	resized.connect(_place_art)
+	_place_art()
+
+
+func _place_art() -> void:
+	if not _art:
+		return
+	_art.size = size
+	_art.position = Vector2(0, -size.y * ART_SHIFT)
+	_art.pivot_offset = Vector2(size.x * 0.5, size.y * 0.45)
 
 
 func _build_overlay() -> void:
 	# Przyciemnienie góry (logo) i dołu (przyciski), środek – widok sceny.
 	var shade := TextureRect.new()
 	var grad := Gradient.new()
-	grad.set_color(0, Color(0.02, 0.01, 0.01, 0.85))
-	grad.add_point(0.3, Color(0.02, 0.01, 0.01, 0.1))
-	grad.add_point(0.52, Color(0.02, 0.01, 0.01, 0.0))
-	grad.add_point(0.72, Color(0.02, 0.01, 0.01, 0.6))
-	grad.set_color(grad.get_point_count() - 1, Color(0.02, 0.01, 0.01, 0.97))
+	grad.set_color(0, Color(0.02, 0.01, 0.01, 0.55))
+	grad.add_point(0.26, Color(0.02, 0.01, 0.01, 0.05))
+	grad.add_point(0.6, Color(0.02, 0.01, 0.01, 0.0))
+	grad.add_point(0.76, Color(0.02, 0.01, 0.01, 0.55))
+	grad.add_point(0.88, Color(0.02, 0.01, 0.01, 0.95))
+	grad.set_color(grad.get_point_count() - 1, Color(0.02, 0.01, 0.01, 1.0))
 	var gt := GradientTexture2D.new()
 	gt.gradient = grad
 	gt.fill_to = Vector2(0, 1)
@@ -94,7 +96,7 @@ func _build_overlay() -> void:
 	var vig := TextureRect.new()
 	var vg := Gradient.new()
 	vg.set_color(0, Color(0, 0, 0, 0.0))
-	vg.set_color(1, Color(0, 0, 0, 0.7))
+	vg.set_color(1, Color(0, 0, 0, 0.45))
 	vg.set_offset(0, 0.55)
 	var vt := GradientTexture2D.new()
 	vt.gradient = vg
@@ -159,7 +161,7 @@ func _build_ui() -> void:
 	_logo.texture = load("res://assets/ui/logo.png")
 	_logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_logo.custom_minimum_size = Vector2(620, 292)
+	_logo.custom_minimum_size = Vector2(560, 230)
 	var sm := ShaderMaterial.new()
 	var sh := Shader.new()
 	sh.code = SHINE_SHADER
@@ -167,19 +169,16 @@ func _build_ui() -> void:
 	_logo.material = sm
 	_content.add_child(_logo)
 	_content.add_child(_subtitle("ŁOWY  W  POPIELE"))
-	var tag := IdleUI.label("RPG idle  •  klikaj, zdobywaj łup, odradzaj się z popiołu", 18, Color(0.88, 0.8, 0.7))
-	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_content.add_child(tag)
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_content.add_child(spacer)
 	var save := gm.save.load_game()
 	if not save.is_empty():
-		_content.add_child(_save_card(save))
+		_content.add_child(_save_strip(save))
 	# Kamienna płyta z żarem – jak przycisk ATAK! na ekranie walki.
 	_play = IdleUI.ash_button("stone_button", 44)
 	_play.text = "KONTYNUUJ" if not save.is_empty() else "ROZPOCZNIJ PRZYGODĘ"
-	_play.custom_minimum_size = Vector2(0, 124)
+	_play.custom_minimum_size = Vector2(0, 112)
 	_play.add_theme_font_override("font", UiTheme.TITLE_FONT)
 	_play.add_theme_font_size_override("font_size", 36)
 	_play.add_theme_color_override("font_color", Color(0.95, 0.92, 0.88))
@@ -259,6 +258,34 @@ func _chip(text: String) -> Control:
 	return p
 
 
+## Zwięzły pasek zapisu nad przyciskiem (nie zasłania grafiki): poziom, etap, kraina, nieobecność.
+func _save_strip(s: Dictionary) -> Control:
+	var c := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.03, 0.02, 0.02, 0.72)
+	sb.border_color = Color(1.0, 0.6, 0.25, 0.45)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(14)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	c.add_theme_stylebox_override("panel", sb)
+	var v := IdleUI.vbox(2)
+	c.add_child(v)
+	var stage := int(s.get("stage", 1))
+	var reg: Dictionary = gm.db.regions[((stage - 1) / gm.db.stages_per_region) % gm.db.regions.size()]
+	var t := IdleUI.label("Poziom %d  •  Etap %d  •  %s" % [int(s.get("level", 1)), stage, str(reg.name)], 20, UiTheme.ACCENT)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(t)
+	var ago := Time.get_unix_time_from_system() - float(s.get("last_time", 0.0))
+	if ago > 120.0:
+		var a := IdleUI.label("Drużyna walczy od %s – czeka na ciebie łup!" % IdleDB.fmt_time(ago), 16, IdleUI.GOOD)
+		a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		v.add_child(a)
+	return c
+
+
 ## Karta zapisu: bohater, etap, kraina, złoto, kiedy grano.
 func _save_card(s: Dictionary) -> Control:
 	var c := PanelContainer.new()
@@ -303,7 +330,7 @@ func _intro() -> void:
 	var tw := create_tween()
 	tw.tween_property(_fade, "color:a", 0.0, 1.4).set_ease(Tween.EASE_OUT)
 	_logo.modulate.a = 0.0
-	_logo.pivot_offset = Vector2(310, 146)
+	_logo.pivot_offset = Vector2(280, 115)
 	_logo.scale = Vector2(1.25, 1.25)
 	var lt := _logo.create_tween().set_parallel(true)
 	lt.tween_property(_logo, "modulate:a", 1.0, 1.2).set_delay(0.5)
@@ -330,19 +357,11 @@ func _process(delta: float) -> void:
 		var b := 1.0 + sin(_t * 0.9) * 0.012
 		if _t > 2.2:
 			_logo.scale = Vector2(b, b)
-	# Walka w tle: czary drużyny, ryk smoka.
-	_fx_t -= delta
-	if _fx_t <= 0.0 and view:
-		_fx_t = randf_range(1.6, 2.8)
-		var id: String = SPELLS[_spell_i % SPELLS.size()]
-		_spell_i += 1
-		view.on_spell(id)
-		if view.enemy:
-			view.get_tree().create_timer(0.35).timeout.connect(func():
-				if is_instance_valid(view) and view.enemy:
-					view.enemy.flash()
-					if randf() < 0.5:
-						view.enemy.play_attack("melee"))
+	# Powolne przybliżanie grafiki (efekt Kena Burnsa) z lekkim kołysaniem.
+	if _art:
+		var z := 1.0 + 0.045 * (0.5 - 0.5 * cos(_t * 0.12))
+		_art.scale = Vector2(z, z)
+		_art.position = Vector2(sin(_t * 0.07) * 6.0, -size.y * ART_SHIFT + sin(_t * 0.09) * 4.0)
 
 
 ## Wyjście do gry: zanik i zwolnienie sceny 3D.
