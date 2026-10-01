@@ -25,6 +25,9 @@ var _enemy_l: Label
 var _hp_bar: ProgressBar
 var _hp_l: Label
 var _timer_l: Label
+var _affix_l: Label
+var _combo_l: Label
+var _combo_shown := 0
 var _boss_btn: Button
 var _hud: VBoxContainer
 var _hud_buttons: Array = []
@@ -310,6 +313,10 @@ func _build_header() -> void:
 	_region_l = IdleUI.hud_label("", 17, Color(0.85, 0.8, 0.74), 5)
 	_region_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	right.add_child(_region_l)
+	_affix_l = IdleUI.hud_label("", 17, Color(0.85, 0.65, 1.0), 5)
+	_affix_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_affix_l.visible = false
+	right.add_child(_affix_l)
 	# Środek: cele zadań (z lewej), menu, drużyna i auto-etap (z prawej).
 	var mid := IdleUI.pass_through(IdleUI.hbox(8))
 	mid.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -626,6 +633,36 @@ func _flash_edge(strength: float) -> void:
 	_edge_tw.tween_property(_edge, "modulate:a", 0.0, 0.35 + strength * 0.3)
 
 
+## Licznik combo nad przyciskiem ATAK! (od 5 trafień), puls przy każdej dziesiątce.
+func _update_combo() -> void:
+	var c := gm.combat.combo
+	if _combo_l == null:
+		_combo_l = IdleUI.hud_label("", 30, Color(1.0, 0.8, 0.3), 7)
+		_combo_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_combo_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_combo_l)
+	if c == _combo_shown:
+		return
+	var grew := c > _combo_shown
+	_combo_shown = c
+	_combo_l.visible = c >= 5
+	if c < 5:
+		return
+	_combo_l.text = "COMBO %d  ×%s" % [c, String.num(gm.combat.combo_mult(), 2)]
+	var col := Color(1.0, 0.8, 0.3).lerp(Color(1.0, 0.3, 0.15), float(c) / float(CombatManager.COMBO_MAX))
+	_combo_l.add_theme_color_override("font_color", col)
+	_combo_l.reset_size()
+	var br := _atk_btn.get_global_rect()
+	_combo_l.position = Vector2(br.position.x - global_position.x + (br.size.x - _combo_l.size.x) / 2.0, br.position.y - global_position.y - _combo_l.size.y - 36)
+	_combo_l.pivot_offset = _combo_l.size / 2.0
+	if grew and c % 10 == 0:
+		var tw := _combo_l.create_tween()
+		tw.tween_property(_combo_l, "scale", Vector2(1.35, 1.35), 0.07)
+		tw.tween_property(_combo_l, "scale", Vector2.ONE, 0.15)
+		if c == CombatManager.COMBO_MAX:
+			gm.audio.play("rare")
+
+
 ## ATAK!: cios od razu, przytrzymanie – seria jak przy przytrzymaniu palca na scenie.
 func _attack_press() -> void:
 	_tap_at(_enemy_pos() + Vector2(randf_range(-40, 40), randf_range(-30, 50)))
@@ -637,8 +674,8 @@ func _attack_press() -> void:
 	tw.tween_property(_atk_btn, "scale", Vector2.ONE, 0.1)
 
 
-func _tap_at(pos: Vector2) -> void:
-	gm.combat.tap()
+func _tap_at(pos: Vector2, manual := true) -> void:
+	gm.combat.tap(manual)
 	_spark(pos, Color(1.0, 0.85, 0.5))
 	gm.audio.play("hit", 0.12)
 
@@ -670,8 +707,9 @@ func _process(delta: float) -> void:
 		_auto_acc += delta * AUTO_CLICK_RATE
 		while _auto_acc >= 1.0:
 			_auto_acc -= 1.0
-			_tap_at(_enemy_pos() + Vector2(randf_range(-50, 50), randf_range(-30, 60)))
+			_tap_at(_enemy_pos() + Vector2(randf_range(-50, 50), randf_range(-30, 60)), false)
 	_update_enemy(delta)
+	_update_combo()
 	_ui_t += delta
 	_update_guide(delta)
 	if _ui_t >= 0.1:
@@ -1105,6 +1143,8 @@ func _on_spawn() -> void:
 	view.set_region(_challenge_region() if e.has("challenge") else (_tower_region() if e.has("tower") or e.has("raid") else gm.progression.region(int(e.stage))))
 	view.spawn_enemy(e)
 	_refresh_stage()
+	_affix_l.visible = e.has("affixes")
+	_affix_l.text = gm.affix.hud_text(e)
 	if str(e.get("challenge", "")) == "arena":
 		ui.banner("ARENA", str(e.name), Color(1.0, 0.5, 0.3))
 	elif str(e.get("challenge", "")) == "dream":
@@ -1122,7 +1162,13 @@ func _on_spawn() -> void:
 		ui.banner("ZŁOTY GOBLIN!", "Pokonaj go, zanim ucieknie (%d s)!" % int(e.time_max), Color(1.0, 0.85, 0.3))
 		_buzz(60, true)
 	elif kind > 0:
-		ui.banner(["", "ELITA", "BOSS"][kind] + ": " + str(e.name), "Pokonaj w %d s!" % int(e.time_max), Color(1.0, 0.55, 0.3))
+		var sub_t := tr("Pokonaj w %d s!") % int(e.time_max)
+		if e.has("affixes"):
+			var ds: Array = []
+			for a in e.affixes:
+				ds.append(tr(AffixManager.name_of(str(a))) + ": " + tr(str(AffixManager.AFFIXES[str(a)][1])))
+			sub_t += "\n" + "\n".join(ds)
+		ui.banner(["", "ELITA", "BOSS"][kind] + ": " + str(e.name), sub_t, Color(1.0, 0.55, 0.3))
 
 
 # --- Efekty -----------------------------------------------------------------------
@@ -1155,6 +1201,8 @@ func _on_hit(amount: float, crit: bool, source: String) -> void:
 				_float(IdleDB.fmt(amount) + ("CRIT" if crit else ""), pos + Vector2(0, 30), yellow if crit else Color(0.97, 0.96, 0.94), 40 if crit else 30, crit)
 		"spell":
 			_float(IdleDB.fmt(amount), pos, Color(0.6, 0.85, 1.0), 46, true)
+		"miss":
+			_float(tr("UNIK!"), pos, Color(0.6, 0.95, 1.0), 34, false)
 		"dragon":
 			_float("🔥 " + IdleDB.fmt(amount), pos + Vector2(0, -30), Color(1.0, 0.55, 0.2), 44, true)
 		"dot":

@@ -64,6 +64,8 @@ func spawn() -> void:
 	cur = {"monster": mid, "name": name, "look": str(m.get("look", mid)), "max_hp": hp, "hp": hp, "kind": kind,
 		"stage": stage, "time_left": gm.db.boss_time, "time_max": gm.db.boss_time, "frozen": 0.0, "vuln": 0.0, "vuln_t": 0.0,
 		"undead": gm.db.undead.has(mid)}
+	if kind > 0:
+		gm.affix.apply(cur)
 	if kind == 0:
 		var gob := gm.goblin.maybe_spawn(stage)
 		if not gob.is_empty():
@@ -118,10 +120,11 @@ func tick(dt: float) -> void:
 		cur.frozen = maxf(0.0, float(cur.frozen) - dt)
 		return
 	cur.time_left = float(cur.time_left) - dt
+	gm.affix.regen(cur, dt)
 	_boss_attack_t -= dt
 	if _boss_attack_t <= 0.0:
 		_boss_attack_t = 2.0
-		gm.combat.boss_attacks(ProgressionManager.boss_hit(int(cur.stage), int(cur.kind)))
+		gm.combat.boss_attacks(ProgressionManager.boss_hit(int(cur.stage), int(cur.kind)) * gm.affix.attack_mult(cur))
 	if float(cur.time_left) <= 0.0 and alive():
 		fail("Czas minął!")
 

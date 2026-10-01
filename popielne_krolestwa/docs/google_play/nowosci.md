@@ -3,6 +3,36 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.5.0
+
+```
+<pl-PL>
+• Cechy elit i bossów – Opancerzony, W szale, Zwinny i inne
+• Trudniejsze walki, większe nagrody
+• Combo ciosów do ×2 i okno „Czeka na Ciebie”
+</pl-PL>
+<en-US>
+• Elite and boss traits – Armored, Frenzied, Agile and more
+• Tougher fights, bigger rewards
+• Tap combos up to ×2 and a "Waiting for you" summary
+</en-US>
+<es-ES>
+• Rasgos de élites y jefes: Acorazado, Frenético, Ágil y más
+• Combates más duros, mejores recompensas
+• Combos de golpes hasta ×2 y resumen «Te espera»
+</es-ES>
+<pt-BR>
+• Traços de elites e chefes – Blindado, Frenético, Ágil e mais
+• Lutas mais difíceis, recompensas maiores
+• Combos de golpes até ×2 e resumo "Esperando por você"
+</pt-BR>
+<de-DE>
+• Eigenschaften von Eliten und Bossen – Gepanzert, Rasend, Flink und mehr
+• Härtere Kämpfe, größere Belohnungen
+• Schlag-Kombos bis ×2 und Übersicht „Wartet auf dich"
+</de-DE>
+```
+
 ## 4.4.0
 
 ```

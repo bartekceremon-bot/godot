@@ -851,6 +851,55 @@ func _ready() -> void:
 	s.erase("stronghold")
 	g.stats.mark_dirty()
 
+	# --- Cechy elit i bossów ---
+	var afx := g.affix
+	check(afx.roll(10, 2).is_empty(), "brak cech przed etapem 30")
+	var any_af := false
+	for i in 60:
+		if not afx.roll(80, 2).is_empty():
+			any_af = true
+	check(any_af, "cechy losują się na etapie 80")
+	var eaf := {"stage": 40, "kind": 2, "max_hp": 100.0, "hp": 100.0}
+	afx.force = ["colossal", "armored"]
+	afx.apply(eaf)
+	check(float(eaf.max_hp) == 200.0 and AffixManager.has(eaf, "armored"), "Kolosalny podwaja zdrowie")
+	check(afx.damage_mult(eaf, "auto") == 0.5 and afx.damage_mult(eaf, "spell") == 1.0, "Opancerzony: −50% ciosów")
+	check(afx.reward_mult(eaf) == 2.0 and afx.bonus_gems(eaf) == 2, "nagroda za cechy")
+	var ecu := {"affixes": ["cursed", "frenzy", "regen"], "max_hp": 100.0, "hp": 50.0}
+	check(afx.damage_mult(ecu, "spell") == 0.5 and afx.attack_mult(ecu) == 2.0, "Przeklęty i W szale")
+	afx.regen(ecu, 5.0)
+	check(absf(float(ecu.hp) - 60.0) < 0.01, "regeneracja 2%/s")
+	var miss := 0
+	var eag := {"affixes": ["agile"]}
+	for i in 400:
+		if afx.damage_mult(eag, "tap") == 0.0:
+			miss += 1
+	check(miss > 60 and miss < 140, "Zwinny unika ok. 25%% ciosów (%d/400)" % miss)
+	check(afx.hud_text(eaf).count("◆") == 2, "tekst cech w HUD")
+
+	# --- Combo ciosów ---
+	var cb := g.combat
+	cb.combo = 0
+	s.stage = 21
+	s.farm_mode = true
+	g.enemy.spawn()
+	g.enemy.cur.max_hp = 1e18
+	g.enemy.cur.hp = 1e18
+	for i in 30:
+		cb.tap()
+	check(cb.combo == 30 and absf(cb.combo_mult() - 1.3) < 0.001, "combo 30 → ×1,3")
+	cb.tap(false)
+	check(cb.combo == 30, "auto-klik nie buduje combo")
+	check(int(s.stats.best_combo) >= 30, "rekord combo")
+	cb.tick(CombatManager.COMBO_WINDOW + 0.1)
+	check(cb.combo == 0, "przerwa zeruje combo")
+	for i in 150:
+		cb.tap()
+	check(cb.combo == CombatManager.COMBO_MAX and cb.combo_mult() == 2.0, "combo maks. ×2")
+	cb.combo = 0
+	s.farm_mode = false
+	g.enemy.spawn()
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

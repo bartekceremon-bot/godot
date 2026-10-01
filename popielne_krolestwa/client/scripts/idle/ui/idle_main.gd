@@ -1138,6 +1138,27 @@ func confirm(title_text: String, text: String, on_yes: Callable) -> void:
 	dialog(title_text, text, [["Anuluj", Callable()], ["Tak", on_yes]])
 
 
+## Gotowe do odebrania / użycia: [ikona, tekst, zakładka].
+func waiting_list() -> Array:
+	var out: Array = []
+	var md := "res://assets/ui/modes/"
+	if gm.garden.ready_count() > 0:
+		out.append([load(md + "garden.png"), tr("Ogród: gotowe grządki: %d") % gm.garden.ready_count(), "garden"])
+	if gm.stronghold.unlocked():
+		gm.stronghold.check_done()
+		if gm.stronghold.free_builders() > 0:
+			out.append([load(md + "stronghold.png"), tr("Twierdza: wolni budowniczowie: %d") % gm.stronghold.free_builders(), "stronghold"])
+	if gm.dragon.unlocked() and gm.dragon.state() in ["none", "ready"]:
+		out.append([load(md + "dragon_egg.png"), tr("Smocze jajo czeka!"), "dragon"])
+	if gm.expeditions.ready_count() > 0:
+		out.append([IdleUI.ash_tex("nav_compass"), tr("Wyprawy wróciły: %d") % gm.expeditions.ready_count(), "expeditions"])
+	if gm.wheel.free_spins() > 0:
+		out.append([IdleUI.ash_tex("nav_gem"), tr("Darmowy obrót Koła Żaru"), "wheel"])
+	if gm.mail.unread() > 0:
+		out.append([Sprites.icon("book"), tr("Poczta: %d") % gm.mail.unread(), "mail"])
+	return out
+
+
 ## „Witaj ponownie!” – animowane liczniki nagród z postępu offline.
 func _show_offline(r: Dictionary) -> void:
 	var v := IdleUI.vbox(12)
@@ -1169,6 +1190,26 @@ func _show_offline(r: Dictionary) -> void:
 			tw.tween_method(func(x: float): l.text = "%s %s" % [IdleDB.fmt(x), suffix], 0.0, target, 0.9).set_ease(Tween.EASE_OUT)
 			i += 1
 	var m: Control
+	# Co czeka na gracza: skróty do gotowych systemów (zamykają okno i otwierają zakładkę).
+	var waiting := waiting_list()
+	if not waiting.is_empty():
+		v.add_child(IdleUI.label("Czeka na Ciebie:", 22, UiTheme.ACCENT))
+		var wg := GridContainer.new()
+		wg.columns = 2
+		wg.add_theme_constant_override("h_separation", 8)
+		wg.add_theme_constant_override("v_separation", 6)
+		v.add_child(wg)
+		for w in waiting:
+			var wb := IdleUI.button(str(w[1]), Vector2(0, 58), 17)
+			wb.icon = w[0]
+			wb.add_theme_constant_override("icon_max_width", 36)
+			wb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			wb.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			var tab := str(w[2])
+			wb.pressed.connect(func():
+				close_modal(m)
+				show_tab(tab))
+			wg.add_child(wb)
 	var row := IdleUI.hbox(10)
 	v.add_child(row)
 	var ok := IdleUI.button("Odbierz", Vector2(0, 92), 28)

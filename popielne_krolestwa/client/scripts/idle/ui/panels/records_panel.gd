@@ -39,6 +39,7 @@ func rows() -> Array:
 		["Pokonani przeciwnicy", IdleDB.fmt(float(st.kills))],
 		["Pokonani bossowie i elity", IdleDB.fmt(float(st.bosses))],
 		["Zadane ciosy", IdleDB.fmt(float(st.taps))],
+		["Najwyższe combo", str(int(st.get("best_combo", 0)))],
 		["Trafienia krytyczne", IdleDB.fmt(float(st.crits))],
 		["Zdobyte złoto", IdleDB.fmt(float(st.gold))],
 		["Czas gry", IdleDB.fmt_time(float(s.play_time))],

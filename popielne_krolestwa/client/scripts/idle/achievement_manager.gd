@@ -18,6 +18,7 @@ const LIST := [
 	["harvests", "Zielarz", "Zebrane plony: %s", [1, 25, 100, 500]],
 	["mastery_levels", "Mistrz oręża", "Suma poziomów mistrzostwa broni: %s", [5, 25, 75, 200]],
 	["stronghold_levels", "Budowniczy", "Suma poziomów budynków Twierdzy: %s", [5, 30, 90, 180]],
+	["best_combo", "Burza ciosów", "Najwyższe combo: %s", [25, 50, 100]],
 	["goblins", "Łowca skarbów", "Pokonane Złote Gobliny: %s", [1, 10, 50, 200]],
 ]
 

@@ -15,6 +15,12 @@ var _auto_t := 0.0
 var _dot_t := 0.0
 var _potion_cd := 0.0
 var _rng := RandomNumberGenerator.new()
+## Combo ciosów: każdy ręczny cios w odstępie < COMBO_WINDOW zwiększa licznik (+1% obrażeń
+## ciosu za trafienie, maks. ×2 przy 100). Przerwa – licznik spada do zera.
+const COMBO_WINDOW := 1.2
+const COMBO_MAX := 100
+var combo := 0
+var combo_t := 0.0
 
 
 func _init(g: IdleGame) -> void:
@@ -35,14 +41,23 @@ func clear_dots() -> void:
 	dots.clear()
 
 
-## Dotknięcie przeciwnika.
-func tap() -> void:
+func combo_mult() -> float:
+	return 1.0 + 0.01 * combo
+
+
+## Dotknięcie przeciwnika (manual – ręczny cios buduje combo; auto-klik nie).
+func tap(manual := true) -> void:
 	if not gm.enemy.alive():
 		return
 	var s := gm.s
+	if manual:
+		combo = mini(COMBO_MAX, combo + 1)
+		combo_t = COMBO_WINDOW
+		if combo > int(s.stats.get("best_combo", 0)):
+			s.stats["best_combo"] = combo
 	s.stats.taps = int(s.stats.taps) + 1
 	gm.quests.on_event("taps", 1)
-	var dmg := gm.stats.click * _rng.randf_range(0.92, 1.08)
+	var dmg := gm.stats.click * _rng.randf_range(0.92, 1.08) * combo_mult()
 	var crit := _rng.randf() < gm.stats.crit_chance + (gm.dream.crit_bonus() if gm.dream.active else 0.0) or gm.hero.ult_mults().has("crit")
 	gm.hero.add_charge(0.6)
 	if crit:
@@ -56,6 +71,10 @@ func tap() -> void:
 
 func tick(dt: float) -> void:
 	var st := gm.stats
+	if combo_t > 0.0:
+		combo_t -= dt
+		if combo_t <= 0.0:
+			combo = 0
 	# Regeneracja many (zdrowie odnawia się tylko poza walką z bossem).
 	mp = minf(st.max_mp, mp + st.mp_regen * dt)
 	if not gm.enemy.is_boss():
@@ -106,6 +125,11 @@ func damage(amount: float, crit: bool, source: String, overflow := false) -> voi
 		return
 	if gm.dream.active:
 		amount *= gm.dream.damage_mult(source) * (gm.dream.crit_mult() if crit else 1.0)
+	var am := gm.affix.damage_mult(gm.enemy.cur, source)
+	if am <= 0.0:
+		gm.enemy_hit.emit(0.0, false, "miss")
+		return
+	amount *= am
 	var before := float(gm.enemy.cur.hp)
 	var dealt := gm.enemy.take(amount)
 	gm.enemy_hit.emit(dealt, crit, source)
@@ -156,12 +180,12 @@ func kill() -> void:
 	if lant > 0 and kind > 0:
 		gm.notify("+%d Żarne Lampiony" % lant, Color(1.0, 0.6, 0.25))
 	var st := gm.stats
-	var gold := ProgressionManager.gold_for(stage) * ProgressionManager.boss_hp_mult(kind) * st.gold_mult
+	var gold := ProgressionManager.gold_for(stage) * ProgressionManager.boss_hp_mult(kind) * st.gold_mult * gm.affix.reward_mult(e)
 	var xp := ProgressionManager.xp_for(stage) * (1.0 + kind * 4.0) * st.xp_mult
 	s.stats.kills = int(s.stats.kills) + 1
 	gm.add_gold(gold)
 	gm.progression.add_xp(xp)
-	var gems := gm.loot.roll_gems(kind)
+	var gems := gm.loot.roll_gems(kind) + gm.affix.bonus_gems(e)
 	if gems > 0:
 		gm.add_gems(gems)
 	var info := {"name": e.name, "monster": e.monster, "gold": gold, "xp": xp, "boss": kind, "gems": gems}

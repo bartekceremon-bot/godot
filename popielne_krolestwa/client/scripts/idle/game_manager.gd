@@ -70,6 +70,7 @@ var goblin: GoblinManager
 var mastery: MasteryManager
 var dragon: DragonManager
 var stronghold: StrongholdManager
+var affix: AffixManager
 var weekly: WeeklyManager
 var mail: MailManager
 var story: StoryManager
@@ -133,6 +134,7 @@ func _ready() -> void:
 	mastery = MasteryManager.new(self)
 	dragon = DragonManager.new(self)
 	stronghold = StrongholdManager.new(self)
+	affix = AffixManager.new(self)
 	weekly = WeeklyManager.new(self)
 	mail = MailManager.new(self)
 	story = StoryManager.new(self)
