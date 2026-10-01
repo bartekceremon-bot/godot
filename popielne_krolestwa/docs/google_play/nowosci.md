@@ -3,6 +3,26 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.7.0
+
+```
+<pl-PL>
+• Kwatermistrz: auto-najemnicy, auto-ekwipunek i auto-odrodzenie
+</pl-PL>
+<en-US>
+• Quartermaster: auto-mercenaries, auto-equipment and auto-rebirth
+</en-US>
+<es-ES>
+• Intendente: automercenarios, autoequipo y autorrenacimiento
+</es-ES>
+<pt-BR>
+• Intendente: automercenários, autoequipamento e autorrenascimento
+</pt-BR>
+<de-DE>
+• Quartiermeister: Auto-Söldner, Auto-Ausrüstung und Auto-Wiedergeburt
+</de-DE>
+```
+
 ## 4.6.0
 
 ```

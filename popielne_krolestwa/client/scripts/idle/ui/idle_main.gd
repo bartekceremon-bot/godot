@@ -634,6 +634,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return StrongholdPanel.new()
 		"soul_night":
 			return SoulNightPanel.new()
+		"auto":
+			return AutoPanel.new()
 	return null
 
 
@@ -672,6 +674,7 @@ func _open_menu() -> void:
 			["Opowieść", Sprites.icon("book"), "chronicle", 0, 0],
 			["Garderoba", IdleUI.ash_tex("portrait"), "skins", 0, 0],
 			["Postać", Sprites.icon("character"), "stats", 0, 0],
+			["Kwatermistrz", Sprites.icon("people"), "auto", 0, 0],
 			["Ustawienia", Sprites.icon("menu"), "settings", 0, 0]]],
 	]
 	var best := int(gm.achievements.value("best_stage"))

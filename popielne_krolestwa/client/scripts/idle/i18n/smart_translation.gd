@@ -65,8 +65,9 @@ func add_entry(key: String, value: String) -> void:
 			_prefixes.append(key)
 		return
 	var lits := _ph.search_all(key)
+	# sam wzorzec też dokładnie – tr("Rezerwa: %d%%") % x tłumaczy przed wstawieniem liczb
+	_exact[key] = value
 	if lits.is_empty():
-		_exact[key] = value
 		return
 	# wzorce strukturalne ("%s  ×%d", "%d× %s") – tylko gdy przetłumaczy się któraś część %s;
 	# same "%s %s" pomijamy, bo cięłyby dowolne zdania na słowa

@@ -919,6 +919,33 @@ func _ready() -> void:
 	sn.force = -1
 	check(sn.days_left() >= 1, "dni do Nocy Dusz: %d" % sn.days_left())
 
+	# --- Kwatermistrz ---
+	var au := g.auto
+	s.erase("auto")
+	var rb_keep := int(s.rebirths)
+	s.rebirths = 0
+	check(au.mercs_unlocked() == (g.phoenix.count() >= AutoManager.MERCS_REBIRTHS), "auto-najemnicy zablokowani przed odrodzeniem")
+	s.rebirths = 3
+	check(au.mercs_unlocked() and au.rebirth_unlocked(), "automatyzacja odblokowana")
+	g.add_gold(1e12)
+	var lv0 := int(s.train_lvl)
+	for k in s.mercs:
+		lv0 += int(s.mercs[k])
+	check(au.buy_mercs() > 0, "auto-zakup najemników")
+	var lv1 := int(s.train_lvl)
+	for k in s.mercs:
+		lv1 += int(s.mercs[k])
+	check(lv1 > lv0, "poziomy najemników wzrosły")
+	au.cycle("reserve", AutoManager.RESERVES.size())
+	check(au.reserve() == 0.25, "rezerwa 25%")
+	var gold_r := float(s.gold)
+	au.buy_mercs()
+	check(float(s.gold) >= gold_r * 0.25 - 1.0, "rezerwa złota zachowana")
+	au.set_enabled("gear", true)
+	check(au.enabled("gear"), "przełącznik auto-ekwipunku")
+	s.erase("auto")
+	s.rebirths = rb_keep
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

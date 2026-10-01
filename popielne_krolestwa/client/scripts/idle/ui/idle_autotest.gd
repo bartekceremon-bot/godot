@@ -152,7 +152,8 @@ func _ready() -> void:
 		func(): await _shot("12s35_smok_walka"); g.s.farm_mode = false; g.s.erase("stronghold"); g.add_gold(g.stronghold.cost("forge") * 50.0); g.stronghold.build("treasury"); g.s.stronghold.queue[0].done_at = 0.0; g.stronghold.check_done(); g.stronghold.build("forge"); ui.show_tab("stronghold"); return 0.8,
 		func(): await _shot("12s36_twierdza"); ui.show_tab("fight"); g.s.farm_mode = false; g.affix.force = ["armored", "regen"]; g.s.stage = 25; g.s.kills_in_stage = 99; g.enemy.spawn(); return 1.2,
 		func(): await _shot("12s37_boss_cechy"); g.soul_night.force = 1; g.s.erase("soul_night"); g.soul_night.on_kill(2); g.s.soul_night.flames = 420; g.s.soul_night.total = 420; ui.show_tab("soul_night"); return 0.8,
-		func(): await _shot("12s38_noc_dusz"); g.soul_night.force = -1; ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s38_noc_dusz"); g.soul_night.force = -1; g.s.rebirths = maxi(int(g.s.rebirths), 3); g.auto.set_enabled("mercs", true); ui.show_tab("auto"); return 0.8,
+		func(): await _shot("12s39_kwatermistrz"); g.auto.set_enabled("mercs", false); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
