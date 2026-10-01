@@ -3,6 +3,31 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 3.9.0
+
+```
+<pl-PL>
+• Nowe języki: hiszpański, portugalski i niemiecki
+• Prezent od Gildii w Poczcie
+</pl-PL>
+<en-US>
+• New languages: Spanish, Portuguese and German
+• A gift from the Guild in your Mail
+</en-US>
+<es-ES>
+• Nuevos idiomas: español, portugués y alemán
+• Un regalo del Gremio en el Correo
+</es-ES>
+<pt-BR>
+• Novos idiomas: espanhol, português e alemão
+• Um presente da Guilda no Correio
+</pt-BR>
+<de-DE>
+• Neue Sprachen: Spanisch, Portugiesisch und Deutsch
+• Ein Geschenk der Gilde in der Post
+</de-DE>
+```
+
 ## 3.8.0
 
 ```

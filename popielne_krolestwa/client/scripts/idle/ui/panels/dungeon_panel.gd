@@ -58,7 +58,7 @@ func _dungeon_card(k: String) -> Control:
 	var need := d.guard_hp(t)
 	var est := gm.stats.dps + gm.stats.click * 5.0
 	var secs := need / maxf(est, 1.0)
-	var hint := "Strażnik: %s zdrowia  •  ok. %.1f s na strażnika przy Twojej sile" % [IdleDB.fmt(need), secs]
+	var hint := "Strażnik: %s zdrowia  •  ok. %.1f s na strażnika przy Twojej sile" % [IdleDB.fmt(need), minf(secs, 999.9)]
 	v.add_child(IdleUI.label(hint, 16, IdleUI.GOOD if secs * DungeonManager.GUARDS < DungeonManager.TIME * 0.8 else IdleUI.BAD, true))
 	v.add_child(IdleUI.label(_reward_hint(k, t), 16, IdleUI.GOLD_COL, true))
 	var go := IdleUI.button("Wejdź" if d.keys(k) > 0 else "Wejdź za %d żarokr." % DungeonManager.EXTRA_COST, Vector2(0, 80), 24)

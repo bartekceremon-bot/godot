@@ -271,45 +271,60 @@ func _by_template(s: String, depth: int, structural: bool):
 
 # --- wybór języka -----------------------------------------------------------
 
+## Języki gry: [kod, nazwa własna]. Polski to język źródłowy (bez słownika).
+const LANGUAGES := [["pl", "Polski"], ["en", "English"], ["es", "Español"], ["pt", "Português"], ["de", "Deutsch"]]
+
+## Bieżące tłumaczenie (null po polsku).
 static var _installed: SmartTranslation = null
+static var _log := false
 
 
-## Rejestruje angielskie tłumaczenie i ustawia język ("auto", "pl", "en").
+static func available(code: String) -> bool:
+	return code == "pl" or FileAccess.file_exists("res://data/i18n/%s.json" % code)
+
+
+## Rejestruje tłumaczenie wybranego języka i ustawia go ("auto", "pl", "en", "es", "pt", "de").
 static func apply_language(lang: String) -> String:
-	if _installed == null:
-		_installed = SmartTranslation.new()
-		_installed.locale = "en"
-		_installed.load_json("res://data/i18n/en.json")
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--lang="):
 			lang = a.substr(7)
-			_installed.log_missing = true
+			_log = true
 	var loc := resolve(lang)
-	# po polsku tłumaczenia nie rejestrujemy – Godot użyłby go jako zapasowego (fallback "en")
-	var has := TranslationServer.get_translation_object("en") == _installed
-	if loc == "en" and not has:
-		TranslationServer.add_translation(_installed)
-	elif loc != "en" and has:
+	# Po polsku tłumaczenia nie rejestrujemy – Godot użyłby go jako zapasowego (fallback „en”).
+	if _installed != null and (loc == "pl" or _installed.locale != loc):
 		TranslationServer.remove_translation(_installed)
+		_installed = null
+	if loc != "pl" and _installed == null:
+		_installed = SmartTranslation.new()
+		_installed.locale = loc
+		_installed.log_missing = _log
+		_installed.load_json("res://data/i18n/%s.json" % loc)
+		TranslationServer.add_translation(_installed)
 	TranslationServer.set_locale(loc)
 	return loc
 
 
 static func resolve(lang: String) -> String:
-	if lang == "pl" or lang == "en":
-		return lang
-	return "pl" if OS.get_locale_language() == "pl" else "en"
+	for l in LANGUAGES:
+		if lang == l[0] and available(lang):
+			return lang
+	var sys := OS.get_locale_language()
+	if sys == "pl":
+		return "pl"
+	if sys in ["es", "pt", "de"] and available(sys):
+		return sys
+	return "en"
 
 
 ## Tłumaczenie poza węzłami (np. powiadomienia) – zwraca oryginał po polsku.
 static func t(s: String) -> String:
-	if _installed == null or TranslationServer.get_locale().begins_with("pl"):
+	if _installed == null:
 		return s
 	var r = _installed.translate(s)
 	return s if r == null else r
 
 
-## Zapis brakujących tłumaczeń (tryb testowy, --lang=en).
+## Zapis brakujących tłumaczeń (tryb testowy, --lang=xx).
 static func dump_missing(path: String) -> void:
 	if _installed == null or _installed.missing.is_empty():
 		return

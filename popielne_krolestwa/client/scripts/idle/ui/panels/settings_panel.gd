@@ -45,12 +45,19 @@ func refresh() -> void:
 			gm.save.save_game()
 			request_refresh())
 		qrow.add_child(qb)
-	# Język: automatycznie wg telefonu, polski albo angielski.
-	var lrow := IdleUI.hbox(8)
-	add_child(lrow)
-	lrow.add_child(IdleUI.label("Język:", 22))
+	# Język: automatycznie wg telefonu albo wybrany (nazwy języków bez tłumaczenia).
+	add_child(IdleUI.label("Język:", 22))
 	var lang := str(set.get("lang", "auto"))
-	for l in [["auto", "Automatycznie"], ["pl", "Polski"], ["en", "English"]]:
+	var opts: Array = [["auto", "Automatycznie"]]
+	for l in SmartTranslation.LANGUAGES:
+		if SmartTranslation.available(str(l[0])):
+			opts.append(l)
+	var lgrid := GridContainer.new()
+	lgrid.columns = 3
+	lgrid.add_theme_constant_override("h_separation", 8)
+	lgrid.add_theme_constant_override("v_separation", 8)
+	add_child(lgrid)
+	for l in opts:
 		var lb := IdleUI.button(str(l[1]), Vector2(0, 68), 19)
 		lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		lb.toggle_mode = true
@@ -62,7 +69,7 @@ func refresh() -> void:
 			SmartTranslation.apply_language(code)
 			gm.save.save_game()
 			request_refresh())
-		lrow.add_child(lb)
+		lgrid.add_child(lb)
 	var store: Dictionary = gm.db.store
 	var en := not TranslationServer.get_locale().begins_with("pl")
 	var links := IdleUI.hbox(8)

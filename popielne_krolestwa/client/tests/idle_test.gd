@@ -701,9 +701,9 @@ func _ready() -> void:
 	s.erase("mail")
 	check(g.mail.unread() == MailManager.MESSAGES.size(), "poczta: %d nieprzeczytanych" % g.mail.unread())
 	var gems_m := int(s.gems)
-	check(g.mail.has_gift(0) and g.mail.claim(0).size() == 2 and int(s.gems) == gems_m + 100, "prezent za aktualizację")
+	check(g.mail.has_gift(0) and g.mail.claim(0).size() == 1 and int(s.gems) == gems_m + 50, "prezent za aktualizację")
 	check(not g.mail.has_gift(0) and g.mail.claim(0).is_empty(), "prezent raz")
-	check(not g.mail.has_gift(1), "starsze wiadomości bez prezentów")
+	check(not g.mail.has_gift(2), "starsze wiadomości bez prezentów")
 	var last := MailManager.MESSAGES.size() - 1
 	check(g.mail.has_gift(last), "powitanie z prezentem")
 
@@ -730,6 +730,21 @@ func _ready() -> void:
 	check(tr("ATAK!") == "ATAK!", "po polsku bez tłumaczenia (bez zapasowego angielskiego)")
 	SmartTranslation.apply_language("en")
 	check(tr("Zabij szczury") == "Kill the rats", "ponowne przełączenie na angielski")
+	SmartTranslation.apply_language("es")
+	check(tr("ATAK!") == "¡ATAQUE!" and tr("Miecz Adepta (T3)") == "Espada de Adepto (T3)", "po hiszpańsku: %s, %s" % [tr("ATAK!"), tr("Miecz Adepta (T3)")])
+	check(tr("PZ: 1.2K / 3K") == "VIDA: 1.2K / 3K", "hiszpański wzorzec: %s" % tr("PZ: 1.2K / 3K"))
+	SmartTranslation.apply_language("de")
+	check(tr("ATAK!") == "ANGRIFF!" and tr("Miecz Adepta (T3)") == "Adept-Schwert (T3)", "po niemiecku: %s, %s" % [tr("ATAK!"), tr("Miecz Adepta (T3)")])
+	SmartTranslation.apply_language("pt")
+	check(tr("ATAK!") != "ATAK!", "po portugalsku: %s" % tr("ATAK!"))
+	for lang_code in ["es", "pt", "de"]:
+		var lt := SmartTranslation.new()
+		check(lt.load_json("res://data/i18n/%s.json" % lang_code), "słownik %s wczytany" % lang_code)
+		var lmiss := 0
+		for id in g.db.items:
+			if lt.translate(g.db.item_name(str(id))) == null:
+				lmiss += 1
+		check(lmiss == 0, "nazwy przedmiotów (%s) – brak: %d" % [lang_code, lmiss])
 	SmartTranslation.apply_language("pl")
 
 	g.save.delete_save()
