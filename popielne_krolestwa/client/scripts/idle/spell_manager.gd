@@ -89,6 +89,10 @@ func upgrade(id: String) -> bool:
 
 
 func cooldown_of(id: String) -> float:
+	return _cooldown_of(id) * (1.0 - minf(0.5, float(gm.talents.totals().get("cdr", 0.0))))
+
+
+func _cooldown_of(id: String) -> float:
 	return float(idle_def(id).get("cd", 10)) * maxf(0.5, 1.0 - 0.03 * level(id))
 
 

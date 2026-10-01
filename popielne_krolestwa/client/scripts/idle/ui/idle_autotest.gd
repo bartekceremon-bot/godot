@@ -49,7 +49,18 @@ func _ready() -> void:
 		func(): await _shot("12_oltarz"); ui.show_tab("achievements"); return 0.8,
 		func(): await _shot("12b_osiagniecia"); ui.show_daily(); return 0.8,
 		func(): await _shot("12c_codzienna"); _press("Odbierz nagrodę"); return 0.5,
-		func(): await _expect_no_modal("Odbierz nagrodę dnia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
+		func(): await _expect_no_modal("Odbierz nagrodę dnia"); ui._open_menu(); return 0.7,
+		func(): await _shot("12d_menu"); _press("Talenty"); return 0.8,
+		func():
+			for id in ["heavy_hand", "heavy_hand", "heavy_hand", "heavy_hand", "hawk_eye", "hawk_eye"]:
+				g.talents.learn(id)
+			ui._panels["talents"].refresh()
+			return 0.5,
+		func(): await _shot("12e_talenty"); g.expeditions.start(0, 2); g.expeditions.start(1, 0, ExpeditionManager.now() - 3600.0); ui.show_tab("expeditions"); return 0.8,
+		func(): await _shot("12f_wyprawy"); ui.show_tab("bestiary"); return 0.8,
+		func(): await _shot("12g_bestiariusz"); ui.show_tab("tower"); return 0.8,
+		func(): await _shot("12h_wieza"); _press("Wejdź do Wieży"); return 2.5,
+		func(): await _shot("12i_wieza_walka"); g.tower.leave(); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
 			g.spells.cast("fireball")
@@ -116,7 +127,7 @@ func _press(text: String) -> void:
 
 func _find_button(n: Node, text: String) -> Button:
 	for c in n.get_children():
-		if c is Button and str(c.text).begins_with(text) and c.is_visible_in_tree():
+		if c is Button and (str(c.text).begins_with(text) or str(c.get_meta("label", "")).begins_with(text)) and c.is_visible_in_tree():
 			return c
 		var r := _find_button(c, text)
 		if r:

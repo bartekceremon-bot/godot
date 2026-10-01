@@ -112,6 +112,14 @@ func damage(amount: float, crit: bool, source: String, overflow := false) -> voi
 
 func kill() -> void:
 	var e := gm.enemy.cur
+	if e.has("tower"):
+		# Wieża: bez złota i etapów – nagroda piętra i od razu wyżej.
+		gm.bestiary.on_kill(str(e.monster))
+		clear_dots()
+		gm.enemy_killed.emit({"name": e.name, "monster": e.monster, "gold": 0.0, "xp": 0.0, "boss": 2, "gems": 0})
+		gm.tower.on_win()
+		gm.enemy.spawn()
+		return
 	var s := gm.s
 	var kind := int(e.kind)
 	var stage := int(e.stage)
@@ -126,6 +134,7 @@ func kill() -> void:
 		gm.add_gems(gems)
 	var info := {"name": e.name, "monster": e.monster, "gold": gold, "xp": xp, "boss": kind, "gems": gems}
 	gm.quests.on_kill(str(e.monster))
+	gm.bestiary.on_kill(str(e.monster))
 	gm.quests.on_event("kills", 1)
 	gm.loot.on_kill(e)
 	clear_dots()

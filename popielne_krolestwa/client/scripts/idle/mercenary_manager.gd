@@ -18,6 +18,10 @@ func level(id: String) -> int:
 
 ## Koszt `count` kolejnych poziomów (suma ciągu geometrycznego).
 func cost(id: String, count := 1) -> float:
+	return _cost(id, count) * (1.0 - minf(0.5, float(gm.talents.totals().get("merc_cost", 0.0))))
+
+
+func _cost(id: String, count := 1) -> float:
 	var d := gm.db.merc_def(id)
 	return _geo(float(d.cost), level(id), count)
 

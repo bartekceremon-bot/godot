@@ -22,6 +22,8 @@ var defense := 0.0
 var max_mp := 50.0
 var mp_regen := 1.0
 var spell_power := 1.0
+## Mnożnik obrażeń zadawanych bossom i elitom (talent Pogromca).
+var boss_mult := 1.0
 var offline_eff := 0.5
 var offline_cap_h := 12.0
 ## Ułamek DPS doliczany do kliknięcia (trening co 10 poziomów).
@@ -62,29 +64,34 @@ func recalc() -> void:
 	var pr: Dictionary = gm.prestige.totals()
 	var bo: Dictionary = gm.spells.active_buffs()
 	var boost: Dictionary = gm.crafting.active_boosts()
+	var tl: Dictionary = gm.talents.totals()
+	var best := 1.0 + gm.bestiary.bonus()
+	var arch: float = tl.get("archmage", 0.0)
 
 	dmg_mult = (1.0 + 0.02 * (level - 1)) * (1.0 + eq.get("dmg", 0.0)) * (1.0 + mt.get("damage", 0.0)) \
-		* (1.0 + pr.get("damage", 0.0)) * (1.0 + boost.get("damage", 0.0)) * (1.0 + bo.get("damage", 0.0))
-	merc_dps = gm.mercs.total_dps() * (1.0 + eq.get("merc", 0.0))
-	atk_speed = 1.0 + eq.get("speed", 0.0) + pr.get("speed", 0.0) + bo.get("speed", 0.0)
+		* (1.0 + pr.get("damage", 0.0)) * (1.0 + boost.get("damage", 0.0)) * (1.0 + bo.get("damage", 0.0)) \
+		* (1.0 + tl.get("damage", 0.0) + arch * 0.5) * best
+	merc_dps = gm.mercs.total_dps() * (1.0 + eq.get("merc", 0.0) + tl.get("merc", 0.0) + tl.get("banner", 0.0))
+	atk_speed = 1.0 + eq.get("speed", 0.0) + pr.get("speed", 0.0) + bo.get("speed", 0.0) + tl.get("speed", 0.0)
+	boss_mult = 1.0 + tl.get("boss", 0.0)
 	dps = merc_dps * dmg_mult * atk_speed
 	var train := int(s.train_lvl)
 	click_dps_share = minf(0.25, 0.01 * floor(train / 10.0))
-	click = (1.0 + train + level + eq.get("click", 0.0)) * dmg_mult * (1.0 + boost.get("click", 0.0)) + dps * click_dps_share
-	crit_chance = minf(0.75, 0.05 + eq.get("crit", 0.0) + pr.get("crit", 0.0))
-	crit_mult = 2.0 + eq.get("critdmg", 0.0)
-	gold_mult = 1.0 + eq.get("gold", 0.0) + mt.get("gold", 0.0) + pr.get("gold", 0.0) + boost.get("gold", 0.0)
-	xp_mult = 1.0 + eq.get("xp", 0.0) + mt.get("xp", 0.0) + pr.get("xp", 0.0) + boost.get("xp", 0.0)
-	loot_mult = 1.0 + pr.get("loot", 0.0)
+	click = (1.0 + train + level + eq.get("click", 0.0)) * dmg_mult * (1.0 + boost.get("click", 0.0) + tl.get("click", 0.0)) + dps * click_dps_share
+	crit_chance = minf(0.75, 0.05 + eq.get("crit", 0.0) + pr.get("crit", 0.0) + tl.get("crit", 0.0))
+	crit_mult = 2.0 + eq.get("critdmg", 0.0) + tl.get("critdmg", 0.0)
+	gold_mult = (1.0 + eq.get("gold", 0.0) + mt.get("gold", 0.0) + pr.get("gold", 0.0) + boost.get("gold", 0.0) + tl.get("gold", 0.0) + tl.get("banner", 0.0)) * best
+	xp_mult = 1.0 + eq.get("xp", 0.0) + mt.get("xp", 0.0) + pr.get("xp", 0.0) + boost.get("xp", 0.0) + tl.get("xp", 0.0)
+	loot_mult = 1.0 + pr.get("loot", 0.0) + tl.get("loot", 0.0)
 	material_mult = 1.0 + eq.get("materials", 0.0)
 	max_hp = 100.0 + 12.0 * level + eq.get("hp", 0.0)
 	defense = minf(0.75, eq.get("def", 0.0))
-	max_mp = 50.0 + 5.0 * level + eq.get("mp", 0.0)
+	max_mp = (50.0 + 5.0 * level + eq.get("mp", 0.0)) * (1.0 + tl.get("mp", 0.0))
 	mp_regen = 1.0 + max_mp * 0.02
-	spell_power = 1.0 + eq.get("spell", 0.0)
-	offline_eff = minf(1.5, 0.5 + mt.get("offline", 0.0) + pr.get("offline", 0.0))
+	spell_power = 1.0 + eq.get("spell", 0.0) + tl.get("spell", 0.0) + arch
+	offline_eff = minf(1.8, 0.5 + mt.get("offline", 0.0) + pr.get("offline", 0.0) + tl.get("offline", 0.0))
 	offline_cap_h = 12.0 + pr.get("offline_h", 0.0)
-	parts = {"eq": eq, "mounts": mt, "prestige": pr, "buffs": bo, "boosts": boost}
+	parts = {"eq": eq, "mounts": mt, "prestige": pr, "buffs": bo, "boosts": boost, "talents": tl, "bestiary": best}
 	gm.changed.emit("stats")
 
 
@@ -105,4 +112,7 @@ func summary() -> Array:
 		["Mana", IdleDB.fmt(max_mp)],
 		["Siła czarów", "%d%%" % roundi(spell_power * 100.0)],
 		["Postęp offline", "%d%% (maks. %d h)" % [roundi(offline_eff * 100.0), int(offline_cap_h)]],
+		["Obrażenia bossom", "%d%%" % roundi(boss_mult * 100.0)],
+		["Premia bestiariusza", "+%d%% obrażeń i złota" % gm.bestiary.total_tiers()],
+		["Talenty", "%d / %d punktów" % [gm.talents.spent(), gm.talents.earned()]],
 	]

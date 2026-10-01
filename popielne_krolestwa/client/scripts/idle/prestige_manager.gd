@@ -85,6 +85,7 @@ func rebirth() -> bool:
 	var start := start_stage()
 	# Osiągnięcia liczą rekordy całej gry – zapamiętaj je przed wyzerowaniem.
 	gm.achievements.remember()
+	gm.tower.active = false
 	s.gold = 0.0
 	s.level = 1
 	s.xp = 0.0

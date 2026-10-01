@@ -11,7 +11,7 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 > Świat został spalony przez upadłego boga Ognia. Gracze to **Popielnicy** – ocaleni, którzy
 > odbudowują miasta i walczą o żyzne ziemie.
 
-## Popielne Królestwa Idle (wersja 1.3.0)
+## Popielne Królestwa Idle (wersja 2.0.0)
 
 **Pętla:** KLIK → ATAK → OBRAŻENIA → ZABICIE → ŁUP → ZŁOTO/XP → ULEPSZENIE → SILNIEJSZY WRÓG → POWTÓRZ.
 
@@ -19,6 +19,11 @@ Klasyczne **MMORPG** (klimat Tibii + gospodarka i PvP Albion Online) nadal jest 
 |---|---|
 | Ekran walki (1.2) | Oprawa „Popiół i żar” wg projektu ekranu: kamienny pasek ZŁOTO / PD / STREFA z plakietkami (żarokryształy, poziom, popiół), portret bohatera z paskami zdrowia i many, nagłówek „[WRÓG - PZ: a / b]” z paskiem w żelaznej ramie, plakietka LVL i pasek etapu (u bossa – czas), duży przycisk **ATAK!** (przytrzymanie = seria), kafle AUTO KLIK (3 ciosy/s przy otwartej grze), 4 czary ze stanem [GOTOWY]/[CD]/[MP] i mikstury, kamienne kafle nawigacji INWENTARZ / TWORZENIE / CZARY / ZADANIA / MAPA / SKLEP (zakładki wysuwają się nad walką). Kamera zza pleców bohatera, potwory przeskalowane do jednej, dużej wysokości. Grafiki: `tools/textures/gen_ui_ash.py` + ikony wycięte z projektu (`assets/ui/ash`). |
 | Oprawa 1.3 | Za areną ruiny (wyszczerbione mury z oknami, rozbite wieże, gruz; w Popielisku i Świątyni Ognia – ciemny kamień z żarzącymi się szczelinami) i słupy dymu. Kamienne przyciski, karty i zakładki we wszystkich panelach i w menu głównym. Krytyk rozżarza krawędzie ekranu, ATAK! sypie iskrami. |
+| Talenty (menu, 2.0) | 3 gałęzie po 6 węzłów: Wojownik (cios, krytyk, szybkość, obrażenia bossom, Gniew Żarogniewa), Dowódca (DPS najemników, złoto, tańsi najemnicy, XP, Zwiadowcy, Sztandar), Mistyk (mana, siła czarów, krótsze odnowienie, offline, łup, Arcymag). Punkty na stałe: połowa rekordu poziomu + 1 za 5 pięter Wieży; węzeł n wymaga 4·n punktów w gałęzi; pierwszy reset darmowy, potem 100 żarokryształów. |
+| Wyprawy (menu, 2.0) | Zwiad 15 min, Patrol 1 h, Wyprawa 4 h, Wielka wyprawa 12 h do dowolnej odkrytej krainy – czas rzeczywisty, także przy zamkniętej grze. Łup: złoto, surowce krainy, skrzynie, żarokryształy, fragmenty wierzchowców. Sloty: 1 + etap 20 + etap 50 + 10. piętro Wieży. Natychmiastowy powrót za żarokryształy. |
+| Bestiariusz (menu, 2.0) | 33 gatunki krain; progi 10 / 100 / 1000 / 10 000 zabitych – każdy stopień na stałe +1% obrażeń i +1% złota. |
+| Wieża Popiołu (menu, 2.0) | Niekończące się piętra z bossami i elitami wszystkich krain (30 s na piętro, zwycięstwo = od razu wyżej). 3 próby dziennie, kolejne za 40 żarokryształów. Nagrody: żarokryształy za piętro, skrzynia co 5 pięter, punkt talentu za każde 5 pięter rekordu, slot wyprawy za 10. piętro. |
+| Rozmiar (2.0) | Bez limitu rozmiaru: pełna, bezstratna jakość grafik, APK z bibliotekami arm64-v8a i armeabi-v7a (~57 MB). |
 | Codzienna nagroda (menu) | Seria 7 dni: złoto, mikstury, żarokryształy, skrzynie; 7. dnia epicka skrzynia i 100 żarokryształów. Opuszczony dzień zaczyna serię od nowa. Okno pojawia się samo przy starcie gry. |
 | Osiągnięcia (menu) | 8 osiągnięć po 4–5 stopni (Łowca, Pogromca bossów, Wędrowiec, Weteran, Niezmordowana pięść, Ostrze losu, Adept magii, Feniks); liczą całe dzieje bohatera, także sprzed odrodzeń; nagrody w żarokryształach. Kropka na przycisku MENU pokazuje, co czeka na odbiór. |
 | Walka | Dotknij przeciwnika albo przycisku ATAK! (przytrzymanie – 8 ciosów/s). Krytyki, liczby obrażeń, cząsteczki, wstrząs ekranu, dźwięki. Modele 3D bohatera (w założonym ekwipunku), drużyny i potworów z gry MMO na dioramie regionu z pogodą. |

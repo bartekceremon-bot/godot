@@ -31,6 +31,14 @@ func is_boss() -> bool:
 
 
 func spawn() -> void:
+	if gm.tower.active:
+		cur = gm.tower.make_enemy()
+		_boss_attack_t = 2.0
+		gm.combat.clear_dots()
+		gm.boss_started.emit()
+		gm.audio.play("boss")
+		gm.enemy_spawned.emit()
+		return
 	var s := gm.s
 	var stage := int(s.stage)
 	var pm := gm.progression
@@ -79,6 +87,8 @@ func take(amount: float) -> float:
 		return 0.0
 	if float(cur.vuln_t) > 0.0:
 		amount *= 1.0 + float(cur.vuln)
+	if int(cur.kind) > 0:
+		amount *= gm.stats.boss_mult
 	cur.hp = float(cur.hp) - amount
 	return amount
 
@@ -107,6 +117,11 @@ func fail(reason: String) -> void:
 		return
 	cur.hp = 0.0
 	gm.combat.clear_dots()
+	if gm.tower.active:
+		gm.tower.on_fail(reason)
+		gm.audio.play("fail")
+		spawn()
+		return
 	gm.progression.on_boss_fail(reason)
 	gm.audio.play("fail")
 	spawn()

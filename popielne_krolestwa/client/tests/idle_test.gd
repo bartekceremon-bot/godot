@@ -211,6 +211,67 @@ func _ready() -> void:
 	check(g.achievements.claim("kills") and int(s.gems) > gems0, "odebrano osiągnięcie Łowca")
 	check(g.achievements.claimed("kills") == 1 and not g.achievements.claim("rebirths_x"), "stopień zapisany, zły klucz odrzucony")
 
+	print("== talenty")
+	s.ach.best_level = 40
+	check(g.talents.earned() >= 20, "punkty talentów z rekordu poziomu: %d" % g.talents.earned())
+	var click0 := g.stats.click
+	check(g.talents.learn("heavy_hand"), "nauka: Ciężka ręka")
+	check(g.stats.click > click0 * 1.05, "talent zwiększa cios (%s → %s)" % [IdleDB.fmt(click0), IdleDB.fmt(g.stats.click)])
+	check(not g.talents.can_learn("wrath"), "węzeł końcowy zablokowany bez punktów w gałęzi")
+	for i in 3:
+		g.talents.learn("heavy_hand")
+	check(g.talents.can_learn("hawk_eye"), "4 punkty w gałęzi odblokowują drugi węzeł")
+	var cost0 := g.mercs.cost("guard")
+	g.talents.learn("wages")
+	for i in 4:
+		g.talents.learn("wages")
+	for i in 3:
+		g.talents.learn("plunder")
+	g.talents.learn("quarter")
+	check(g.mercs.cost("guard") < cost0, "Kwatermistrz obniża koszt najemników")
+	var spent := g.talents.spent()
+	check(g.talents.reset() and g.talents.spent() == 0 and g.talents.free_points() >= spent, "pierwszy reset darmowy, punkty wracają")
+
+	print("== bestiariusz")
+	s.bestiary = {}
+	g.stats.recalc()
+	var dmg0 := g.stats.dmg_mult
+	for i in 10:
+		g.bestiary.on_kill("rat")
+	g.stats.recalc()
+	check(g.bestiary.tier_of(g.bestiary.kills("rat")) >= 1 and g.bestiary.total_tiers() >= 1, "stopień szczura w bestiariuszu")
+	check(g.stats.dmg_mult > dmg0, "bestiariusz daje premię do obrażeń")
+	check(g.bestiary.all_species().size() >= 20, "gatunków w bestiariuszu: %d" % g.bestiary.all_species().size())
+
+	print("== wyprawy")
+	s.max_stage = 25
+	s.exped = {"active": [], "done": 0}
+	var te := ExpeditionManager.now()
+	check(g.expeditions.slots() == 2, "sloty wypraw na etapie 25: %d" % g.expeditions.slots())
+	check(g.expeditions.start(0, 1, te) and g.expeditions.start(1, 0, te), "wysłano dwie wyprawy")
+	check(not g.expeditions.start(0, 0, te), "brak wolnego slotu")
+	check(g.expeditions.claim(0, te + 60.0).is_empty(), "nie można odebrać przed powrotem")
+	var gold0 := float(s.gold)
+	var ex_got := g.expeditions.claim(0, te + 3700.0)
+	check(not ex_got.is_empty() and float(s.gold) > gold0, "łup z patrolu: %d pozycji" % ex_got.size())
+	check(g.expeditions.active().size() == 1 and int(s.exped.done) == 1, "wyprawa zakończona, slot wolny")
+
+	print("== wieża popiołu")
+	s.tower = {"best": 0, "attempts": 3, "day": DailyManager.today()}
+	check(g.tower.enter(), "wejście do wieży")
+	check(g.enemy.cur.has("tower") and int(g.enemy.cur.kind) == 2, "przeciwnik piętra 1: %s" % g.enemy.cur.name)
+	var gems1 := int(s.gems)
+	var tw_stage := int(s.stage)
+	for i in 3:
+		g.combat.damage(float(g.enemy.cur.max_hp) * 2.0, false, "tap")
+	check(g.tower.best() == 3 and int(s.gems) > gems1, "pokonano 3 piętra, rekord 3")
+	check(int(s.stage) == tw_stage, "wieża nie zmienia etapu")
+	g.enemy.cur.time_left = 0.01
+	g.tick(0.1)
+	check(not g.tower.active and not g.enemy.cur.has("tower"), "koniec czasu kończy wspinaczkę, powrót do walki")
+	check(g.tower.attempts() == 2, "zostały 2 próby")
+	check(g.tower.boss_hp(20) > g.tower.boss_hp(10) * 100.0, "piętra rosną wykładniczo")
+
 	g.save.delete_save()
 	print("== wynik: %s (%d błędów)" % ["OK" if fails == 0 else "BŁĘDY", fails])
 	get_tree().quit(1 if fails > 0 else 0)

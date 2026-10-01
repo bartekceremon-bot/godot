@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/nav_compass.png-57e2b2661b276ffc85c8b45dc864f
 
 [params]
 
-compress/mode=1
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.85
 compress/uastc_level=0

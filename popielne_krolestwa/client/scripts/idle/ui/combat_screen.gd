@@ -370,7 +370,11 @@ func _build_bottom() -> void:
 	_boss_btn.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.02))
 	_boss_btn.add_theme_color_override("font_color", Color(1.0, 0.8, 0.5))
 	_boss_btn.custom_minimum_size = Vector2(340, 84)
-	_boss_btn.pressed.connect(func(): gm.progression.challenge_boss())
+	_boss_btn.pressed.connect(func():
+		if gm.tower.active:
+			gm.tower.leave()
+		else:
+			gm.progression.challenge_boss())
 	boss_row.add_child(_boss_btn)
 	_hud_buttons.append(_boss_btn)
 	_stats_l = IdleUI.hud_label("", 17, Color(0.9, 0.86, 0.78), 5)
@@ -518,7 +522,7 @@ func refresh_badges() -> void:
 		n += 1
 	_team_dot.visible = n > 0
 	_team_dot.text = str(n)
-	var m := gm.achievements.ready_count() + (1 if gm.daily.available() else 0)
+	var m := gm.achievements.ready_count() + (1 if gm.daily.available() else 0) + gm.expeditions.ready_count() + maxi(0, gm.talents.free_points())
 	_menu_dot.visible = m > 0
 	_menu_dot.text = str(m)
 
@@ -640,6 +644,8 @@ func _on_changed(what: String) -> void:
 			_refresh_goals()
 		"spells":
 			_refresh_spell_icons()
+		"tower":
+			_refresh_stage()
 
 
 func _refresh_all() -> void:
@@ -667,10 +673,25 @@ func _refresh_stage() -> void:
 	var kind := pm.boss_kind(st)
 	var what: String = ["", "  •  ELITA", "  •  BOSS REGIONU"][kind] if not bool(s.farm_mode) else "  •  farmienie"
 	_region_l.text = "%s  •  etap %d/%d%s" % [pm.region_title(st), in_reg, per, what]
+	if gm.tower.active:
+		_region_l.text = "WIEŻA POPIOŁU  •  piętro %d  •  rekord %d" % [gm.tower.floor_n, gm.tower.best()]
+		_boss_btn.text = "OPUŚĆ WIEŻĘ"
+		_boss_btn.visible = true
+		view.set_region(_tower_region())
+		return
+	_boss_btn.text = "WALCZ Z BOSSEM"
 	_stage_bar.value = float(s.kills_in_stage) / float(gm.db.kills_per_stage) if kind == 0 or bool(s.farm_mode) else 1.0
 	_boss_btn.visible = bool(s.farm_mode)
 	_auto_btn.set_pressed_no_signal(bool(s.auto_progress))
 	view.set_region(pm.region(st))
+
+
+## Wieża stoi w Popielisku (ruiny, żar, dym).
+func _tower_region() -> Dictionary:
+	for r in gm.db.regions:
+		if str(r.id) == "ash":
+			return r
+	return gm.db.regions.back()
 
 
 func _refresh_stats() -> void:
@@ -803,10 +824,12 @@ func _on_spawn() -> void:
 	_elvl_l.text = "LVL %d" % int(e.stage)
 	(_stage_bar.get_theme_stylebox("fill") as StyleBoxFlat).bg_color = Color(1.0, 0.6, 0.18) if kind == 0 else Color(1.0, 0.3, 0.12)
 	_shown_hp = 1.0
-	view.set_region(gm.progression.region(int(e.stage)))
+	view.set_region(_tower_region() if e.has("tower") else gm.progression.region(int(e.stage)))
 	view.spawn_enemy(e)
 	_refresh_stage()
-	if kind > 0:
+	if e.has("tower"):
+		ui.banner("PIĘTRO %d" % int(e.tower), str(e.name).get_slice(" – ", 0), Color(1.0, 0.6, 0.3))
+	elif kind > 0:
 		ui.banner(["", "ELITA", "BOSS"][kind] + ": " + str(e.name), "Pokonaj w %d s!" % int(e.time_max), Color(1.0, 0.55, 0.3))
 
 
@@ -845,7 +868,7 @@ func _on_killed(info: Dictionary) -> void:
 	_pop_gold(float(info.gold))
 	if boss > 0:
 		_flash_edge(1.0)
-	if boss > 0:
+	if boss > 0 and float(info.gold) > 0.0:
 		ui.banner("Pokonano: %s!" % info.name, "+%s zł  •  +%s XP" % [IdleDB.fmt(float(info.gold)), IdleDB.fmt(float(info.xp))], Color(1.0, 0.85, 0.35))
 
 

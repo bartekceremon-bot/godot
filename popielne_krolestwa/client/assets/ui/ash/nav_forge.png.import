@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/nav_forge.png-4b151ffa853452a41edcbf4fdc11bfe
 
 [params]
 
-compress/mode=1
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.85
 compress/uastc_level=0

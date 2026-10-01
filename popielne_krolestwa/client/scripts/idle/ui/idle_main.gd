@@ -31,6 +31,7 @@ var _zone_l: Label
 var _gem_badge: Control
 var _lvl_badge: Control
 var _sheet_close: Button
+var _banner_box: Control
 var _menu_screen: Control
 var _ui_t := 0.0
 var _started := false
@@ -478,23 +479,54 @@ func _make_panel(id: String) -> IdlePanel:
 			return SettingsPanel.new()
 		"achievements":
 			return AchievementsPanel.new()
+		"talents":
+			return TalentsPanel.new()
+		"expeditions":
+			return ExpeditionsPanel.new()
+		"bestiary":
+			return BestiaryPanel.new()
+		"tower":
+			return TowerPanel.new()
 	return null
 
 
 func _open_menu() -> void:
-	var ach := gm.achievements.ready_count()
-	var items := [["Codzienna nagroda" + ("  (gotowa!)" if gm.daily.available() else ""), "chest", "daily"],
-		["Osiągnięcia" + ("  (%d do odebrania)" % ach if ach > 0 else ""), "quest", "achievements"],
-		["Drużyna – najemnicy", "character", "heroes"], ["Stajnia – wierzchowce", "mount", "mounts"], ["Ołtarz Popiołu – odrodzenie", "prestige", "prestige"],
-		["Postać i statystyki", "character", "stats"], ["Ustawienia", "menu", "settings"]]
-	var box := IdleUI.vbox(10)
+	# Kafle menu: [nazwa, ikona, zakładka, plakietka (liczba do odebrania / wolne punkty)].
+	var items := [["Codzienna nagroda", Sprites.icon("chest"), "daily", 1 if gm.daily.available() else 0],
+		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
+		["Wyprawy", IdleUI.ash_tex("nav_compass"), "expeditions", gm.expeditions.ready_count()],
+		["Talenty", Sprites.icon("attack"), "talents", maxi(0, gm.talents.free_points())],
+		["Osiągnięcia", Sprites.icon("quest"), "achievements", gm.achievements.ready_count()],
+		["Bestiariusz", IdleUI.ash_tex("nav_book"), "bestiary", 0],
+		["Drużyna", Sprites.icon("character"), "heroes", 0], ["Stajnia", Sprites.icon("mount"), "mounts", 0],
+		["Ołtarz Popiołu", Sprites.icon("prestige"), "prestige", 1 if gm.prestige.can_rebirth() else 0],
+		["Postać", IdleUI.ash_tex("portrait"), "stats", 0], ["Ustawienia", Sprites.icon("menu"), "settings", 0]]
+	var box := GridContainer.new()
+	box.columns = 3
+	box.add_theme_constant_override("h_separation", 8)
+	box.add_theme_constant_override("v_separation", 8)
 	var m: Control
 	for it in items:
-		var b := IdleUI.button(str(it[0]), Vector2(0, 84), 24)
-		b.icon = Sprites.icon(str(it[1]))
-		b.expand_icon = true
-		b.add_theme_constant_override("icon_max_width", 56)
-		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		var b := IdleUI.ash_button("stone_panel", 26, "tile_on")
+		b.custom_minimum_size = Vector2(0, 150)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var ic := IdleUI.icon_rect(it[1], 76)
+		ic.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+		ic.position.y = 14
+		b.add_child(ic)
+		var l := IdleUI.hud_label(str(it[0]), 17, Color(0.96, 0.94, 0.9), 5)
+		l.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		l.offset_top = -48
+		l.offset_bottom = -8
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		b.add_child(l)
+		var dot := _dot(b)
+		dot.visible = int(it[3]) > 0
+		dot.text = str(it[3])
+		b.text = ""
+		b.set_meta("label", str(it[0]))
 		var tab := str(it[2])
 		b.pressed.connect(func():
 			close_modal(m)
@@ -504,6 +536,26 @@ func _open_menu() -> void:
 				show_tab(tab))
 		box.add_child(b)
 	m = modal("Menu", box)
+
+
+## Kafel menu po nazwie (testy automatyczne naciskają kafle jak przyciski z tekstem).
+func menu_tile(name: String) -> Button:
+	for c in _modals:
+		if is_instance_valid(c):
+			var r := _find_tile(c, name)
+			if r:
+				return r
+	return null
+
+
+func _find_tile(n: Node, name: String) -> Button:
+	for c in n.get_children():
+		if c is Button and str(c.get_meta("label", "")) == name:
+			return c
+		var r := _find_tile(c, name)
+		if r:
+			return r
+	return null
 
 
 ## Codzienna nagroda: 7 kamiennych kafli serii, dzisiejszy świeci; przycisk odbioru.
@@ -716,7 +768,11 @@ func toast_msg(text: String, color := UiTheme.ACCENT) -> void:
 
 ## Duży napis na środku ekranu walki (boss, awans, nowy region).
 func banner(title_text: String, sub: String, color: Color) -> void:
+	# Nowy napis zastępuje poprzedni (szybkie piętra wieży, bossy jeden po drugim).
+	if is_instance_valid(_banner_box):
+		_banner_box.queue_free()
 	var box := IdleUI.vbox(0)
+	_banner_box = box
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var t := IdleUI.title(title_text, 44)
 	t.add_theme_color_override("font_color", color)
