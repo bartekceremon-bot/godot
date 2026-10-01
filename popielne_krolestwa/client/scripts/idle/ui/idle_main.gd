@@ -275,6 +275,7 @@ func _build_game() -> void:
 	gm.level_up.connect(_on_level_up)
 	gm.loot_gained.connect(_on_loot)
 	gm.toast.connect(toast_msg)
+	gm.changed.connect(func(w): if w == "stage": _maybe_ask_rating())
 	gm.unlocked.connect(func(t, x): banner("NOWOŚĆ: " + SmartTranslation.t(t).to_upper(), x, IdleUI.GOLD_COL))
 	_refresh_top()
 	show_tab("fight")
@@ -619,71 +620,103 @@ func _make_panel(id: String) -> IdlePanel:
 			return WeeklyPanel.new()
 		"mail":
 			return MailPanel.new()
+		"records":
+			return RecordsPanel.new()
 	return null
 
 
 func _open_menu() -> void:
-	# Kafle menu: [nazwa, ikona, zakładka, plakietka (liczba do odebrania / wolne punkty)].
-	var items := [["Codzienna nagroda", Sprites.icon("chest"), "daily", 1 if gm.daily.available() else 0],
-		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
-		["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count()],
-		["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers()],
-		["Poczta", Sprites.icon("book"), "mail", gm.mail.unread()],
-		["Wyzwania tygodnia", Sprites.icon("quest"), "weekly", gm.weekly.ready_count()],
-		["Sen Popielnika", load("res://assets/ui/runes/mind.png"), "dream", gm.dream.free_runs() if gm.dream.unlocked() else 0],
-		["Festyn Żaru", load("res://assets/ui/modes/relic_lantern.png"), "festival", 1 if gm.festival.active() else 0],
-		["Klasa bohatera", load("res://assets/ui/runes/fire.png"), "class", 1 if gm.hero.unlocked() and gm.hero.current() == "" else 0],
-		["Koło Żaru", IdleUI.ash_tex("nav_gem"), "wheel", gm.wheel.free_spins()],
-		["Lochy Żaru", load("res://assets/ui/modes/dungeon.png"), "dungeon", gm.dungeon.total_keys() if gm.dungeon.unlocked() else 0],
-		["Arena", load("res://assets/ui/modes/arena.png"), "arena", (gm.arena.tickets() + (1 if gm.arena.weekly_ready() else 0)) if gm.arena.unlocked() else 0],
-		["Relikwie", load("res://assets/ui/modes/relics.png"), "relics", int(gm.relics.shards() / RelicManager.PULL_COST)],
-		["Wyprawy", IdleUI.ash_tex("nav_compass"), "expeditions", gm.expeditions.ready_count()],
-		["Chowańce", load("res://assets/ui/runes/egg.png"), "pets", gm.inventory.count("pet_egg")],
-		["Talenty", Sprites.icon("attack"), "talents", maxi(0, gm.talents.free_points())],
-		["Osiągnięcia", Sprites.icon("quest"), "achievements", gm.achievements.ready_count()],
-		["Runy", load("res://assets/ui/runes/fire.png"), "runes", 0],
-		["Bestiariusz", IdleUI.ash_tex("nav_book"), "bestiary", 0],
-		["Drużyna", Sprites.icon("character"), "heroes", 0], ["Stajnia", Sprites.icon("mount"), "mounts", 0],
-		["Ołtarz Popiołu", Sprites.icon("prestige"), "prestige", 1 if gm.prestige.can_rebirth() else 0],
-		["Feniks", Sprites.icon("prestige"), "phoenix", 1 if gm.phoenix.can_awaken() else 0],
-		["Opowieść", Sprites.icon("book"), "chronicle", 0],
-		["Garderoba", IdleUI.ash_tex("portrait"), "skins", 0],
-		["Postać", Sprites.icon("character"), "stats", 0], ["Ustawienia", Sprites.icon("menu"), "settings", 0]]
-	var box := GridContainer.new()
-	box.columns = 3
-	box.add_theme_constant_override("h_separation", 8)
-	box.add_theme_constant_override("v_separation", 8)
+	# Kafle menu w sekcjach: [nazwa, ikona, zakładka, plakietka, etap odblokowania (0 – zawsze)].
+	var sections := [
+		["Codziennie", [["Codzienna nagroda", Sprites.icon("chest"), "daily", 1 if gm.daily.available() else 0, 0],
+			["Poczta", Sprites.icon("book"), "mail", gm.mail.unread(), 0],
+			["Koło Żaru", IdleUI.ash_tex("nav_gem"), "wheel", gm.wheel.free_spins(), 0],
+			["Wyzwania tygodnia", Sprites.icon("quest"), "weekly", gm.weekly.ready_count(), 0],
+			["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count(), 0],
+			["Festyn Żaru", load("res://assets/ui/modes/relic_lantern.png"), "festival", 1 if gm.festival.active() else 0, 0]]],
+		["Walki i wyzwania", [["Lochy Żaru", load("res://assets/ui/modes/dungeon.png"), "dungeon", gm.dungeon.total_keys() if gm.dungeon.unlocked() else 0, 15],
+			["Arena", load("res://assets/ui/modes/arena.png"), "arena", (gm.arena.tickets() + (1 if gm.arena.weekly_ready() else 0)) if gm.arena.unlocked() else 0, 25],
+			["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts(), 0],
+			["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers(), 0],
+			["Sen Popielnika", load("res://assets/ui/runes/mind.png"), "dream", gm.dream.free_runs() if gm.dream.unlocked() else 0, DreamManager.UNLOCK_STAGE],
+			["Wyprawy", IdleUI.ash_tex("nav_compass"), "expeditions", gm.expeditions.ready_count(), 0]]],
+		["Rozwój bohatera", [["Klasa bohatera", load("res://assets/ui/runes/fire.png"), "class", 1 if gm.hero.unlocked() and gm.hero.current() == "" else 0, ClassManager.UNLOCK_STAGE],
+			["Talenty", Sprites.icon("attack"), "talents", maxi(0, gm.talents.free_points()), 0],
+			["Relikwie", load("res://assets/ui/modes/relics.png"), "relics", int(gm.relics.shards() / RelicManager.PULL_COST), 0],
+			["Runy", load("res://assets/ui/runes/fire.png"), "runes", 0, 0],
+			["Chowańce", load("res://assets/ui/runes/egg.png"), "pets", gm.inventory.count("pet_egg"), 0],
+			["Stajnia", Sprites.icon("mount"), "mounts", 0, 0],
+			["Drużyna", Sprites.icon("character"), "heroes", 0, 0],
+			["Ołtarz Popiołu", Sprites.icon("prestige"), "prestige", 1 if gm.prestige.can_rebirth() else 0, 0],
+			["Feniks", Sprites.icon("prestige"), "phoenix", 1 if gm.phoenix.can_awaken() else 0, 0]]],
+		["Kolekcje i inne", [["Osiągnięcia", Sprites.icon("quest"), "achievements", gm.achievements.ready_count(), 0],
+			["Rekordy", IdleUI.ash_tex("badge"), "records", 0, 0],
+			["Bestiariusz", IdleUI.ash_tex("nav_book"), "bestiary", 0, 0],
+			["Opowieść", Sprites.icon("book"), "chronicle", 0, 0],
+			["Garderoba", IdleUI.ash_tex("portrait"), "skins", 0, 0],
+			["Postać", Sprites.icon("character"), "stats", 0, 0],
+			["Ustawienia", Sprites.icon("menu"), "settings", 0, 0]]],
+	]
+	var best := int(gm.achievements.value("best_stage"))
+	var box := IdleUI.vbox(6)
 	var m: Control
-	for it in items:
-		var b := IdleUI.ash_button("stone_panel", 26, "tile_on")
-		b.custom_minimum_size = Vector2(0, 150)
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var ic := IdleUI.icon_rect(it[1], 76)
-		ic.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-		ic.position.y = 14
-		b.add_child(ic)
-		var l := IdleUI.hud_label(str(it[0]), 17, Color(0.96, 0.94, 0.9), 5)
-		l.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-		l.offset_top = -48
-		l.offset_bottom = -8
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		b.add_child(l)
-		var dot := _dot(b)
-		dot.visible = int(it[3]) > 0
-		dot.text = str(it[3])
-		b.text = ""
-		b.set_meta("label", str(it[0]))
-		var tab := str(it[2])
-		b.pressed.connect(func():
-			close_modal(m)
-			if tab == "daily":
-				show_daily()
-			else:
-				show_tab(tab))
-		box.add_child(b)
+	for sec in sections:
+		box.add_child(IdleUI.label(str(sec[0]), 21, UiTheme.ACCENT))
+		var grid := GridContainer.new()
+		grid.columns = 3
+		grid.add_theme_constant_override("h_separation", 8)
+		grid.add_theme_constant_override("v_separation", 8)
+		box.add_child(grid)
+		for it in sec[1]:
+			var locked := int(it[4]) > 0 and best < int(it[4])
+			var b := IdleUI.ash_button("stone_panel", 26, "tile_on")
+			b.custom_minimum_size = Vector2(0, 150)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var ic := IdleUI.icon_rect(it[1], 76)
+			ic.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+			ic.position.y = 14
+			if locked:
+				ic.modulate = Color(0.3, 0.28, 0.3, 0.9)
+			b.add_child(ic)
+			var l := IdleUI.hud_label(str(it[0]) if not locked else "🔒 etap %d" % int(it[4]), 17, Color(0.96, 0.94, 0.9) if not locked else IdleUI.DIM, 5)
+			l.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+			l.offset_top = -48
+			l.offset_bottom = -8
+			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			b.add_child(l)
+			var dot := _dot(b)
+			dot.visible = int(it[3]) > 0 and not locked
+			dot.text = str(it[3])
+			b.text = ""
+			b.set_meta("label", str(it[0]))
+			var tab := str(it[2])
+			b.pressed.connect(func():
+				close_modal(m)
+				if tab == "daily":
+					show_daily()
+				else:
+					show_tab(tab))
+			grid.add_child(b)
 	m = modal("Menu", box)
+
+
+## Jednorazowa prośba o ocenę w Google Play (po etapie 30 i 2 h gry; „Później” – za 30 etapów, maks. 2 razy).
+func _maybe_ask_rating() -> void:
+	var s := gm.s
+	if not s.has("rate"):
+		s["rate"] = {"done": false, "next": 30, "asks": 0}
+	var r: Dictionary = s.rate
+	if bool(r.done) or int(r.asks) >= 2 or int(s.max_stage) < int(r.next) or float(s.play_time) < 7200.0 or _modals_open() > 0 or gm.challenge() != null:
+		return
+	r.asks = int(r.asks) + 1
+	r.next = int(s.max_stage) + 30
+	dialog("Podoba Ci się gra?", "Jeśli Popielne Królestwa sprawiają Ci frajdę, zostaw ocenę w Google Play – to bardzo pomaga małej grze dotrzeć do nowych graczy. Dziękujemy!", [
+		["Oceń ★★★★★", func():
+			r.done = true
+			OS.shell_open("market://details?id=pl.popielnekrolestwa.gra" if OS.get_name() == "Android" else RecordsPanel.STORE_URL)],
+		["Może później", func(): pass]])
 
 
 func _modals_open() -> int:

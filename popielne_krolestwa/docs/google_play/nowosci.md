@@ -3,6 +3,21 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 3.8.0
+
+```
+<pl-PL>
+• Nowe menu podzielone na sekcje
+• Rekordy z możliwością udostępnienia znajomym
+• Drobne poprawki i usprawnienia
+</pl-PL>
+<en-US>
+• New menu organized into sections
+• Records you can share with friends
+• Small fixes and improvements
+</en-US>
+```
+
 ## 3.7.0
 
 ```
