@@ -615,6 +615,10 @@ func _make_panel(id: String) -> IdlePanel:
 			return FestivalPanel.new()
 		"dream":
 			return DreamPanel.new()
+		"weekly":
+			return WeeklyPanel.new()
+		"mail":
+			return MailPanel.new()
 	return null
 
 
@@ -624,6 +628,8 @@ func _open_menu() -> void:
 		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
 		["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count()],
 		["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers()],
+		["Poczta", Sprites.icon("book"), "mail", gm.mail.unread()],
+		["Wyzwania tygodnia", Sprites.icon("quest"), "weekly", gm.weekly.ready_count()],
 		["Sen Popielnika", load("res://assets/ui/runes/mind.png"), "dream", gm.dream.free_runs() if gm.dream.unlocked() else 0],
 		["Festyn Żaru", load("res://assets/ui/modes/relic_lantern.png"), "festival", 1 if gm.festival.active() else 0],
 		["Klasa bohatera", load("res://assets/ui/runes/fire.png"), "class", 1 if gm.hero.unlocked() and gm.hero.current() == "" else 0],

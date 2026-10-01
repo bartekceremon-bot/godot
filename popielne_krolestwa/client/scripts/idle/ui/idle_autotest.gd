@@ -133,7 +133,9 @@ func _ready() -> void:
 		func(): g.combat.damage(float(g.enemy.cur.max_hp) * 3.0, false, "tap"); return 1.0,
 		func(): await _shot("12s19_sen_wybor"); _close_modals(); g.dream.choose(0); return 1.5,
 		func(): await _shot("12s20_sen_pietro2"); g.dream.leave(); ui.show_tab("dream"); return 0.8,
-		func(): await _shot("12s21_sen_wynik"); ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s21_sen_wynik"); var wg: Array = g.weekly.goals()[0]; g.quests.on_event(str(wg[0]), float(wg[2])); ui.show_tab("weekly"); return 0.8,
+		func(): await _shot("12s22_wyzwania"); ui.show_tab("mail"); return 0.8,
+		func(): await _shot("12s23_poczta"); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0

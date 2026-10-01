@@ -682,6 +682,31 @@ func _ready() -> void:
 	s.erase("dream")
 	g.stats.recalc()
 
+	print("== wyzwania tygodnia i poczta")
+	s.erase("weekly")
+	var wk_g := g.weekly.goals()
+	check(wk_g.size() == 7 and g.weekly.goals() == wk_g, "7 celów tygodnia, stałe w tygodniu")
+	var t0g: Array = wk_g[0]
+	check(not g.weekly.done(0) and g.weekly.claim(0).is_empty(), "cel niewykonany")
+	g.quests.on_event(str(t0g[0]), float(t0g[2]))
+	check(g.weekly.done(0) and g.weekly.ready_count() == 1, "cel %s wykonany" % t0g[0])
+	check(g.weekly.claim(0).size() >= 1 and g.weekly.claimed(0) and g.weekly.claim(0).is_empty(), "nagroda za cel odebrana raz")
+	for i in range(1, 7):
+		var gi: Array = wk_g[i]
+		g.quests.on_event(str(gi[0]), float(gi[2]))
+		g.weekly.claim(i)
+	var seals_w := g.mercs.seals()
+	check(g.weekly.final_ready() and g.weekly.claim_final().size() == 4 and g.mercs.seals() == seals_w + 1, "komplet tygodnia: wielka nagroda")
+	check(not g.weekly.final_ready(), "komplet raz w tygodniu")
+	s.erase("mail")
+	check(g.mail.unread() == MailManager.MESSAGES.size(), "poczta: %d nieprzeczytanych" % g.mail.unread())
+	var gems_m := int(s.gems)
+	check(g.mail.has_gift(0) and g.mail.claim(0).size() == 2 and int(s.gems) == gems_m + 100, "prezent za aktualizację")
+	check(not g.mail.has_gift(0) and g.mail.claim(0).is_empty(), "prezent raz")
+	check(not g.mail.has_gift(1), "starsze wiadomości bez prezentów")
+	var last := MailManager.MESSAGES.size() - 1
+	check(g.mail.has_gift(last), "powitanie z prezentem")
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

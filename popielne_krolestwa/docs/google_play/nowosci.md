@@ -3,6 +3,19 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 3.7.0
+
+```
+<pl-PL>
+• Wyzwania tygodnia: 7 celów co tydzień i wielka nagroda za komplet
+• Poczta z nowościami i prezentem od Gildii
+</pl-PL>
+<en-US>
+• Weekly challenges: 7 goals every week and a big reward for the full set
+• Mail with news and a gift from the Guild
+</en-US>
+```
+
 ## 3.6.0
 
 ```

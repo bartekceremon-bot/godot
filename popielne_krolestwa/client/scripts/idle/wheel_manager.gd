@@ -76,6 +76,7 @@ func spin(use_gems := false) -> Array:
 		gm.spend_gems(GEM_COST)
 		st.paid = paid_today() + 1
 	st.spins = int(st.spins) + 1
+	gm.quests.on_event("wheel", 1)
 	var roll := _rng.randi_range(1, 100)
 	var idx := 0
 	var acc := 0

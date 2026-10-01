@@ -586,7 +586,8 @@ func refresh_badges() -> void:
 		n += 1
 	_team_dot.visible = n > 0
 	_team_dot.text = str(n)
-	var m := gm.achievements.ready_count() + gm.season.ready_count() + (1 if gm.daily.available() else 0) + gm.expeditions.ready_count() + maxi(0, gm.talents.free_points())
+	var m := gm.achievements.ready_count() + gm.season.ready_count() + (1 if gm.daily.available() else 0) + gm.expeditions.ready_count() + maxi(0, gm.talents.free_points()) \
+		+ gm.weekly.ready_count() + gm.mail.unread() + gm.wheel.free_spins()
 	_menu_dot.visible = m > 0
 	_menu_dot.text = str(m)
 

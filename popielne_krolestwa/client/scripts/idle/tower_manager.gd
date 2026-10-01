@@ -101,6 +101,7 @@ func on_win() -> void:
 	gm.add_gems(gems)
 	_run_gems += gems
 	gm.season.add_xp(10)
+	gm.quests.on_event("tower", 1)
 	if f % 10 == 0:
 		gm.mercs.add_seals(1)
 		gm.inventory.add("pet_egg", 1)
