@@ -137,6 +137,9 @@ func kill() -> void:
 	var kind := int(e.kind)
 	var stage := int(e.stage)
 	gm.hero.add_charge(3.0 + kind * 7.0)
+	var lant := gm.festival.on_kill(kind)
+	if lant > 0 and kind > 0:
+		gm.notify("+%d Żarne Lampiony" % lant, Color(1.0, 0.6, 0.25))
 	var st := gm.stats
 	var gold := ProgressionManager.gold_for(stage) * ProgressionManager.boss_hp_mult(kind) * st.gold_mult
 	var xp := ProgressionManager.xp_for(stage) * (1.0 + kind * 4.0) * st.xp_mult

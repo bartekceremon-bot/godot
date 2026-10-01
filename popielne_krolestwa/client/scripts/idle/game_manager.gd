@@ -63,6 +63,7 @@ var relics: RelicManager
 var path: PathManager
 var wheel: WheelManager
 var hero: ClassManager
+var festival: FestivalManager
 var story: StoryManager
 var phoenix: PhoenixManager
 var events: EventManager
@@ -117,6 +118,7 @@ func _ready() -> void:
 	path = PathManager.new(self)
 	wheel = WheelManager.new(self)
 	hero = ClassManager.new(self)
+	festival = FestivalManager.new(self)
 	story = StoryManager.new(self)
 	phoenix = PhoenixManager.new(self)
 	events = EventManager.new(self)

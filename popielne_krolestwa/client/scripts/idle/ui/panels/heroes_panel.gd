@@ -54,13 +54,22 @@ func refresh() -> void:
 			if gm.mercs.buy(id, _count()):
 				request_refresh())
 		r[1].add_child(mb)
-		_rows.append({"id": id, "btn": mb, "title": r[3], "desc": r[2]})
+		var ab := IdleUI.button("", Vector2(120, 84), 17)
+		ab.pressed.connect(func():
+			if gm.mercs.awaken(id):
+				ui.banner("PRZEBUDZENIE", "%s ★%d – DPS ×%d" % [gm.db.merc_def(id).name, gm.mercs.stars(id), int(MercenaryManager.STAR_MULT)], Color(1.0, 0.85, 0.35))
+				request_refresh())
+		r[1].add_child(ab)
+		r[1].move_child(ab, 0)
+		_rows.append({"id": id, "btn": mb, "title": r[3], "desc": r[2], "awaken": ab})
 	tick_ui()
 
 
 func tick_ui() -> void:
 	var st := gm.stats
 	_sum.text = "Klik: %s   •   DPS drużyny: %s   •   Najemnicy: %s DPS" % [IdleDB.fmt(st.click), IdleDB.fmt(st.dps), IdleDB.fmt(st.merc_dps)]
+	if gm.mercs.seals() > 0 or not gm.s.get("merc_stars", {}).is_empty():
+		_sum.text += "\nPieczęcie Przebudzenia: %d  (najemnik od poz. 100: gwiazdka = DPS ×3)" % gm.mercs.seals()
 	for r in _rows:
 		var id := str(r.id)
 		var n := _count()
@@ -81,7 +90,13 @@ func tick_ui() -> void:
 				n = maxi(1, gm.mercs.affordable(float(d.cost), lvl))
 			var c := gm.mercs.cost(id, n)
 			var gain := gm.mercs.dps(id, lvl + n) - gm.mercs.dps(id)
-			r.title.text = "%s  •  poz. %d" % [d.name, lvl]
+			var stv := gm.mercs.stars(id)
+			r.title.text = "%s  •  poz. %d%s" % [d.name, lvl, ("  " + "★".repeat(stv)) if stv > 0 else ""]
+			var ab: Button = r.awaken
+			ab.visible = stv < MercenaryManager.MAX_STARS and lvl >= gm.mercs.awaken_level(id)
+			if ab.visible:
+				ab.text = "Przebudź\n%d pieczęci" % gm.mercs.awaken_cost(id)
+				IdleUI.set_affordable(ab, gm.mercs.can_awaken(id))
 			var ms := gm.mercs.next_milestone(lvl)
 			r.desc.text = "%s\nDPS: %s  (+%s)%s" % [d.text, IdleDB.fmt(gm.mercs.dps(id) * st.dmg_mult * st.atk_speed), IdleDB.fmt(gain * st.dmg_mult * st.atk_speed), ("  •  ×2 na poz. %d" % ms) if ms > 0 else ""]
 			b.text = ("Wynajmij\n" if lvl == 0 else "+%d\n" % n) + "%s zł" % IdleDB.fmt(c)

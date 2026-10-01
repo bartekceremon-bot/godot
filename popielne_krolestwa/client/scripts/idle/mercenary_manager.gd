@@ -4,6 +4,10 @@ extends RefCounted
 ## (obrażenia kliknięcia). Koszt rośnie ×1,07 na poziom, kamienie milowe podwajają DPS.
 
 const TRAIN_BASE := 5.0
+## Przebudzenie: maks. gwiazdek, mnożnik DPS za gwiazdkę, wymagany poziom na gwiazdkę.
+const MAX_STARS := 5
+const STAR_MULT := 3.0
+const STAR_LEVEL := 100
 
 var gm: IdleGame
 
@@ -65,7 +69,7 @@ func dps(id: String, lvl := -1) -> float:
 		lvl = level(id)
 	if lvl <= 0:
 		return 0.0
-	return float(gm.db.merc_def(id).dps) * lvl * milestone_mult(lvl)
+	return float(gm.db.merc_def(id).dps) * lvl * milestone_mult(lvl) * pow(STAR_MULT, stars(id))
 
 
 func total_dps() -> float:
@@ -73,6 +77,48 @@ func total_dps() -> float:
 	for d in gm.db.mercs:
 		t += dps(str(d.id))
 	return t
+
+
+# --- Przebudzenie (gwiazdki zostają po odrodzeniu) ---------------------------------
+
+func stars(id: String) -> int:
+	return int(gm.s.get("merc_stars", {}).get(id, 0))
+
+
+func seals() -> int:
+	return int(gm.s.get("seals", 0))
+
+
+func add_seals(n: int) -> void:
+	gm.s["seals"] = seals() + n
+	gm.changed.emit("mercs")
+
+
+## Pieczęcie na kolejną gwiazdkę: 1, 2, 4, 8, 16.
+func awaken_cost(id: String) -> int:
+	return 1 << stars(id)
+
+
+func awaken_level(id: String) -> int:
+	return STAR_LEVEL * (stars(id) + 1)
+
+
+func can_awaken(id: String) -> bool:
+	return stars(id) < MAX_STARS and level(id) >= awaken_level(id) and seals() >= awaken_cost(id)
+
+
+func awaken(id: String) -> bool:
+	if not can_awaken(id):
+		return false
+	gm.s["seals"] = seals() - awaken_cost(id)
+	if not gm.s.has("merc_stars"):
+		gm.s["merc_stars"] = {}
+	gm.s.merc_stars[id] = stars(id) + 1
+	gm.notify("%s: przebudzenie ★%d – DPS ×%d!" % [gm.db.merc_def(id).name, stars(id), int(STAR_MULT)], Color(1.0, 0.85, 0.35))
+	gm.audio.play("rare")
+	gm.stats.recalc()
+	gm.changed.emit("mercs")
+	return true
 
 
 func buy(id: String, count := 1) -> bool:

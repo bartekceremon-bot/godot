@@ -12,6 +12,7 @@ const SKINS := [
 	{"id": "ashknight", "name": "Rycerz Popiołu", "eq": ["plate_head_t7", "plate_body_t7", "plate_legs_t7", "plate_feet_t7", "sword_t7", "shield_t7"], "req": "tower:20", "text": "20. piętro Wieży Popiołu"},
 	{"id": "dragonslayer", "name": "Pogromca Smoka", "eq": ["plate_head_t8", "plate_body_t8", "plate_legs_t8", "plate_feet_t8", "sword_t8", "shield_t8"], "req": "story:outro:fire_temple", "text": "Pokonaj Żarogniewa"},
 	{"id": "ashprince", "name": "Popielny Książę", "eq": ["plate_head_t8", "leather_body_t8", "plate_legs_t8", "leather_feet_t8", "staff_t8", ""], "req": "owned:ashprince", "text": "Nagroda 30. poziomu Złotego Karnetu"},
+	{"id": "festival", "name": "Mistrz Festynu", "eq": ["cloth_head_t8", "plate_body_t7", "leather_legs_t8", "plate_feet_t8", "mace_t8", "shield_t8"], "req": "owned:festival", "text": "Kram Festynu Żaru (600 lampionów)"},
 	{"id": "phoenix", "name": "Feniks", "eq": ["leather_head_t8", "leather_body_t8", "leather_legs_t8", "leather_feet_t8", "axe_t8", ""], "req": "phoenix:1", "text": "Przebudź się jako Feniks"},
 ]
 

@@ -28,6 +28,7 @@ const SHOP := [
 	["shards", "5 odłamków relikwii", 120, 2],
 	["gems", "40 żarokryształów", 200, 1],
 	["key", "Klucz do lochu (losowy)", 70, 2],
+	["seal", "Pieczęć Przebudzenia", 150, 1],
 ]
 const TAG_A := ["Popielny", "Krwawy", "Szary", "Złoty", "Mroczny", "Cichy", "Żelazny", "Szronowy", "Dziki", "Stary", "Ognisty", "Kruczy"]
 const TAG_B := ["Wilk", "Kruk", "Rycerz", "Łowca", "Smok", "Mag", "Lis", "Topór", "Cień", "Ogar", "Kieł", "Pielgrzym"]
@@ -265,6 +266,8 @@ func buy(i: int) -> String:
 			gm.relics.add_shards(5)
 		"gems":
 			gm.add_gems(40)
+		"seal":
+			gm.mercs.add_seals(1)
 		"key":
 			var d := gm.dungeon._st()
 			var k: String = DungeonManager.ORDER[_rng.randi() % 3]

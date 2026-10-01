@@ -124,7 +124,11 @@ func _ready() -> void:
 			for i in 15:
 				g.combat.tap()
 			return 0.5,
-		func(): await _shot("12s13_furia"); ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s13_furia"); g.festival.force = 1; g.s.festival = {"lanterns": 640, "total": 640, "bought": {}, "month": FestivalManager.month_id()}; ui.show_tab("festival"); return 0.8,
+		func(): await _shot("12s14_festyn"); _press("Kup"); return 0.8,
+		func(): await _shot("12s15_festyn_kupiony"); g.festival.force = -1; g.s.mercs[str(g.db.mercs[0].id)] = 120; g.mercs.add_seals(2); ui.show_tab("heroes"); return 0.8,
+		func(): await _shot("12s16_przebudzenie"); _press("Przebudź"); return 0.8,
+		func(): await _shot("12s17_przebudzony"); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0

@@ -605,6 +605,48 @@ func _ready() -> void:
 	s.erase("hero_class")
 	g.stats.recalc()
 
+	print("== festyn żaru")
+	var fe := g.festival
+	s.erase("festival")
+	var t_on := Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 10, "day": 5, "hour": 12, "minute": 0, "second": 0})
+	var t_off := Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 10, "day": 20, "hour": 12, "minute": 0, "second": 0})
+	check(fe.active(t_on) and not fe.active(t_off), "festyn w dniach 1–10 miesiąca")
+	fe.force = 0
+	check(fe.on_kill(2) == 0 and fe.lanterns() == 0, "poza festynem brak lampionów")
+	fe.force = 1
+	check(fe.on_kill(2) == 4 and fe.on_kill(1) == 3, "boss 4, elita 3 lampiony")
+	var lt_n := 0
+	for i in 500:
+		lt_n += fe.on_kill(0)
+	check(lt_n > 15 and lt_n < 80, "zwykli wrogowie: ok. 8%% (%d / 500)" % lt_n)
+	check(not fe.can_buy(0), "strój kosztuje 600 lampionów")
+	s.festival.lanterns = 2000
+	check(fe.buy(0) and g.skins.unlocked("festival") and not fe.can_buy(0), "strój Mistrz Festynu kupiony raz")
+	var eggs_f := g.inventory.count("pet_egg")
+	check(fe.buy(1) and g.inventory.count("pet_egg") == eggs_f + 1, "jajo z kramu")
+	fe.force = 0
+	check(not fe.can_buy(1), "kram zamknięty poza festynem")
+	check(fe.days_left() > 0, "odliczanie do festynu: %d dni" % fe.days_left())
+	fe.force = -1
+
+	print("== przebudzenie najemników")
+	var mid0 := str(g.db.mercs[0].id)
+	s.mercs[mid0] = 99
+	s.seals = 0
+	var dps_a := g.mercs.dps(mid0)
+	check(not g.mercs.can_awaken(mid0), "przed poz. 100 brak przebudzenia")
+	s.mercs[mid0] = 100
+	check(not g.mercs.can_awaken(mid0) and g.mercs.awaken_cost(mid0) == 1, "bez pieczęci brak przebudzenia")
+	g.mercs.add_seals(3)
+	var dps_b := g.mercs.dps(mid0)
+	check(g.mercs.awaken(mid0) and g.mercs.stars(mid0) == 1 and g.mercs.seals() == 2, "przebudzenie ★1 za 1 pieczęć")
+	check(absf(g.mercs.dps(mid0) - dps_b * 3.0) < 0.01 * dps_b, "★1: DPS ×3")
+	check(not g.mercs.can_awaken(mid0) and g.mercs.awaken_level(mid0) == 200, "★2 wymaga poz. 200")
+	s.mercs[mid0] = 200
+	check(g.mercs.awaken(mid0) and g.mercs.seals() == 0, "★2 za 2 pieczęci")
+	check(dps_a > 0.0, "DPS przed przebudzeniem %s" % IdleDB.fmt(dps_a))
+	s.erase("merc_stars")
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

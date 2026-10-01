@@ -170,6 +170,9 @@ func _finish(cleared: bool, reason: String) -> void:
 		var sh := 2 + int(tier / 10) + (1 if kind == "gems" else 0)
 		gm.relics.add_shards(sh)
 		run.shards = sh
+		if tier >= 5:
+			gm.mercs.add_seals(1)
+			run["seals"] = 1
 		st.clears = int(st.clears) + 1
 		if tier > best(kind):
 			st.best[kind] = tier

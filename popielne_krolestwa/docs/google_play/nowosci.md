@@ -3,6 +3,21 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 3.5.0
+
+```
+<pl-PL>
+• Festyn Żaru: comiesięczne wydarzenie (dni 1–10) – zbieraj Żarne Lampiony
+• Kram festynu z ekskluzywnym strojem „Mistrz Festynu”
+• Przebudzenie najemników: gwiazdki potrajające DPS na zawsze
+</pl-PL>
+<en-US>
+• Ember Festival: a monthly event (days 1–10) – collect Ember Lanterns
+• Festival stall with the exclusive "Festival Master" outfit
+• Mercenary awakening: stars that triple DPS permanently
+</en-US>
+```
+
 ## 3.4.0
 
 ```

@@ -102,6 +102,7 @@ func on_win() -> void:
 	_run_gems += gems
 	gm.season.add_xp(10)
 	if f % 10 == 0:
+		gm.mercs.add_seals(1)
 		gm.inventory.add("pet_egg", 1)
 		gm.notify("Wieża: jajo chowańca!", Color(1.0, 0.85, 0.4))
 	if randf() < 0.35:

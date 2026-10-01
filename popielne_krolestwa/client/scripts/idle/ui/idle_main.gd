@@ -124,6 +124,8 @@ func _start_game() -> void:
 	music.play("walka")
 	var ev := gm.events.current()
 	get_tree().create_timer(2.0).timeout.connect(func(): toast_msg("%s: %s" % [ev.name, ev.text], Color(1.0, 0.75, 0.35)))
+	if gm.festival.active():
+		get_tree().create_timer(4.0).timeout.connect(func(): banner("FESTYN ŻARU", "Zbieraj lampiony – kram czeka w Menu!", Color(1.0, 0.65, 0.25)))
 	gm.enemy_spawned.connect(_update_music)
 	gm.changed.connect(func(w): if w in ["tower", "raid", "dungeon", "arena"]: _update_music())
 	if _menu_screen.has_method("leave"):
@@ -609,6 +611,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return WheelPanel.new()
 		"class":
 			return ClassPanel.new()
+		"festival":
+			return FestivalPanel.new()
 	return null
 
 
@@ -618,6 +622,7 @@ func _open_menu() -> void:
 		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
 		["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count()],
 		["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers()],
+		["Festyn Żaru", load("res://assets/ui/modes/relic_lantern.png"), "festival", 1 if gm.festival.active() else 0],
 		["Klasa bohatera", load("res://assets/ui/runes/fire.png"), "class", 1 if gm.hero.unlocked() and gm.hero.current() == "" else 0],
 		["Koło Żaru", IdleUI.ash_tex("nav_gem"), "wheel", gm.wheel.free_spins()],
 		["Lochy Żaru", load("res://assets/ui/modes/dungeon.png"), "dungeon", gm.dungeon.total_keys() if gm.dungeon.unlocked() else 0],
