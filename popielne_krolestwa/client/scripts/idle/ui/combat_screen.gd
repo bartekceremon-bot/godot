@@ -725,7 +725,7 @@ func _on_changed(what: String) -> void:
 			_refresh_goals()
 		"class":
 			_update_ult()
-		"pets":
+		"pets", "dragon":
 			_refresh_pets()
 
 
@@ -742,6 +742,7 @@ func _refresh_all() -> void:
 
 func _refresh_pets() -> void:
 	view.set_pets(gm.pets.active().map(func(id): return str(PetManager.def(str(id)).look)))
+	view.set_dragon(gm.dragon.model_scale() if gm.dragon.alive() else 0.0)
 
 
 func _refresh_mercs() -> void:
@@ -1154,6 +1155,8 @@ func _on_hit(amount: float, crit: bool, source: String) -> void:
 				_float(IdleDB.fmt(amount) + ("CRIT" if crit else ""), pos + Vector2(0, 30), yellow if crit else Color(0.97, 0.96, 0.94), 40 if crit else 30, crit)
 		"spell":
 			_float(IdleDB.fmt(amount), pos, Color(0.6, 0.85, 1.0), 46, true)
+		"dragon":
+			_float("🔥 " + IdleDB.fmt(amount), pos + Vector2(0, -30), Color(1.0, 0.55, 0.2), 44, true)
 		"dot":
 			if randf() < 0.5:
 				_float(IdleDB.fmt(amount), pos + Vector2(0, 40), Color(0.6, 1.0, 0.45), 26, false)

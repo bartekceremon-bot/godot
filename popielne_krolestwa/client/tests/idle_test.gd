@@ -791,6 +791,41 @@ func _ready() -> void:
 	s.erase("mastery")
 	g.stats.mark_dirty()
 
+	# --- Smoczy towarzysz ---
+	var drg := g.dragon
+	s.erase("dragon")
+	var bs_d := int(s.ach.best_stage)
+	s.ach.best_stage = 50
+	check(drg.unlocked() and drg.state() == "none", "smocze jajo do odebrania")
+	check(drg.take_egg() and drg.state() == "egg" and drg.hatch_left() > 7000.0, "jajo wysiadywane 2 h")
+	check(not drg.hatch(false), "jajo jeszcze nie gotowe")
+	s.dragon.hatch_at = DragonManager.now() - 1.0
+	check(drg.state() == "ready" and drg.hatch(false) and drg.alive() and drg.level() == 1, "smok wykluty")
+	g.stats.recalc()
+	var gold_d0 := g.stats.gold_mult
+	g.add_gold(drg.gold_cost() * 3.0)
+	check(drg.feed_gold() and drg.gold_feeds_left() == DragonManager.GOLD_FEEDS - 1, "karmienie złotem")
+	g.s.garden.herbs["dragon_pepper"] = 10
+	check(drg.feed_herb("dragon_pepper", -1) == 10 and g.garden.herbs("dragon_pepper") == 0 and drg.level() > 5, "karmienie papryczką: poziom %d" % drg.level())
+	g.stats.recalc()
+	check(g.stats.gold_mult > gold_d0, "smok zwiększa złoto")
+	drg.add_xp(999999)
+	check(drg.level() == DragonManager.MAX_LVL and drg.stage_name() == "Pradawny smok", "pradawny smok")
+	s.stage = 21
+	s.farm_mode = true
+	g.enemy.spawn()
+	var hp_d := float(g.enemy.cur.hp)
+	g.enemy.cur.max_hp = drg.breath_damage() * 100.0
+	g.enemy.cur.hp = drg.breath_damage() * 100.0
+	hp_d = float(g.enemy.cur.hp)
+	drg.tick(DragonManager.BREATH_CD + 0.1)
+	check(float(g.enemy.cur.hp) < hp_d and int(s.dragon.breaths) == 1, "zionięcie ogniem")
+	s.farm_mode = false
+	s.erase("dragon")
+	s.ach.best_stage = bs_d
+	g.enemy.spawn()
+	g.stats.mark_dirty()
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

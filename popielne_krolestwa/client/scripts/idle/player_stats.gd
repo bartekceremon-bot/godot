@@ -73,7 +73,10 @@ func recalc() -> void:
 	for k in pe:
 		ru[k] = float(ru.get(k, 0.0)) + float(pe[k])
 	var rl: Dictionary = gm.relics.totals()
-	var dt: Dictionary = gm.dream.totals()
+	var dt: Dictionary = gm.dream.totals().duplicate()
+	var dg: Dictionary = gm.dragon.totals()
+	for k in dg:
+		dt[k] = float(dt.get(k, 0.0)) + float(dg[k])
 	for k in dt:
 		rl[k] = float(rl.get(k, 0.0)) + float(dt[k])
 	for k in rl:

@@ -3,6 +3,31 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 4.3.0
+
+```
+<pl-PL>
+• Smoczy towarzysz – wykluj smoka i wychowaj go do Pradawnego
+• Smok zieje ogniem w walce i przynosi więcej złota
+</pl-PL>
+<en-US>
+• Dragon Companion – hatch a dragon and raise it into an Ancient one
+• Your dragon breathes fire in battle and brings more gold
+</en-US>
+<es-ES>
+• Dragón compañero: haz nacer un dragón y críalo hasta que sea ancestral
+• Tu dragón escupe fuego en combate y trae más oro
+</es-ES>
+<pt-BR>
+• Dragão Companheiro – choque um dragão e crie-o até ser Ancestral
+• Seu dragão cospe fogo em combate e traz mais ouro
+</pt-BR>
+<de-DE>
+• Drachengefährte – brüte einen Drachen aus und zieh ihn zum Uralten groß
+• Dein Drache speit im Kampf Feuer und bringt mehr Gold
+</de-DE>
+```
+
 ## 4.2.0
 
 ```

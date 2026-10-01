@@ -626,6 +626,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return GardenPanel.new()
 		"mastery":
 			return MasteryPanel.new()
+		"dragon":
+			return DragonPanel.new()
 	return null
 
 
@@ -651,6 +653,7 @@ func _open_menu() -> void:
 			["Relikwie", load("res://assets/ui/modes/relics.png"), "relics", int(gm.relics.shards() / RelicManager.PULL_COST), 0],
 			["Runy", load("res://assets/ui/runes/fire.png"), "runes", 0, 0],
 			["Chowańce", load("res://assets/ui/runes/egg.png"), "pets", gm.inventory.count("pet_egg"), 0],
+			["Smoczy towarzysz", load("res://assets/ui/modes/dragon.png" if gm.dragon.alive() else "res://assets/ui/modes/dragon_egg.png"), "dragon", 1 if gm.dragon.unlocked() and gm.dragon.state() in ["none", "ready"] else 0, DragonManager.UNLOCK_STAGE],
 			["Stajnia", Sprites.icon("mount"), "mounts", 0, 0],
 			["Drużyna", Sprites.icon("character"), "heroes", 0, 0],
 			["Ołtarz Popiołu", Sprites.icon("prestige"), "prestige", 1 if gm.prestige.can_rebirth() else 0, 0],

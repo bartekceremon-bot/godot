@@ -143,7 +143,13 @@ func _ready() -> void:
 		func(): await _shot("12s28_kociol"); _close_modals(); ui.show_tab("fight"); g.s.farm_mode = true; g.goblin.force = true; g.enemy.spawn(); return 1.6,
 		func(): await _shot("12s29_goblin"); g.combat.damage(float(g.enemy.cur.max_hp) * 2.0, false, "tap"); return 0.7,
 		func(): await _shot("12s30_goblin_lup"); g.s.farm_mode = false; g.mastery.add_xp(g.mastery.current(), 3000); g.mastery.add_xp("bow", 900); ui.show_tab("mastery"); return 0.8,
-		func(): await _shot("12s31_mistrzostwo"); ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s31_mistrzostwo"); g.s.ach.best_stage = maxi(int(g.s.ach.best_stage), 60); g.s.erase("dragon"); g.dragon.take_egg(); ui.show_tab("dragon"); return 0.8,
+		func(): await _shot("12s32_smocze_jajo"); g.s.dragon.hatch_at = 0.0; return 0.6,
+		func(): _press("Wykluj!"); return 1.0,
+		func(): await _shot("12s33_smok_wykluty"); g.s.garden.herbs["dragon_pepper"] = 12; g.dragon.feed_herb("dragon_pepper", -1); ui.show_tab("dragon"); return 0.8,
+		func(): await _shot("12s34_smok_panel"); _close_modals(); ui.show_tab("fight"); g.s.farm_mode = true; g.enemy.spawn(); return 1.5,
+		func(): g.dragon.tick(DragonManager.BREATH_CD); return 0.25,
+		func(): await _shot("12s35_smok_walka"); g.s.farm_mode = false; ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
@@ -162,6 +168,14 @@ func _ready() -> void:
 	# --idle-quick: tylko menu i walka (szybki podgląd układu).
 	if "--idle-quick" in OS.get_cmdline_user_args():
 		_steps = _steps.slice(0, 12)
+	# --idle-dragon: szybki podgląd smoka w walce (ustawienie modelu i zionięcia).
+	if "--idle-dragon" in OS.get_cmdline_user_args():
+		_steps = _steps.slice(0, 9) + [
+			func(): g.s.ach.best_stage = 60; g.s.erase("dragon"); g.dragon.take_egg(); g.s.dragon.hatch_at = 0.0; g.dragon.hatch(); g.changed.emit("dragon"); return 1.5,
+			func(): await _shot("d1_smok"); g.dragon.add_xp(5000); g.changed.emit("dragon"); return 1.5,
+			func(): g.dragon.tick(DragonManager.BREATH_CD); return 0.2,
+			func(): await _shot("d2_smok_zionie"); return 0.2,
+		]
 
 
 ## Postęp: złoto, najemnicy, czary, łup – żeby ekrany miały treść.

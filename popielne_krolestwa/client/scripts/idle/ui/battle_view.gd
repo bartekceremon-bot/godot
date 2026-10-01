@@ -36,6 +36,8 @@ var pets: Array = []
 var _pet_key := ""
 ## Chowańce idą obok bohatera (bliżej kamery i lekko w prawo).
 const PET_POS := [Vector3(0.9, 0, 0.6), Vector3(-0.2, 0, 1.2)]
+## Smoczy towarzysz – za bohaterem, po lewej.
+const DRAGON_POS := Vector3(1.9, 0.75, -1.35)
 var _region_id := ""
 var _hero_key := ""
 var _merc_key := ""
@@ -556,6 +558,42 @@ func set_pets(looks: Array) -> void:
 		pets.append(ent)
 
 
+var dragon: Entity3D
+var _dragon_scale := 0.0
+
+
+## Smok towarzysz (model Żarogniewa w pomniejszeniu zależnym od stadium; 0 – brak).
+func set_dragon(scale_f: float) -> void:
+	if is_equal_approx(scale_f, _dragon_scale):
+		return
+	_dragon_scale = scale_f
+	if dragon:
+		dragon.queue_free()
+		dragon = null
+	if scale_f <= 0.0:
+		return
+	dragon = _entity({"i": 40, "k": "m", "n": "", "l": "ash_dragon", "h": 100}, HERO_TILE, PI / 2.0 - 0.5)
+	dragon._to = DRAGON_POS
+	dragon._from = DRAGON_POS
+	dragon.position = DRAGON_POS
+	if dragon.model:
+		var body := maxf(0.3, dragon.label_height - 0.32)
+		dragon.model.scale *= clampf(2.2 * scale_f / body, 0.1, 2.0)
+
+
+func dragon_breath() -> void:
+	if not dragon or not enemy:
+		return
+	dragon.play_attack("cast")
+	var a := DRAGON_POS + Vector3(0, 0.9 * _dragon_scale + 0.4, 0)
+	var b := Fx3D.center(ENEMY_TILE.x, ENEMY_TILE.y) + Vector3(0, 0.8, 0)
+	fx.orb(a, b, Color(1.0, 0.45, 0.1), 0.35 + 0.3 * _dragon_scale, 0.35, false)
+	fx.cloud(b - Vector3(0, 0.6, 0), Color(1.0, 0.4, 0.1), 1.0, 0.8, 1.2)
+	fx.burst(b, Color(1.0, 0.6, 0.15), 26, 3.5, -2.0, 0.6, 1.3)
+	enemy.flash()
+	shake(0.3)
+
+
 func spawn_enemy(cur: Dictionary) -> void:
 	if enemy:
 		enemy.vanish(true)
@@ -615,6 +653,9 @@ func on_hit(crit: bool, source: String) -> void:
 	if not enemy:
 		return
 	var p := Fx3D.center(ENEMY_TILE.x, ENEMY_TILE.y) + Vector3(0, 0.7, 0)
+	if source == "dragon":
+		dragon_breath()
+		return
 	if source == "tap" or source == "auto":
 		enemy.flash()
 		if source == "tap" and hero:

@@ -68,6 +68,7 @@ var dream: DreamManager
 var garden: GardenManager
 var goblin: GoblinManager
 var mastery: MasteryManager
+var dragon: DragonManager
 var weekly: WeeklyManager
 var mail: MailManager
 var story: StoryManager
@@ -129,6 +130,7 @@ func _ready() -> void:
 	garden = GardenManager.new(self)
 	goblin = GoblinManager.new(self)
 	mastery = MasteryManager.new(self)
+	dragon = DragonManager.new(self)
 	weekly = WeeklyManager.new(self)
 	mail = MailManager.new(self)
 	story = StoryManager.new(self)
@@ -222,6 +224,7 @@ func tick(dt: float) -> void:
 	progression.tick(dt)
 	premium.tick(dt)
 	hero.tick(dt)
+	dragon.tick(dt)
 	stats.tick(dt)
 
 
