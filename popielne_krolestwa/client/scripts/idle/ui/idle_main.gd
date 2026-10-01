@@ -127,7 +127,7 @@ func _start_game() -> void:
 	if gm.festival.active():
 		get_tree().create_timer(4.0).timeout.connect(func(): banner("FESTYN ŻARU", "Zbieraj lampiony – kram czeka w Menu!", Color(1.0, 0.65, 0.25)))
 	gm.enemy_spawned.connect(_update_music)
-	gm.changed.connect(func(w): if w in ["tower", "raid", "dungeon", "arena"]: _update_music())
+	gm.changed.connect(func(w): if w in ["tower", "raid", "dungeon", "arena", "dream"]: _update_music())
 	if _menu_screen.has_method("leave"):
 		_menu_screen.leave()
 	else:
@@ -613,6 +613,8 @@ func _make_panel(id: String) -> IdlePanel:
 			return ClassPanel.new()
 		"festival":
 			return FestivalPanel.new()
+		"dream":
+			return DreamPanel.new()
 	return null
 
 
@@ -622,6 +624,7 @@ func _open_menu() -> void:
 		["Wieża Popiołu", IdleUI.ash_tex("ico_skull"), "tower", gm.tower.attempts()],
 		["Karnet Popiołu", Sprites.icon("book"), "season", gm.season.ready_count()],
 		["Boss tygodnia", Sprites.icon("attack"), "raid", gm.raid.attempts() + gm.raid.ready_tiers()],
+		["Sen Popielnika", load("res://assets/ui/runes/mind.png"), "dream", gm.dream.free_runs() if gm.dream.unlocked() else 0],
 		["Festyn Żaru", load("res://assets/ui/modes/relic_lantern.png"), "festival", 1 if gm.festival.active() else 0],
 		["Klasa bohatera", load("res://assets/ui/runes/fire.png"), "class", 1 if gm.hero.unlocked() and gm.hero.current() == "" else 0],
 		["Koło Żaru", IdleUI.ash_tex("nav_gem"), "wheel", gm.wheel.free_spins()],

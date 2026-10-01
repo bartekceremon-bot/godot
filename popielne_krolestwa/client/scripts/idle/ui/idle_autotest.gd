@@ -128,7 +128,12 @@ func _ready() -> void:
 		func(): await _shot("12s14_festyn"); _press("Kup"); return 0.8,
 		func(): await _shot("12s15_festyn_kupiony"); g.festival.force = -1; g.s.mercs[str(g.db.mercs[0].id)] = 120; g.mercs.add_seals(2); ui.show_tab("heroes"); return 0.8,
 		func(): await _shot("12s16_przebudzenie"); _press("Przebudź"); return 0.8,
-		func(): await _shot("12s17_przebudzony"); ui.show_tab("settings"); return 0.8,
+		func(): await _shot("12s17_przebudzony"); g.s.ach.best_stage = maxi(int(g.s.ach.best_stage), 40); g.s.erase("dream"); ui.show_tab("dream"); return 0.8,
+		func(): await _shot("12s18_sen"); _press("Zaśnij"); return 1.5,
+		func(): g.combat.damage(float(g.enemy.cur.max_hp) * 3.0, false, "tap"); return 1.0,
+		func(): await _shot("12s19_sen_wybor"); _close_modals(); g.dream.choose(0); return 1.5,
+		func(): await _shot("12s20_sen_pietro2"); g.dream.leave(); ui.show_tab("dream"); return 0.8,
+		func(): await _shot("12s21_sen_wynik"); ui.show_tab("settings"); return 0.8,
 		func(): await _shot("12t_ustawienia"); ui.show_tab("fight"); g.s.stage = 10; g.s.kills_in_stage = 0; g.enemy.spawn(); return 2.5,
 		func():
 			g.combat.mp = 9999.0
@@ -208,7 +213,8 @@ func _expect_no_modal(what: String) -> void:
 	await get_tree().process_frame
 	for c in ui._modals:
 		if is_instance_valid(c) and not c.is_queued_for_deletion():
-			push_error("idle-autotest: okno nie zamknęło się po „%s”" % what)
+			var labels: Array = c.find_children("*", "Label", true, false)
+			push_error("idle-autotest: okno nie zamknęło się po „%s” (%s)" % [what, str(labels[0].text) if not labels.is_empty() else "?"])
 			fails += 1
 			return
 	print("idle-autotest: okno zamknięte po „%s”" % what)

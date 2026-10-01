@@ -647,6 +647,41 @@ func _ready() -> void:
 	check(dps_a > 0.0, "DPS przed przebudzeniem %s" % IdleDB.fmt(dps_a))
 	s.erase("merc_stars")
 
+	print("== sen popielnika")
+	var dr := g.dream
+	s.erase("dream")
+	s.ach.best_stage = maxi(int(s.ach.best_stage), DreamManager.UNLOCK_STAGE)
+	check(dr.unlocked() and dr.free_runs() == 1, "sen odblokowany, 1 darmowy dziennie")
+	check(dr.enter() and dr.active and g.challenge() == dr, "zasypianie")
+	check(str(g.enemy.cur.get("challenge", "")) == "dream" and float(g.enemy.cur.time_max) == DreamManager.TIME, "zjawa piętra 1")
+	var f1 := float(g.enemy.cur.max_hp)
+	g.combat.damage(float(g.enemy.cur.max_hp) * 3.0, false, "tap")
+	check(dr.choosing and dr.options.size() == 3 and dr.floor_n == 2 and dr.best() == 1, "piętro 1 pokonane – wybór z 3 błogosławieństw")
+	check(g.enemy.cur.has("hold"), "zjawa czeka na wybór")
+	var hp_hold := float(g.enemy.cur.hp)
+	g.combat.damage(1e30, false, "tap")
+	check(float(g.enemy.cur.hp) == hp_hold, "w czasie wyboru zjawa nietykalna")
+	dr.options = ["blade", "pack", "clock"]
+	check(dr.choose(0) and dr.count("blade") == 1 and not g.enemy.cur.has("hold"), "wybrano Ostrze Snu")
+	check(float(g.enemy.cur.max_hp) > f1 * 1.2, "piętro 2 silniejsze")
+	check(absf(dr.damage_mult("tap") - 1.6) < 0.001 and absf(dr.damage_mult("auto") - 1.0) < 0.001, "Ostrze Snu: ciosy ×1,6")
+	dr.blessings.append("clock")
+	check(dr.floor_time() >= DreamManager.TIME + 5.0, "Klepsydra: +5 s")
+	g.combat.clear_dots()
+	g.enemy.cur.hp = 1e30
+	g.enemy.cur.time_left = 0.01
+	g.tick(0.1)
+	check(not dr.active and dr.shards() == dr.reward_for(1) and dr.shards() > 0, "koniec snu: %d Okruchów" % dr.shards())
+	check(not dr.can_enter() and dr.can_enter(true) == (int(s.gems) >= DreamManager.PAID_COST), "kolejny sen za żarokryształy")
+	s.dream.shards = 100
+	var dmg_d := g.stats.dmg_mult
+	check(dr.upgrade("power") and dr.tree_level("power") == 1, "Drzewo Snu: Siła Snu")
+	g.stats.recalc()
+	check(g.stats.dmg_mult > dmg_d, "Siła Snu zwiększa obrażenia na stałe")
+	check(dr.reward_for(10) > dr.reward_for(9) + 5, "premia za 10 pięter")
+	s.erase("dream")
+	g.stats.recalc()
+
 	# --- wersja angielska ---
 	var tr_en := SmartTranslation.new()
 	check(tr_en.load_json("res://data/i18n/en.json"), "słownik angielski wczytany")

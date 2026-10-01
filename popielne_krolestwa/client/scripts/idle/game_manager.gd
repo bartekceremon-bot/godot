@@ -64,6 +64,7 @@ var path: PathManager
 var wheel: WheelManager
 var hero: ClassManager
 var festival: FestivalManager
+var dream: DreamManager
 var story: StoryManager
 var phoenix: PhoenixManager
 var events: EventManager
@@ -119,6 +120,7 @@ func _ready() -> void:
 	wheel = WheelManager.new(self)
 	hero = ClassManager.new(self)
 	festival = FestivalManager.new(self)
+	dream = DreamManager.new(self)
 	story = StoryManager.new(self)
 	phoenix = PhoenixManager.new(self)
 	events = EventManager.new(self)
@@ -227,7 +229,7 @@ func _notification(what: int) -> void:
 
 ## Aktywne wyzwanie (Wieża, Boss tygodnia, Loch, Arena) albo null – zwykła walka.
 func challenge() -> Object:
-	for m in [tower, raid, dungeon, arena]:
+	for m in [tower, raid, dungeon, arena, dream]:
 		if m != null and m.active:
 			return m
 	return null
@@ -274,6 +276,7 @@ func import_state(d: Dictionary) -> bool:
 	raid.active = false
 	dungeon.active = false
 	arena.active = false
+	dream.active = false
 	s = d
 	_migrate()
 	if s.gear.is_empty():

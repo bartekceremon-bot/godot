@@ -3,6 +3,19 @@
 Play Console → Wersja → „Informacje o wersji” (maks. 500 znaków na język). Wklej blok
 odpowiedni dla wydawanej wersji (tagi `<pl-PL>` i `<en-US>` wpisuje się w polu edycji).
 
+## 3.6.0
+
+```
+<pl-PL>
+• Sen Popielnika: nowy tryb roguelike – schodź coraz głębiej i wybieraj błogosławieństwa
+• Drzewo Snu: stałe ulepszenia za Okruchy Snu
+</pl-PL>
+<en-US>
+• Ashborn's Dream: a new roguelike mode – go deeper and pick blessings
+• Dream Tree: permanent upgrades for Dream Shards
+</en-US>
+```
+
 ## 3.5.0
 
 ```

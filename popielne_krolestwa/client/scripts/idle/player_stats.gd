@@ -70,6 +70,9 @@ func recalc() -> void:
 	for k in pe:
 		ru[k] = float(ru.get(k, 0.0)) + float(pe[k])
 	var rl: Dictionary = gm.relics.totals()
+	var dt: Dictionary = gm.dream.totals()
+	for k in dt:
+		rl[k] = float(rl.get(k, 0.0)) + float(dt[k])
 	for k in rl:
 		ru[k] = float(ru.get(k, 0.0)) + float(rl[k])
 	var best := 1.0 + gm.bestiary.bonus()

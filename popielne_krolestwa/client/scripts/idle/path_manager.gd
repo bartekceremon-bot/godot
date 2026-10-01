@@ -41,7 +41,7 @@ func _st() -> Dictionary:
 		# Starsze zapisy z dużym postępem: ścieżka uznana za przebytą (bez zalewu nagród).
 		var veteran := int(gm.s.get("max_stage", 1)) > 30 or int(gm.s.get("rebirths", 0)) > 0
 		var ms := int(gm.s.get("max_stage", 1))
-		var seen: Array = [15, 25, 30, -1].filter(func(x): return x > 0 and ms >= x) if not veteran else [15, 25, 30, -1]
+		var seen: Array = [15, 25, 30, 40, -1].filter(func(x): return x > 0 and ms >= x) if not veteran else [15, 25, 30, 40, -1]
 		gm.s["path"] = {"i": GOALS.size() if veteran else 0, "counters": {}, "done": veteran, "seen": seen}
 	return gm.s.path
 
@@ -151,6 +151,7 @@ func claim() -> Array:
 const UNLOCKS := [
 	[15, "Lochy Żaru", "Menu → Lochy Żaru: złoto, żarokryształy i surowce co dzień."],
 	[25, "Arena Popiołu", "Menu → Arena: pojedynki o ranking i odznaki chwały."],
+	[40, "Sen Popielnika", "Menu → Sen Popielnika: piętra snu i błogosławieństwa – tryb roguelike."],
 	[30, "Klasa bohatera", "Menu → Klasa bohatera: Wojownik, Łowca albo Mag i umiejętność ostateczna."],
 ]
 

@@ -43,13 +43,15 @@ func tap() -> void:
 	s.stats.taps = int(s.stats.taps) + 1
 	gm.quests.on_event("taps", 1)
 	var dmg := gm.stats.click * _rng.randf_range(0.92, 1.08)
-	var crit := _rng.randf() < gm.stats.crit_chance or gm.hero.ult_mults().has("crit")
+	var crit := _rng.randf() < gm.stats.crit_chance + (gm.dream.crit_bonus() if gm.dream.active else 0.0) or gm.hero.ult_mults().has("crit")
 	gm.hero.add_charge(0.6)
 	if crit:
 		dmg *= gm.stats.crit_mult
 		s.stats.crits = int(s.stats.crits) + 1
 		gm.quests.on_event("crits", 1)
 	damage(dmg, crit, "tap")
+	if gm.dream.active and _rng.randf() < gm.dream.echo_chance():
+		damage(dmg, crit, "tap")
 
 
 func tick(dt: float) -> void:
@@ -100,8 +102,10 @@ func tick(dt: float) -> void:
 
 ## Zadaje obrażenia bieżącemu wrogowi i obsługuje zabicie.
 func damage(amount: float, crit: bool, source: String, overflow := false) -> void:
-	if not gm.enemy.alive() or amount <= 0.0:
+	if not gm.enemy.alive() or amount <= 0.0 or gm.enemy.cur.has("hold"):
 		return
+	if gm.dream.active:
+		amount *= gm.dream.damage_mult(source) * (gm.dream.crit_mult() if crit else 1.0)
 	var before := float(gm.enemy.cur.hp)
 	var dealt := gm.enemy.take(amount)
 	gm.enemy_hit.emit(dealt, crit, source)
@@ -168,7 +172,7 @@ func kill() -> void:
 
 
 func boss_attacks(raw: float) -> void:
-	var dmg := raw * (1.0 - gm.stats.defense)
+	var dmg := raw * (1.0 - gm.stats.defense) * (gm.dream.taken_mult() if gm.dream.active else 1.0)
 	if shield > 0.0:
 		var absorbed := minf(shield, dmg)
 		shield -= absorbed

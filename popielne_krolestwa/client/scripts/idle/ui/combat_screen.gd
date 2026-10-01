@@ -717,6 +717,9 @@ func _on_changed(what: String) -> void:
 			_refresh_spell_icons()
 		"tower", "raid", "dungeon", "arena":
 			_refresh_stage()
+		"dream":
+			_refresh_stage()
+			_dream_choice()
 		"path":
 			_refresh_goals()
 		"class":
@@ -761,10 +764,10 @@ func _refresh_stage() -> void:
 		_boss_btn.visible = true
 		view.set_region(_tower_region())
 		return
-	if gm.dungeon.active or gm.arena.active:
+	if gm.dungeon.active or gm.arena.active or gm.dream.active:
 		var ch = gm.challenge()
 		_region_l.text = ch.hud_text()
-		_boss_btn.text = "OPUŚĆ LOCH" if gm.dungeon.active else "PODDAJ WALKĘ"
+		_boss_btn.text = "OPUŚĆ LOCH" if gm.dungeon.active else ("OBUDŹ SIĘ" if gm.dream.active else "PODDAJ WALKĘ")
 		_boss_btn.visible = true
 		if gm.dungeon.active:
 			_stage_bar.value = float(gm.dungeon.kills) / float(DungeonManager.GUARDS)
@@ -781,6 +784,33 @@ func _refresh_stage() -> void:
 	_boss_btn.visible = bool(s.farm_mode)
 	_auto_btn.set_pressed_no_signal(bool(s.auto_progress))
 	view.set_region(pm.region(st))
+
+
+## Sen Popielnika: wybór 1 z 3 błogosławieństw po każdym piętrze.
+var _dream_modal: Control
+func _dream_choice() -> void:
+	var d := gm.dream
+	if not d.active or not d.choosing:
+		# Sen przerwany w czasie wyboru – zamknij okno.
+		if is_instance_valid(_dream_modal) and not _dream_modal.is_queued_for_deletion():
+			ui.close_modal(_dream_modal)
+		return
+	if is_instance_valid(_dream_modal) and not _dream_modal.is_queued_for_deletion():
+		return
+	var v := IdleUI.vbox(10)
+	v.add_child(IdleUI.label("Piętro %d pokonane! Wybierz błogosławieństwo na resztę snu:" % (d.floor_n - 1), 20, UiTheme.TEXT, true))
+	for i in d.options.size():
+		var id: String = d.options[i]
+		var info: Array = DreamManager.BLESSINGS[id]
+		var have := d.count(id)
+		var b := IdleUI.button("%s%s\n%s" % [info[0], ("  (masz ×%d)" % have) if have > 0 else "", info[1]], Vector2(0, 104), 21)
+		var idx := i
+		b.pressed.connect(func():
+			ui.close_modal(_dream_modal)
+			gm.dream.choose(idx)
+			ui.banner("SEN %d" % gm.dream.floor_n, str(DreamManager.BLESSINGS[id][0]), Color(0.7, 0.6, 1.0)))
+		v.add_child(b)
+	_dream_modal = ui.modal("Błogosławieństwo snu", v, false)
 
 
 ## Loch: kraina strażników; Arena: Popielisko (jak Wieża).
@@ -1075,6 +1105,9 @@ func _on_spawn() -> void:
 	_refresh_stage()
 	if str(e.get("challenge", "")) == "arena":
 		ui.banner("ARENA", str(e.name), Color(1.0, 0.5, 0.3))
+	elif str(e.get("challenge", "")) == "dream":
+		if gm.dream.floor_n == 1:
+			ui.banner("SEN POPIELNIKA", "Piętro 1 – im głębiej, tym silniejsze zjawy", Color(0.7, 0.6, 1.0))
 	elif str(e.get("challenge", "")) == "dungeon":
 		if gm.dungeon.kills == 0:
 			ui.banner(str(DungeonManager.KINDS[gm.dungeon.kind].name).to_upper(), "Pokonaj %d strażników w %d s!" % [DungeonManager.GUARDS, int(DungeonManager.TIME)], DungeonManager.KINDS[gm.dungeon.kind].color)
