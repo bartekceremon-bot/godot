@@ -83,19 +83,30 @@ func to_dict() -> Dictionary:
 	}
 
 
+static func _f(v: Variant, fallback: float) -> float:
+	if typeof(v) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(v)):
+		return float(v)
+	return fallback
+
+
+static func _b(v: Variant, fallback: bool) -> bool:
+	return v if typeof(v) == TYPE_BOOL else fallback
+
+
 func from_dict(d: Dictionary) -> void:
-	master_volume = clampf(float(d.get("master_volume", master_volume)), 0.0, 1.0)
-	music_volume = clampf(float(d.get("music_volume", music_volume)), 0.0, 1.0)
-	sfx_volume = clampf(float(d.get("sfx_volume", sfx_volume)), 0.0, 1.0)
+	## Dane mogą pochodzić z importu (niezaufane) — złe typy są ignorowane.
+	master_volume = clampf(_f(d.get("master_volume"), master_volume), 0.0, 1.0)
+	music_volume = clampf(_f(d.get("music_volume"), music_volume), 0.0, 1.0)
+	sfx_volume = clampf(_f(d.get("sfx_volume"), sfx_volume), 0.0, 1.0)
 	var q := str(d.get("quality", quality))
 	quality = q if q in ["high", "low"] else "high"
-	reduced_motion = bool(d.get("reduced_motion", reduced_motion))
-	screen_shake = bool(d.get("screen_shake", screen_shake))
-	var ts := float(d.get("text_scale", text_scale))
+	reduced_motion = _b(d.get("reduced_motion"), reduced_motion)
+	screen_shake = _b(d.get("screen_shake"), screen_shake)
+	var ts := _f(d.get("text_scale"), text_scale)
 	text_scale = ts if ts in [1.0, 1.15, 1.3] else 1.0
 	var tm := str(d.get("touch_mode", touch_mode))
 	touch_mode = tm if tm in ["auto", "on", "off"] else "auto"
-	show_hints = bool(d.get("show_hints", show_hints))
+	show_hints = _b(d.get("show_hints"), show_hints)
 
 
 func load_settings() -> void:

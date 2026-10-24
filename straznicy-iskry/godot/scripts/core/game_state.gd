@@ -24,6 +24,9 @@ var load_message := ""
 var persistent_storage := true
 ## Zablokowane podczas automatycznych testów, żeby nie nadpisać zapisu gracza.
 var saving_enabled := true
+## Ścieżki zapisu — testy podmieniają je, żeby nie dotykać prawdziwego zapisu gracza.
+var save_path := SAVE_PATH
+var backup_path := BACKUP_PATH
 
 
 func _ready() -> void:
@@ -251,16 +254,16 @@ func fragments() -> int:
 # --- Zapis -----------------------------------------------------------------
 
 func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH) or FileAccess.file_exists(BACKUP_PATH)
+	return FileAccess.file_exists(save_path) or FileAccess.file_exists(backup_path)
 
 
 func save_game() -> bool:
 	if not saving_enabled:
 		return true
 	var text := JSON.stringify(data)
-	if FileAccess.file_exists(SAVE_PATH):
-		DirAccess.copy_absolute(SAVE_PATH, BACKUP_PATH)
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if FileAccess.file_exists(save_path):
+		DirAccess.copy_absolute(save_path, backup_path)
+	var f := FileAccess.open(save_path, FileAccess.WRITE)
 	if f == null:
 		notify.emit("Nie udało się zapisać postępu.", "warn")
 		return false
@@ -272,13 +275,13 @@ func save_game() -> bool:
 func load_game() -> bool:
 	## Zwraca true, jeśli wczytano poprawny zapis. Uszkodzony zapis nie wywraca gry.
 	load_message = ""
-	for path in [SAVE_PATH, BACKUP_PATH]:
+	for path in [save_path, backup_path]:
 		if not FileAccess.file_exists(path):
 			continue
 		var clean: Variant = validate(JSON.parse_string(FileAccess.get_file_as_string(path)))
 		if clean != null:
 			data = clean
-			if path == BACKUP_PATH:
+			if path == backup_path:
 				load_message = "Główny zapis był uszkodzony — wczytano kopię zapasową."
 			refill()
 			return true
@@ -287,7 +290,7 @@ func load_game() -> bool:
 
 
 func delete_save() -> void:
-	for path in [SAVE_PATH, BACKUP_PATH]:
+	for path in [save_path, backup_path]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -342,7 +345,8 @@ func validate(raw: Variant) -> Variant:
 	out["area"] = out["checkpoint"]["area"]
 	out["play_time"] = clampf(_numf(d.get("play_time"), 0.0), 0.0, 1.0e7)
 	out["deaths"] = clampi(_num(d.get("deaths"), 0), 0, 1000000)
-	out["game_complete"] = d.get("game_complete", false) == true
+	var gc: Variant = d.get("game_complete", false)
+	out["game_complete"] = typeof(gc) == TYPE_BOOL and gc
 	return out
 
 

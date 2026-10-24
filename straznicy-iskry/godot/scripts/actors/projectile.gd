@@ -14,6 +14,7 @@ var style := "rune"
 var homing := 0.0
 var pierce := 1
 var effect := ""
+var direct := true          # false: pocisk konstrukcji (nie wybiera celu w fazie iluzji)
 var t := 0.0
 var _hit: Array = []
 
@@ -30,6 +31,7 @@ func init(d: Dictionary) -> void:
 	homing = d.get("homing", 0.0)
 	pierce = d.get("pierce", 1)
 	effect = d.get("effect", "")
+	direct = d.get("direct", true)
 	z_index = 5
 
 
@@ -57,7 +59,7 @@ func _physics_process(delta: float) -> void:
 				var dmg := damage
 				if e.mark_t > 0.0:
 					dmg *= 1.3
-				e.take_damage(dmg, global_position - dir * 20.0, 150.0)
+				e.take_damage(dmg, global_position - dir * 20.0, 150.0, direct)
 				if effect == "rune_mark":
 					e.rune_mark = 4.0
 				_hit.append(e)

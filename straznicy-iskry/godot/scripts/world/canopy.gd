@@ -25,12 +25,12 @@ func _process(delta: float) -> void:
 		target = 0.18
 	_alpha = move_toward(_alpha, target, delta * 2.5)
 	modulate.a = _alpha
-	queue_redraw()
+	if not Settings.reduced_motion:
+		rotation = sin(t * 0.9) * 0.04
 
 
 func _draw() -> void:
-	var sway := 0.0 if Settings.reduced_motion else sin(t * 0.9) * 0.04
-	draw_set_transform(Vector2.ZERO, sway, Vector2.ONE)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	match kind:
 		"leaves":
 			var cols := [Color("#1c4a33"), Color("#245c3e"), Color("#2f6b3a")]

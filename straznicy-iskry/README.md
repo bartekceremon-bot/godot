@@ -78,7 +78,7 @@ cd straznicy-iskry
 ./tools/build.sh            # wymaga polecenia `godot` w wersji 4.7.2 w PATH
 ```
 
-Skrypt sprawdza dane i skrypty, eksportuje do `dist/` (wraz z przykładowym `.htaccess`) i tworzy:
+Skrypt sprawdza dane i skrypty, eksportuje do `dist/` (dokłada przykładowy `.htaccess` z `docs/htaccess-przyklad.txt`) i tworzy:
 - `wydanie/straznicy-iskry-gra-web.zip` — gotowa gra; `index.html` leży w głównym katalogu archiwum,
 - `wydanie/straznicy-iskry-zrodla.zip` — źródła, narzędzia, dokumentacja.
 
@@ -137,6 +137,7 @@ cd straznicy-iskry/godot
 godot --headless -s res://tests/check_all.gd           # kompilacja skryptów + spójność danych
 godot --headless -s res://tests/save_test.gd           # zapis, kopia zapasowa, walidacja, import/eksport
 godot --headless res://tests/autotest_scene.tscn       # pełne przejście gry każdą klasą
+godot --headless res://tests/perf_scene.tscn           # orientacyjny koszt logiki na klatkę w obszarach
 ```
 
 W buildzie testowym (preset „Web (testy)”) w przeglądarce działają parametry `?autotest=1` (przejście gry) i `?tour=1` (wycieczka po ekranach do zrzutów). Wyniki rzeczywiście wykonanych testów są w [`docs/RAPORT_TESTOW.md`](docs/RAPORT_TESTOW.md).

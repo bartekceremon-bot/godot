@@ -30,7 +30,9 @@ func _process(delta: float) -> void:
 			global_position = want
 		_vel = _vel.lerp(d * 4.0, clampf(delta * 5.0, 0.0, 1.0))
 		global_position += _vel * delta
-	queue_redraw()
+	# Ruch daje pozycja węzła; mimikę wystarczy odświeżać co drugą klatkę.
+	if Engine.get_process_frames() % 2 == 0:
+		queue_redraw()
 
 
 func _draw() -> void:

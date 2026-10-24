@@ -69,9 +69,22 @@ func _set_state(v: float) -> void:
 	queue_redraw()
 
 
+var _redraw_acc := 0.0
+
+
 func _process(delta: float) -> void:
 	t += delta
-	if kind in ["gate", "conveyor", "fogwall", "flowerbed", "shelves", "lift"] and is_visible_in_tree():
+	# Animacje ambientowe odświeżamy ~12 razy na sekundę i tylko w kadrze —
+	# każde przerysowanie wielokątów jest kosztowne na WebGL.
+	var animated := (kind == "gate" and state < 1.0) or (kind == "fogwall" and state < 1.0) \
+		or (kind == "conveyor" and state > 0.0) or (kind == "shelves" and state > 0.0)
+	if not animated or not is_visible_in_tree():
+		return
+	if World.current and not World.current.on_screen(global_position, maxf(size.x, size.y)):
+		return
+	_redraw_acc += delta
+	if _redraw_acc >= (1.0 / 12.0 if kind != "conveyor" else 1.0 / 20.0):
+		_redraw_acc = 0.0
 		queue_redraw()
 
 
@@ -134,7 +147,7 @@ func _draw() -> void:
 					var k := (x * 7 + y * 3) % 4
 					var colr: Color = [Color("#ff7a8a"), Art.GOLD, Color("#c89bff"), Color("#f5ecd7")][k]
 					var bloom := clampf(state * 1.4 - (x + y) * 0.04, 0.0, 1.0)
-					var sway := sin(t * 2.0 + x + y) * 1.5
+					var sway := 0.0
 					draw_line(p, p + Vector2(sway, -6 - 6 * bloom), Color("#3f8a47"), 2.0)
 					if bloom > 0.0:
 						draw_circle(p + Vector2(sway, -8 - 6 * bloom), 2.0 + 3.0 * bloom, colr)

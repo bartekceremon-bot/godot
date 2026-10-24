@@ -80,9 +80,38 @@ func _close_overlays() -> void:
 	get_tree().paused = false
 
 
+func _until(cond: Callable, timeout := 60.0) -> bool:
+	## Czeka na warunek zamiast na stały czas (wolne renderowanie w przeglądarce).
+	var t := 0.0
+	while not cond.call() and t < timeout:
+		await _secs(0.1)
+		t += 0.1
+	return cond.call()
+
+
+func _settled() -> bool:
+	## Wszystkie animacje zmian świata (bramy, mosty, iluzje) zakończone.
+	for b in World.current.area.bridges:
+		if GameState.flags_met(b.flag) and not b.is_built():
+			return false
+	for layer in [World.current.area.ground, World.current.area.entities]:
+		for c in layer.get_children():
+			if c.get("kind") != null and c.get("state") != null and c.get("flag") != null:
+				if GameState.flags_met(c.flag) and c.state < 1.0:
+					return false
+	return true
+
+
+func _settle() -> void:
+	await _until(_settled)
+	await _wait(3)
+
+
 func _travel(area: String, spawn := "start") -> void:
 	World.current.travel(area, spawn)
-	await _secs(1.4)
+	await _secs(0.2)
+	await _until(func() -> bool: return World.area_id() == area and not World.current._travelling)
+	await _secs(0.3)
 	_close_overlays()
 	await _wait(2)
 	_ok(World.area_id() == area, "podróż do %s" % area)
@@ -170,7 +199,6 @@ func _combat_check() -> void:
 	var en0 := GameState.energy
 	p.cooldowns["skill1"] = 0.0
 	p.try_skill("skill1")
-	await _wait(2)
 	_ok(GameState.energy < en0 and p.cooldowns["skill1"] > 0.0, "umiejętność 1 klasy %s zużywa energię i ma odnowienie" % GameState.class_id())
 
 
@@ -197,7 +225,8 @@ func _run_class(cid: String) -> void:
 	await _kill_all()
 	_ok(not _reachable(Vector2(600, 0)), "druga wyspa Ogrodu zablokowana przed mostem")
 	await _mission("m_most")
-	await _secs(2.5)
+	await _until(func() -> bool: return World.current.area.bridges[0].is_built())
+	await _wait(3)
 	_ok(_reachable(Vector2(780, 280)), "most w Ogrodzie prowadzi na drugą wyspę")
 	await _mission("m_portal")
 	await _wait(5)
@@ -216,11 +245,12 @@ func _run_class(cid: String) -> void:
 	await _kill_all()
 	_ok(not _reachable(Vector2(620, -360)), "druga wyspa Warsztatu zablokowana przed kładką")
 	await _mission("m_nawadnianie")
-	await _secs(2.5)
+	await _until(func() -> bool: return World.current.area.bridges[0].is_built())
+	await _wait(3)
 	await _mission("m_przenosnik")
-	await _secs(2.2)
+	await _settle()
 	await _mission("m_uprawnienia")
-	await _secs(2.2)
+	await _settle()
 	await _mission("m_redakcja")
 	_ok(GameState.item_count("frag_logika") == 1, "Fragment Logiki w ekwipunku")
 	# Archiwum
@@ -233,14 +263,14 @@ func _run_class(cid: String) -> void:
 	await _kill_all()
 	_ok(not _reachable(Vector2(660, 300)), "Sala Kruków zablokowana iluzją")
 	await _mission("m_echa")
-	await _secs(2.2)
+	await _settle()
 	await _mission("m_kruk")
-	await _secs(2.2)
+	await _settle()
 	await _mission("m_haslo")
-	await _secs(2.6)
+	await _settle()
 	await _kill_all()
 	await _mission("m_fakty")
-	await _secs(2.6)
+	await _settle()
 	# Boss — przeładowanie obszaru tworzy Miraża (wymaga fakty_done).
 	await _travel("archiwum", "cp_ar_c")
 	await _kill_all()
@@ -296,6 +326,10 @@ func _boss_fight(boss: Node) -> void:
 			# Każda kopia różni się od prawdziwego co najmniej jedną cechą ze wskazówek.
 			for c in copies:
 				_ok(c.props != boss.props, "kopia różni się od prawdziwego")
+			# Atak obszarowy nie może rozstrzygnąć zagadki za gracza.
+			Abilities._burst_damage(boss.global_position, 3000.0, 5.0)
+			await _wait(2)
+			_ok(boss.illusion and boss._copies.size() == 2, "atak obszarowy nie demaskuje iluzji")
 			copies[0].take_damage(10.0, Vector2.ZERO)
 			await _wait(2)
 			_ok(boss.illusion and boss._copies.size() == 1, "trafienie kopii jej nie myli z prawdziwym")
@@ -314,6 +348,7 @@ func _boss_fight(boss: Node) -> void:
 func _test_death() -> void:
 	_log("=== ŚMIERĆ I ODRODZENIE ===")
 	GameState.new_game("straznik")
+	GameState.set_flag("intro_seen_world")
 	await _start_world()
 	await _talk("lumi")
 	GameState.set_checkpoint("latarnia", "cp_hub")
@@ -324,12 +359,14 @@ func _test_death() -> void:
 	GameState.hp = 5.0
 	p.take_damage(50.0, p.global_position + Vector2(20, 0))
 	_ok(p.dead, "gracz pada przy 0 PŻ")
-	await _secs(3.5)
+	await _until(func() -> bool: return not p.dead and not World.current._travelling)
+	await _secs(0.8)
 	_close_overlays()
 	await _wait(3)
 	_ok(not p.dead and GameState.hp == GameState.max_hp(), "odrodzenie z pełnym zdrowiem")
 	_ok(p.global_position.distance_to(World.current.area.spawn_point("cp_hub")) < 40.0, "odrodzenie przy Kamieniu Iskry")
-	_ok(GameState.has_flag("talked_lumi") and GameState.data["missions_done"].size() == done, "postęp zachowany po porażce")
+	_ok(GameState.has_flag("talked_lumi"), "flagi fabularne zachowane po porażce")
+	_ok(GameState.data["missions_done"].size() == done, "zadania zachowane po porażce (%d/%d)" % [GameState.data["missions_done"].size(), done])
 	_ok(int(GameState.data["deaths"]) == 1, "licznik powrotów")
 
 

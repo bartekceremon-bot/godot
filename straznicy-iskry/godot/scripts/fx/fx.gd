@@ -48,7 +48,8 @@ func _draw() -> void:
 		"burst":
 			for p in _parts:
 				var pos: Vector2 = p[0] * (0.2 + k)
-				draw_circle(pos, p[1] * (1.0 - k), Color(color, 1.0 - k))
+				var r: float = p[1] * (1.0 - k)
+				draw_rect(Rect2(pos - Vector2(r, r), Vector2(r, r) * 2.0), Color(color, 1.0 - k))
 		"ring":
 			var r := size * (0.3 + 0.7 * k)
 			draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.6))

@@ -127,7 +127,8 @@ func _physics_process(delta: float) -> void:
 	velocity = velocity.move_toward(desired, 900.0 * delta) + knock
 	knock = knock.move_toward(Vector2.ZERO, 1200.0 * delta)
 	move_and_slide()
-	queue_redraw()
+	if World.current == null or World.current.on_screen(global_position, 120.0):
+		queue_redraw()
 
 
 func _windup_time() -> float:
@@ -191,7 +192,7 @@ func _set_state(s: String) -> void:
 		tele = 0.0
 
 
-func take_damage(amount: float, from: Vector2, knock_force := 150.0) -> void:
+func take_damage(amount: float, from: Vector2, knock_force := 150.0, _direct := true) -> void:
 	if not alive:
 		return
 	hp -= amount

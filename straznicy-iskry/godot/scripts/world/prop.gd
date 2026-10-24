@@ -15,6 +15,11 @@ var seed_value := 0
 var variant := 0.0
 var t := 0.0
 var lit := false
+# Animacje bez przerysowywania (transformacje i modulacja węzłów potomnych).
+var _glow: Sprite2D
+var _spin: Node2D
+var _beam: Node2D
+var _cloth: Node2D
 
 
 func setup(def: Dictionary) -> void:
@@ -30,6 +35,66 @@ func setup(def: Dictionary) -> void:
 			if f == lit_flag:
 				lit = true
 				queue_redraw())
+	if kind == "tower":
+		# Latarnia pokazuje postęp (fragmenty, przywrócone światło).
+		GameState.flag_changed.connect(func(_f: String) -> void:
+			queue_redraw()
+			_update_tower_fx())
+		GameState.inventory_changed.connect(queue_redraw)
+	_build_fx()
+
+
+func _glow_sprite(pos: Vector2, r: float, col: Color) -> Sprite2D:
+	var g := Sprite2D.new()
+	g.texture = Art.glow_texture()
+	g.position = pos * s
+	g.scale = Vector2.ONE * (r * s * 2.0 / 128.0)
+	g.modulate = col
+	g.show_behind_parent = true
+	add_child(g)
+	return g
+
+
+func _painter(cb: Callable, pos: Vector2) -> Node2D:
+	var n := Node2D.new()
+	n.position = pos * s
+	n.scale = Vector2(s, s)
+	n.draw.connect(func() -> void: cb.call(n))
+	add_child(n)
+	return n
+
+
+func _build_fx() -> void:
+	match kind:
+		"crystal":
+			_glow = _glow_sprite(Vector2(0, -24), 40, Color(Art.TEAL, 0.3))
+		"lamp":
+			_glow = _glow_sprite(Vector2(0, -62), 46, Color(Art.GOLD, 0.3))
+		"machine":
+			_spin = _painter(func(ci: Node2D) -> void: _gear_at(ci, Vector2.ZERO, 14), Vector2(18, -30))
+		"gear":
+			_spin = _painter(func(ci: Node2D) -> void: _gear_at(ci, Vector2.ZERO, 26), Vector2(0, -30))
+		"flag":
+			_cloth = _painter(func(ci: Node2D) -> void:
+				var pts := PackedVector2Array([Vector2(0, -58), Vector2(32, -56), Vector2(30, -42), Vector2(0, -42)])
+				Art.poly(ci, pts, Art.TEAL, Art.INK, 1.5), Vector2.ZERO)
+		"tower":
+			var lc := Vector2(0, -292)
+			_glow = _glow_sprite(lc, 120, Color(Art.GOLD, 0.4))
+			_beam = _painter(func(ci: Node2D) -> void:
+				ci.draw_colored_polygon(PackedVector2Array([Vector2.ZERO, Vector2(900, -110), Vector2(900, 110)]), Color(Art.GOLD, 0.12)), lc)
+			_update_tower_fx()
+
+
+func _update_tower_fx() -> void:
+	if kind != "tower" or _glow == null:
+		return
+	var frags := GameState.fragments()
+	var restored := GameState.has_flag("lighthouse_restored")
+	var power := 0.25 + frags * 0.2 + (0.25 if restored else 0.0)
+	_glow.scale = Vector2.ONE * ((80.0 + 60.0 * power) * s * 2.0 / 128.0)
+	_glow.modulate = Color(Art.GOLD, 0.25 + 0.35 * power)
+	_beam.visible = restored and not Settings.reduced_motion
 
 
 func collide_radius() -> float:
@@ -38,7 +103,27 @@ func collide_radius() -> float:
 
 func _process(delta: float) -> void:
 	t += delta
-	queue_redraw()
+	if World.current and not World.current.on_screen(global_position, 300.0) and kind != "tower":
+		return
+	match kind:
+		"crystal":
+			_glow.modulate.a = 0.25 + 0.15 * (0.5 + 0.5 * sin(t * 2.0 + variant * 6.0))
+		"lamp":
+			_glow.modulate.a = 0.35 * (0.75 + 0.25 * sin(t * 3.0 + variant * 4.0))
+		"machine":
+			if lit:
+				_spin.rotation = t
+		"gear":
+			_spin.rotation = t * 0.6
+		"flag":
+			if not Settings.reduced_motion:
+				_cloth.skew = sin(t * 4.0) * 0.12
+		"tower":
+			if _beam.visible:
+				# Promień omiata wyspy (spłaszczony w pionie dla perspektywy).
+				var a := t * 0.7
+				_beam.rotation = atan2(sin(a) * 0.45, cos(a))
+			_glow.modulate.a = clampf(_glow.modulate.a, 0.0, 1.0)
 
 
 func _draw() -> void:
@@ -115,8 +200,6 @@ func _rock() -> void:
 
 func _crystal() -> void:
 	Art.shadow(self, Vector2(2, 2), 18, 6)
-	var pulse := 0.5 + 0.5 * sin(t * 2.0 + variant * 6.0)
-	Art.glow(self, Vector2(0, -24), 40, Color(Art.TEAL, 0.25 + 0.15 * pulse))
 	Art.poly(self, PackedVector2Array([Vector2(-8, 0), Vector2(-12, -26), Vector2(0, -48), Vector2(10, -28), Vector2(8, 0)]), Color("#3fd1c1"))
 	Art.poly(self, PackedVector2Array([Vector2(6, 0), Vector2(14, -18), Vector2(20, -6), Vector2(14, 2)]), Color("#2aa89b"))
 	draw_colored_polygon(PackedVector2Array([Vector2(-6, -24), Vector2(0, -42), Vector2(2, -24)]), Color(1, 1, 1, 0.5))
@@ -138,8 +221,6 @@ func _lamp() -> void:
 	Art.shadow(self, Vector2(2, 2), 12, 5)
 	Art.line(self, Vector2(0, 0), Vector2(0, -56), Color("#3b4a44"), 4.0)
 	var c := Vector2(0, -62)
-	var on := 0.75 + 0.25 * sin(t * 3.0 + variant * 4.0)
-	Art.glow(self, c, 46, Color(Art.GOLD, 0.35 * on))
 	Art.poly(self, Art.rrect(Rect2(c - Vector2(8, 9), Vector2(16, 18)), 3), Color("#f7d77a"), Art.INK, 2.0)
 	Art.poly(self, PackedVector2Array([c + Vector2(-11, -9), c + Vector2(11, -9), c + Vector2(0, -18)]), Color("#3b4a44"))
 
@@ -169,25 +250,23 @@ func _machine() -> void:
 	Art.poly(self, Art.rrect(Rect2(-28, -44, 30, 22), 4), Color("#1d3b36"))
 	var on := 1.0 if lit else 0.3
 	for i in 3:
-		draw_rect(Rect2(-24 + i * 9, -38, 6, 10 + sin(t * 3.0 + i) * 3.0 * on), Color(Art.TEAL, on))
-	_gear_at(Vector2(18, -30), 14, t * on)
+		draw_rect(Rect2(-24 + i * 9, -38, 6, 8 + i * 3), Color(Art.TEAL, on))
 	Art.line(self, Vector2(30, -50), Vector2(30, -66), Color("#7d8a93"), 5.0)
 	draw_circle(Vector2(30, -68), 4, Art.GOLD if lit else Color("#7d6a4a"))
 
 
-func _gear_at(c: Vector2, r: float, rot: float) -> void:
+func _gear_at(ci: CanvasItem, c: Vector2, r: float) -> void:
 	var pts := PackedVector2Array()
 	for i in 24:
-		var a := rot + TAU * i / 24
+		var a := TAU * i / 24
 		var rr := r if i % 2 == 0 else r * 0.78
 		pts.append(c + Vector2(cos(a), sin(a)) * rr)
-	Art.poly(self, pts, Color("#c9a24a"), Art.INK, 1.5)
-	Art.circle(self, c, r * 0.35, Color("#7d6a4a"), Art.INK, 1.5)
+	Art.poly(ci, pts, Color("#c9a24a"), Art.INK, 1.5)
+	Art.circle(ci, c, r * 0.35, Color("#7d6a4a"), Art.INK, 1.5)
 
 
 func _gear() -> void:
 	Art.shadow(self, Vector2(2, 2), 26, 8)
-	_gear_at(Vector2(0, -30), 26, t * 0.6)
 
 
 func _crate() -> void:
@@ -261,14 +340,6 @@ func _desk() -> void:
 
 func _flag() -> void:
 	Art.line(self, Vector2(0, 0), Vector2(0, -60), Color("#6e4a2a"), 3.0)
-	var pts := PackedVector2Array()
-	for i in 7:
-		var x := i * 5.0
-		pts.append(Vector2(x, -58 + sin(t * 4.0 + i * 0.7) * 2.0))
-	for i in range(6, -1, -1):
-		var x := i * 5.0
-		pts.append(Vector2(x, -42 + sin(t * 4.0 + i * 0.7) * 2.0))
-	Art.poly(self, pts, Art.TEAL, Art.INK, 1.5)
 
 
 func _tower() -> void:
@@ -287,12 +358,7 @@ func _tower() -> void:
 	# Laterna
 	var lc := Vector2(0, -292)
 	var power := 0.25 + frags * 0.2 + (0.25 if restored else 0.0)
-	var col := Art.TEAL.lerp(Art.GOLD, 0.5 + 0.5 * sin(t * 0.8))
-	if restored and not Settings.reduced_motion:
-		var a := t * 0.7
-		var beam := PackedVector2Array([lc, lc + Vector2(cos(a - 0.12), sin(a - 0.12) * 0.45) * 900, lc + Vector2(cos(a + 0.12), sin(a + 0.12) * 0.45) * 900])
-		draw_colored_polygon(beam, Color(col, 0.12))
-	Art.glow(self, lc, 80 + 60 * power, Color(col, 0.25 + 0.35 * power))
+	var col := Art.GOLD
 	Art.poly(self, Art.rrect(Rect2(lc - Vector2(30, 30), Vector2(60, 52)), 8), Color("#1d3b36"))
 	Art.circle(self, lc, 16, Color(col, 0.35 + 0.65 * power), Art.INK, 2.0)
 	for i in 3:

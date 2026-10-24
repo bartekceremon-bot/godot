@@ -31,7 +31,7 @@ static func basic(p: Node2D, cid: String, dmg: float) -> void:
 			for e in World.enemies():
 				var to: Vector2 = e.global_position - _origin(p)
 				if to.length() < 92.0 and (to.length() < 30.0 or absf(to.angle_to(p.aim)) < 1.25):
-					e.take_damage(dmg, _origin(p), 340.0)
+					e.take_damage(dmg, _origin(p), 340.0, true)
 					hit = true
 			w.slash(center, p.aim, Color("#9fc7ff"))
 			Audio.play("hammer" if hit else "swing")
@@ -67,7 +67,7 @@ static func skill(p: Node2D, cid: String, slot: String) -> void:
 				if best == null:
 					break
 				var bonus := 1.3 if best.rune_mark > 0.0 else 1.0
-				best.take_damage(24.0 * m * bonus, cur_pos, 120.0)
+				best.take_damage(24.0 * m * bonus, cur_pos, 120.0, false)
 				best.rune_mark = 4.0
 				w.lightning(from, best.global_position + Vector2(0, -20), Color("#c89bff"))
 				from = best.global_position + Vector2(0, -20)
@@ -119,7 +119,7 @@ static func _burst_damage(pos: Vector2, r: float, dmg: float, knock := 260.0) ->
 	World.current.burst(pos + Vector2(0, -16), Art.CREAM, 16, r)
 	for e in World.enemies():
 		if e.global_position.distance_to(pos) < r:
-			e.take_damage(dmg, pos, knock)
+			e.take_damage(dmg, pos, knock, false)
 
 
 static func _clamp_walk(from: Vector2, to: Vector2) -> Vector2:

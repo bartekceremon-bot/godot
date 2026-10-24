@@ -16,6 +16,8 @@ func _ready() -> void:
 	for c in Data.class_order:
 		if str(q).contains("class=" + c):
 			cid = c
+	if str(q).contains("quality=low"):
+		Settings.quality = "low"
 	GameState.new_game(cid)
 	GameState.set_flag("intro_seen_world")
 	world = WORLD.instantiate()

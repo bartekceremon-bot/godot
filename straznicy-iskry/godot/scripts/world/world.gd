@@ -449,6 +449,15 @@ func clear_enemy_shots(pos: Vector2, r: float) -> void:
 const PROJECTILE_T := preload("res://scripts/actors/projectile.gd")
 
 
+func on_screen(p: Vector2, margin := 160.0) -> bool:
+	## Czy punkt świata jest w kadrze (z zapasem) — poza kadrem nie animujemy rysunków.
+	if camera == null:
+		return true
+	var half := get_viewport_rect().size / camera.zoom * 0.5
+	var c := camera.get_screen_center_position()
+	return absf(p.x - c.x) < half.x + margin and absf(p.y - c.y) < half.y + margin
+
+
 func is_walkable(p: Vector2) -> bool:
 	return area.is_walkable(p)
 

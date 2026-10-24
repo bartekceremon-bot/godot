@@ -24,9 +24,21 @@ func setup(a: String, ic: String, key: String, r: float, touch: bool) -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+var _last_sig := ""
+
+
 func _process(delta: float) -> void:
 	_flash = maxf(0.0, _flash - delta * 3.0)
-	queue_redraw()
+	if not is_visible_in_tree():
+		return
+	# Przerysowanie tylko, gdy coś się zmieniło (odnowienie, energia, wciśnięcie).
+	var p := World.player()
+	var sig := "%d|%s|%s|%d" % [int(_ratio() * 40.0), _pressed, _flash > 0.0, int(GameState.energy) if action in ["skill1", "skill2"] else 0]
+	if p and action in ["skill1", "skill2"]:
+		sig += "|%s" % p.skill_unlocked(action)
+	if sig != _last_sig or _flash > 0.0:
+		_last_sig = sig
+		queue_redraw()
 
 
 func center() -> Vector2:

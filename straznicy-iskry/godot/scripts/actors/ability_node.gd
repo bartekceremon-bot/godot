@@ -41,7 +41,7 @@ func _physics_process(delta: float) -> void:
 				if e.global_position.distance_to(global_position) < radius:
 					e.slow_t = 0.3
 					if _tick <= 0.0:
-						e.take_damage(damage, global_position, 0.0)
+						e.take_damage(damage, global_position, 0.0, false)
 			if _tick <= 0.0:
 				_tick = 0.5
 		"drone":
@@ -62,6 +62,8 @@ func _shoot(delta: float, rate: float, rng: float) -> void:
 	var best: Node2D = null
 	var bd := rng
 	for e in World.enemies():
+		if e.is_boss and (e.role == "copy" or e.illusion):
+			continue
 		var d := global_position.distance_to(e.global_position)
 		if d < bd:
 			bd = d
@@ -76,7 +78,7 @@ func _shoot(delta: float, rate: float, rng: float) -> void:
 	for off in shots:
 		var p: Node2D = PROJ.new()
 		p.init({"team": "player", "pos": global_position, "dir": _aim.rotated(off), "speed": 700.0,
-			"damage": damage, "radius": 10.0, "range": rng + 40.0, "style": "bolt"})
+			"damage": damage, "radius": 10.0, "range": rng + 40.0, "style": "bolt", "direct": false})
 		World.current.add_effect(p)
 	Audio.play("bolt", 0.1, -8.0)
 

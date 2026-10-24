@@ -10,7 +10,7 @@ func build(d: Dictionary) -> void:
 	picks.clear()
 	_groups.clear()
 	header(d.get("instruction", "Przyporządkuj każde zdanie:"))
-	var bins: Array = d.get("bins", ["Fakt", "Opinia"])
+	var bins := _bins()
 	var items: Array = d.get("items", [])
 	for i in items.size():
 		var v := card()
@@ -32,9 +32,13 @@ func build(d: Dictionary) -> void:
 		_groups.append(g)
 
 
+func _bins() -> Array:
+	return data.get("bins", ["Fakt", "Opinia"])
+
+
 func check() -> Dictionary:
 	var items: Array = data.get("items", [])
-	var bins: Array = data.get("bins", [])
+	var bins := _bins()
 	for i in items.size():
 		if not picks.has(i):
 			return {"ok": false, "msg": "Przyporządkuj jeszcze: „%s”." % items[i]["text"]}
@@ -52,6 +56,6 @@ func reset() -> void:
 
 func solve() -> void:
 	var items: Array = data.get("items", [])
-	var bins: Array = data.get("bins", [])
+	var bins := _bins()
 	for i in items.size():
 		picks[i] = bins.find(items[i]["bin"])

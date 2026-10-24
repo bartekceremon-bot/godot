@@ -30,6 +30,8 @@ var hint_btn: Button
 var _hint_i := 0
 var _attempts := 0
 var _solved := false
+var _panel_x := 0.0
+var _shake_tw: Tween
 
 
 func _ready() -> void:
@@ -92,6 +94,7 @@ func apply_layout(narrow: bool) -> void:
 	var w := minf(vs.x - pad * 2 - m["left"] - m["right"], 1040.0)
 	var h := minf(vs.y - pad * 2 - m["top"] - m["bottom"], 900.0)
 	panel.position = Vector2((vs.x - w) * 0.5, (vs.y - h) * 0.5 + (m["top"] - m["bottom"]) * 0.5)
+	_panel_x = panel.position.x
 	panel.size = Vector2(w, h)
 	panel.custom_minimum_size = panel.size
 
@@ -167,11 +170,13 @@ func _check() -> void:
 func _shake_panel() -> void:
 	if Settings.reduced_motion:
 		return
-	var x := panel.position.x
-	var tw := create_tween()
+	if _shake_tw and _shake_tw.is_valid():
+		_shake_tw.kill()
+	var x := _panel_x
+	_shake_tw = create_tween()
 	for i in 4:
-		tw.tween_property(panel, "position:x", x + (8 if i % 2 == 0 else -8), 0.04)
-	tw.tween_property(panel, "position:x", x, 0.04)
+		_shake_tw.tween_property(panel, "position:x", x + (8 if i % 2 == 0 else -8), 0.04)
+	_shake_tw.tween_property(panel, "position:x", x, 0.04)
 
 
 func _hint() -> void:

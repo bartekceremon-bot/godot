@@ -4,6 +4,7 @@ extends VBoxContainer
 
 var status: Label
 var _import_poll := false
+var _import_deadline := 0
 var _code_box: TextEdit
 
 
@@ -97,11 +98,19 @@ func _import_file() -> void:
 	"""
 	JavaScriptBridge.eval(js, true)
 	_import_poll = true
+	# Anulowanie okna wyboru pliku nie wywołuje żadnego zdarzenia — kończymy po czasie.
+	_import_deadline = Time.get_ticks_msec() + 120000
 	_set_status("Wybierz plik zapisu…")
 
 
 func _process(_delta: float) -> void:
 	if not _import_poll:
+		return
+	if Time.get_ticks_msec() > _import_deadline:
+		_import_poll = false
+		_set_status("Nie wybrano pliku.")
+		return
+	if Engine.get_process_frames() % 10 != 0:
 		return
 	var r: Variant = JavaScriptBridge.eval("window.__iskraImport", true)
 	if r == null:

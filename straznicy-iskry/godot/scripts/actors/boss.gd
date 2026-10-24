@@ -151,8 +151,12 @@ func _summon(n: int) -> void:
 		World.current.burst(global_position, Art.MIST, 18, 90.0)
 
 
-func take_damage(amount: float, from: Vector2, _knock := 0.0) -> void:
+func take_damage(amount: float, from: Vector2, _knock := 0.0, direct := true) -> void:
 	if not alive:
+		return
+	# W fazie iluzji wybór należy do gracza: ataki obszarowe, łańcuchy i automatyczne
+	# konstrukcje nie demaskują ani nie „przebijają” kopii.
+	if not direct and (illusion or role == "copy"):
 		return
 	if role == "copy":
 		if is_instance_valid(master):

@@ -24,6 +24,9 @@ func write(path: String, text: String) -> void:
 func _init() -> void:
 	await process_frame
 	var gs: Node = root.get_node("GameState")
+	# Osobne pliki — test nie może naruszyć prawdziwego zapisu gracza.
+	gs.save_path = "user://test_save.json"
+	gs.backup_path = "user://test_save.bak.json"
 	gs.delete_save()
 	ok(not gs.has_save(), "brak zapisu na starcie")
 	# 1. Zapis i odczyt
@@ -37,12 +40,12 @@ func _init() -> void:
 	ok(gs.class_id() == "tropiciel" and gs.item_count("krysztal") == 3 and gs.has_flag("lamp_lit") and gs.is_mission_done("m_lampa"), "dane po wczytaniu się zgadzają")
 	# 2. Uszkodzony główny zapis, poprawna kopia
 	gs.save_game()      # kopiuje poprzedni zapis do kopii zapasowej
-	write(gs.SAVE_PATH, "{to nie jest json")
+	write(gs.save_path, "{to nie jest json")
 	ok(gs.load_game(), "uszkodzony zapis → wczytano kopię zapasową")
 	ok(gs.load_message.contains("kopię"), "komunikat o kopii zapasowej")
 	# 3. Oba uszkodzone
-	write(gs.SAVE_PATH, "xxx")
-	write(gs.BACKUP_PATH, "")
+	write(gs.save_path, "xxx")
+	write(gs.backup_path, "")
 	ok(not gs.load_game(), "oba pliki uszkodzone → brak wczytania, bez awarii")
 	ok(gs.load_message.contains("uszkodzony"), "komunikat o uszkodzonym zapisie")
 	# 4. Walidacja niezaufanych danych
