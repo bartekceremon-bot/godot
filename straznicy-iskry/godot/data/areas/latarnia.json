@@ -1,0 +1,98 @@
+{
+  "id": "latarnia",
+  "name": "Latarnia Wiedzy",
+  "music": "hub",
+  "palette": {"ground": "#4f8a4a", "ground2": "#5f9c55", "rim": "#8fcf6a", "grass": "#5aa854", "cliff": "#7a5a40", "cliff2": "#3a2a22", "path": "#cbbf9f"},
+  "sky": {"top": "#0f2a33", "bottom": "#2f6566", "cloud": "#f5ecd7"},
+  "islands": [
+    {"rect": [-720, -540, 1440, 1080], "seed": 3},
+    {"rect": [-280, 620, 560, 340], "seed": 5}
+  ],
+  "bridges": [
+    {"id": "b_hub_south", "a": [0, 500], "b": [0, 660], "w": 120}
+  ],
+  "paths": [
+    [[0, 280], [0, -70]],
+    [[-60, 150], [-260, 20], [-420, -110]],
+    [[-40, 60], [-300, 60], [-560, 50]],
+    [[40, -40], [300, -200], [500, -300]],
+    [[60, 120], [330, 160], [560, 190]],
+    [[0, 280], [0, 700]]
+  ],
+  "spawns": {
+    "start": [0, 270],
+    "from_ogrod": [-470, 70],
+    "from_warsztat": [420, -250],
+    "from_archiwum": [470, 230],
+    "cp_hub": [-280, 350]
+  },
+  "props": [
+    {"type": "tower", "pos": [0, -230]},
+    {"type": "tree", "pos": [-600, -420]}, {"type": "tree", "pos": [-430, -450], "scale": 0.9},
+    {"type": "tree", "pos": [-640, -230], "scale": 1.1}, {"type": "pine", "pos": [-260, -460]},
+    {"type": "tree", "pos": [620, -460]}, {"type": "pine", "pos": [300, -470]},
+    {"type": "tree", "pos": [650, -40], "scale": 0.9}, {"type": "tree", "pos": [640, 400]},
+    {"type": "tree", "pos": [-640, 420]}, {"type": "pine", "pos": [-480, 460]},
+    {"type": "tree", "pos": [240, 470], "scale": 0.8}, {"type": "bush", "pos": [-250, 460]},
+    {"type": "bush", "pos": [380, -120]}, {"type": "bush", "pos": [-160, -330]},
+    {"type": "rock", "pos": [520, 450]}, {"type": "rock", "pos": [-560, -60], "scale": 0.7},
+    {"type": "crystal", "pos": [-180, -180]}, {"type": "crystal", "pos": [180, -170]},
+    {"type": "lamp", "pos": [-70, 200]}, {"type": "lamp", "pos": [70, 200]},
+    {"type": "lamp", "pos": [-70, -10]}, {"type": "lamp", "pos": [70, -10]},
+    {"type": "lamp", "pos": [-480, -170], "lit": "lamp_lit"},
+    {"type": "flowers", "pos": [-240, 220]}, {"type": "flowers", "pos": [250, 260]},
+    {"type": "flowers", "pos": [130, 380]}, {"type": "mushroom", "pos": [-380, 380]},
+    {"type": "statue", "pos": [-180, 760]}, {"type": "flag", "pos": [180, 700]},
+    {"type": "stump", "pos": [-560, 250]}, {"type": "flowers", "pos": [-60, 860]}
+  ],
+  "npcs": [
+    {"id": "lumi", "name": "Lumi", "look": "lumi", "pos": [-160, 110], "dialogs": [
+      {"requires": "!talked_lumi", "id": "lumi_intro"},
+      {"requires": "!cleared_tutorial", "id": "lumi_tutorial"},
+      {"requires": "!lamp_lit", "id": "lumi_lamp"},
+      {"requires": "!frag_jasnosc", "id": "lumi_ogrod"},
+      {"requires": "!frag_logika", "id": "lumi_frag1"},
+      {"requires": "!frag_prawda", "id": "lumi_frag2"},
+      {"requires": "!lighthouse_restored", "id": "lumi_final"},
+      {"id": "lumi_after"}
+    ]}
+  ],
+  "stations": [
+    {"mission": "m_lampa", "pos": [-420, -110], "requires": "talked_lumi"}
+  ],
+  "portals": [
+    {"id": "p_ogrod", "pos": [-590, 50], "target": "ogrod", "spawn": "start", "requires": "lamp_lit", "color": "#7cc46a"},
+    {"id": "p_warsztat", "pos": [520, -330], "target": "warsztat", "spawn": "start", "requires": "frag_jasnosc", "color": "#e8b84a"},
+    {"id": "p_archiwum", "pos": [590, 190], "target": "archiwum", "spawn": "start", "requires": "frag_logika", "color": "#b39bff"}
+  ],
+  "pedestal": {"pos": [0, -80]},
+  "altar": {"pos": [250, 110]},
+  "checkpoints": [{"id": "cp_hub", "pos": [-280, 300]}],
+  "chests": [
+    {"id": "hub_c1", "pos": [-130, 790], "loot": {"eliksir": 1}, "xp": 15},
+    {"id": "hub_c2", "pos": [150, 820], "loot": {"krysztal": 1}, "xp": 20, "rare": true}
+  ],
+  "secrets": [
+    {"id": "hub_s1", "pos": [620, 60], "loot": {"eliksir": 1}, "xp": 15, "text": "Ukryty schowek latarników! W środku eliksir. Rozglądanie się popłaca."}
+  ],
+  "class_spots": [
+    {"id": "hub_trop", "class": "tropiciel", "pos": [-380, 820], "prompt": "Zbadaj ślady", "text": "Ślady prowadzą do zakopanej skrzynki. Tropiciel widzi to, co inni przeoczą!", "loot": {"krysztal": 1}, "xp": 25},
+    {"id": "hub_straz", "class": "straznik", "pos": [380, 820], "prompt": "Odpieczętuj skrytkę", "text": "Pieczęć ustępuje przed Strażnikiem Tarczy. Skrytka była chroniona — i dobrze!", "loot": {"eliksir": 1}, "xp": 25}
+  ],
+  "lore": [
+    {"id": "hub_lore", "pos": [-300, -300], "title": "Tablica Latarni", "text": "„Iskra porządkuje to, co pomieszane. Ale Iskra działa tylko wtedy, gdy ludzie zadają jasne pytania, sprawdzają odpowiedzi i chronią to, co prywatne.”\n\n— spisane przez pierwszych latarników"}
+  ],
+  "enemies": [
+    {"type": "szumik", "pos": [470, 330], "tag": "tutorial", "until": "cleared_tutorial"},
+    {"type": "szumik", "pos": [570, 270], "tag": "tutorial", "until": "cleared_tutorial"},
+    {"type": "szumik", "pos": [540, 420], "tag": "tutorial", "until": "cleared_tutorial"}
+  ],
+  "triggers": [
+    {"rect": [250, 150, 450, 380], "requires": "talked_lumi", "once": "tut_fight_seen", "dialog": "tut_fight"}
+  ],
+  "cleared_msgs": {"cleared_tutorial": "Szumiki przegonione! Teraz lampa sygnałowa — stacja jest na zachodzie placu."},
+  "foreground": [
+    {"pos": [-700, -520], "type": "leaves"}, {"pos": [700, -500], "type": "leaves"}, {"pos": [-690, 520], "type": "vines"}
+  ],
+  "fog": {"count": 12, "until": "lighthouse_restored"}
+}

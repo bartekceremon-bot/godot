@@ -1,0 +1,46 @@
+{
+  "area_order": ["latarnia", "ogrod", "warsztat", "archiwum"],
+  "unlocks": {"lamp_lit": "ogrod", "frag_jasnosc": "warsztat", "frag_logika": "archiwum"},
+  "map": {
+    "latarnia": {"pos": [0, 0], "color": "#5f9c55", "links": ["ogrod", "warsztat", "archiwum"], "spawn": "start"},
+    "ogrod": {"pos": [-260, 90], "color": "#7cc46a", "links": [], "spawn": "start"},
+    "warsztat": {"pos": [150, -150], "color": "#c9a24a", "links": [], "spawn": "start"},
+    "archiwum": {"pos": [270, 130], "color": "#8a7ab8", "links": [], "spawn": "start"}
+  },
+  "objectives": [
+    {"done": "talked_lumi", "text": "Porozmawiaj z Lumi przed Latarnią."},
+    {"done": "cleared_tutorial", "text": "Przegoń szumiki na wschodzie placu."},
+    {"done": "lamp_lit", "text": "Uruchom lampę sygnałową (stacja na zachodzie placu)."},
+    {"done": "visited_ogrod", "text": "Wejdź do portalu Ogrodu Poleceń (zachód placu)."},
+    {"done": "bridge_ogrod", "text": "Pomóż golemowi zbudować most w Ogrodzie."},
+    {"done": "portal_ogrod", "text": "Złóż jasne polecenie i otwórz portal do Szklarni."},
+    {"done": "frag_jasnosc", "text": "Sprawdź pracę automatu-ogrodnika w Szklarni."},
+    {"done": "visited_warsztat", "text": "Wróć do Latarni i wejdź do portalu Warsztatu (północny wschód)."},
+    {"done": "water_on", "text": "Ustaw regułę nawadniania w Warsztacie."},
+    {"done": "conveyor_on", "text": "Napraw program przenośnika."},
+    {"done": "gate_warsztat", "text": "Ustaw uprawnienia aplikacji przy bramie energii."},
+    {"done": "frag_logika", "text": "Przygotuj bezpieczną wiadomość dla automatu-tłumacza."},
+    {"done": "visited_archiwum", "text": "Wróć do Latarni i wejdź do portalu Archiwum Echa (wschód)."},
+    {"done": "echa_done", "text": "Porównaj trzy echa i rozwiej iluzję na moście."},
+    {"done": "kruk_done", "text": "Zdemaskuj fałszywego kruka pocztowego."},
+    {"done": "haslo_done", "text": "Zabezpiecz skarbiec silnym hasłem."},
+    {"done": "fakty_done", "text": "Uporządkuj Regały Wiedzy: fakty i opinie."},
+    {"done": "boss_defeated", "text": "Pokonaj Miraża w Sali Luster (południe Archiwum)."},
+    {"done": "lighthouse_restored", "text": "Wróć do Latarni i połóż trzy Fragmenty Iskry na ołtarzu."}
+  ],
+  "intro": [
+    {"scene": "islands", "text": "Luminara — archipelag unoszących się wysp, gdzie natura splata się z dawną technologią. W jej sercu stoi [b]Latarnia Wiedzy[/b]."},
+    {"scene": "islands", "text": "Latarnię zasila [b]Iskra[/b]: mechanizm, który porządkuje informacje i łączy mieszkańców wysp."},
+    {"scene": "fog", "text": "Pewnego dnia nadeszła [color=#c89bff]Mgła Chaosu[/color]. Pomieszała instrukcje, stworzyła pozornie wiarygodne informacje, zepsuła automaty i zamknęła drogi między wyspami."},
+    {"scene": "fragments", "text": "Iskra rozpadła się na trzy fragmenty: [b]Jasność[/b], [b]Logikę[/b] i [b]Prawdę[/b]. Bez nich Latarnia gaśnie."},
+    {"scene": "blik", "mood": "happy", "text": "Tylko Strażnik Iskry może je odzyskać. A każdy Strażnik potrzebuje pomocnika… Cześć! Jestem BLIK!"}
+  ],
+  "finale": [
+    {"scene": "fragments", "text": "Jasność, Logika i Prawda wracają na swoje miejsce. Iskra znów jest cała."},
+    {"scene": "restored", "text": "Latarnia Wiedzy rozbłyska. Jej światło przecina Mgłę Chaosu, która cofa się z każdej wyspy."},
+    {"scene": "hero", "text": "Mieszkańcy Luminary wiedzą już, że jasne polecenia, sprawdzanie wyników i ochrona danych są ważniejsze niż ślepe zaufanie automatom."},
+    {"scene": "restored", "text": "[b]Dziękujemy za grę![/b]\n„Strażnicy Iskry” — gra edukacyjna AI Bliżej. Możesz dalej zwiedzać Luminarę, szukać sekretów i powtarzać zadania."}
+  ],
+  "controls_text": "[b]Komputer[/b]\n• Ruch: WASD lub strzałki\n• Celowanie: mysz\n• Atak: lewy przycisk myszy lub J (przytrzymaj, by atakować seriami)\n• Umiejętność 1: Q, 1 lub prawy przycisk myszy\n• Umiejętność 2: R lub 2 (od poziomu 2)\n• Unik: Spacja lub Shift\n• Interakcja: E, F lub Enter\n• Eliksir: H\n• Pauza i dziennik: Esc lub Tab • Mapa: M\n\n[b]Telefon i tablet[/b]\n• Ruch: joystick po lewej stronie (połóż kciuk w dowolnym miejscu lewej połowy ekranu)\n• Po prawej: duży przycisk ataku, dwie umiejętności i unik\n• „Użyj” pojawia się, gdy coś jest w pobliżu\n• Celowanie jest wspomagane — atak kieruje się na najbliższego przeciwnika\n• Możesz jednocześnie iść i atakować\n• Najwygodniej grać poziomo, ale gra działa też w pionie\n\n[b]Pad[/b] (dodatkowo): lewa gałka — ruch, X — atak, Y/B — umiejętności, RB — unik, A — interakcja.",
+  "about_text": "[b]AI Bliżej: Strażnicy Iskry[/b] — edukacyjna przygoda RPG o mądrym korzystaniu z AI, logicznym myśleniu i bezpieczeństwie w sieci.\n\n[b]Ważne:[/b] zagadki w grze działają na prostych, przygotowanych regułach. BLIK i automaty nie są prawdziwymi modelami AI. Prawdziwe narzędzia AI potrafią więcej, ale też się mylą — dlatego warto pisać jasne polecenia i sprawdzać wyniki.\n\n[b]Prywatność:[/b] gra nie zbiera danych osobowych, nie ma reklam, analityki ani kont. Postęp jest zapisywany tylko w Twojej przeglądarce (pamięć lokalna). Wyczyszczenie danych przeglądarki usuwa zapis — możesz go wcześniej wyeksportować w menu Zapis.\n\n[b]Twórcy i licencje:[/b] grafika wektorowa, dźwięki i muzyka zostały wygenerowane na potrzeby tej gry (kod i syntezator). Czcionki: Nunito i Cinzel (SIL Open Font License 1.1). Silnik: Godot Engine (licencja MIT).\n\nWersja 1.0.0"
+}

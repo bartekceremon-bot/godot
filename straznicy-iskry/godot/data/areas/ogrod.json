@@ -1,0 +1,106 @@
+{
+  "id": "ogrod",
+  "name": "Ogród Poleceń",
+  "music": "explore",
+  "blik_enter": "Ogród Poleceń! Tu wszystko rośnie według instrukcji… o ile instrukcje są dobre. Porozmawiaj z ogrodniczką Felą.",
+  "palette": {"ground": "#5a9a4c", "ground2": "#6fb15e", "rim": "#a6dc7a", "grass": "#72c25e", "cliff": "#7a5a40", "cliff2": "#3d2b20", "path": "#d8c9a3"},
+  "sky": {"top": "#123a3a", "bottom": "#3f7a5e", "cloud": "#fff6df"},
+  "islands": [
+    {"rect": [-950, -420, 950, 840], "seed": 11, "grass": 2},
+    {"rect": [300, -480, 950, 960], "seed": 12, "grass": 2},
+    {"rect": [500, 620, 900, 620], "seed": 13, "grass": 2}
+  ],
+  "bridges": [
+    {"id": "b_most", "a": [-40, 0], "b": [340, 0], "w": 110, "flag": "bridge_ogrod"}
+  ],
+  "paths": [
+    [[-760, -60], [-480, -60], [-200, 60], [-40, 0]],
+    [[340, 0], [600, 60], [870, 180], [1000, 250]],
+    [[760, 820], [900, 800], [1050, 900]]
+  ],
+  "spawns": {
+    "start": [-720, -60],
+    "szklarnia": [780, 830],
+    "portal_b": [860, 170],
+    "cp_og_a": [-600, 260],
+    "cp_og_b": [520, -40],
+    "cp_og_c": [700, 1000]
+  },
+  "props": [
+    {"type": "tree", "pos": [-820, -300]}, {"type": "tree", "pos": [-560, -360], "scale": 1.1},
+    {"type": "tree", "pos": [-280, -350], "scale": 0.9}, {"type": "tree", "pos": [-860, 120]},
+    {"type": "tree", "pos": [-700, 340], "scale": 0.9}, {"type": "pine", "pos": [-420, 340]},
+    {"type": "bush", "pos": [-200, -220]}, {"type": "bush", "pos": [-640, 80]},
+    {"type": "flowers", "pos": [-380, -40]}, {"type": "flowers", "pos": [-520, 160]},
+    {"type": "flowers", "pos": [-120, 280]}, {"type": "mushroom", "pos": [-820, -120]},
+    {"type": "stump", "pos": [-250, 160]}, {"type": "rock", "pos": [-80, -300], "scale": 0.8},
+    {"type": "crate", "pos": [-120, -120]}, {"type": "crate", "pos": [-90, -150], "scale": 0.8, "collide": false},
+    {"type": "tree", "pos": [450, -400]}, {"type": "tree", "pos": [1180, -280], "scale": 1.1},
+    {"type": "tree", "pos": [1180, 360]}, {"type": "pine", "pos": [400, 380]},
+    {"type": "bush", "pos": [900, -100]}, {"type": "bush", "pos": [620, 330]},
+    {"type": "flowers", "pos": [700, -200]}, {"type": "flowers", "pos": [1000, -380]},
+    {"type": "rock", "pos": [820, -420], "scale": 0.8}, {"type": "lamp", "pos": [930, 330]},
+    {"type": "lamp", "pos": [1070, 330]}, {"type": "mushroom", "pos": [480, 120]},
+    {"type": "tree", "pos": [1330, 700], "scale": 0.9}, {"type": "pine", "pos": [560, 1150]},
+    {"type": "bush", "pos": [800, 1150]}, {"type": "flowers", "pos": [620, 900]},
+    {"type": "crystal", "pos": [1330, 1050]}, {"type": "lamp", "pos": [860, 700]}
+  ],
+  "objects": [
+    {"type": "flowerbed", "pos": [1080, 980], "size": [320, 170], "flag": "flowers_ogrod"},
+    {"type": "flowerbed", "pos": [1150, 760], "size": [190, 130], "flag": "flowers_ogrod"}
+  ],
+  "npcs": [
+    {"id": "fela", "name": "Fela", "look": "fela", "pos": [-480, -170], "dialogs": [
+      {"requires": "!bridge_ogrod", "id": "fela_intro"},
+      {"requires": "!portal_ogrod", "id": "fela_bridge"},
+      {"requires": "!flowers_ogrod", "id": "fela_portal"},
+      {"id": "fela_done"}
+    ]}
+  ],
+  "stations": [
+    {"mission": "m_most", "pos": [-170, 110]},
+    {"mission": "m_portal", "pos": [780, 280]},
+    {"mission": "m_ogrodnik", "pos": [920, 790]}
+  ],
+  "portals": [
+    {"id": "p_og_back", "pos": [-850, -200], "target": "latarnia", "spawn": "from_ogrod", "color": "#3fd1c1"},
+    {"id": "p_szklarnia", "pos": [1010, 250], "target": "ogrod", "spawn": "szklarnia", "requires": "portal_ogrod", "color": "#7cc46a"},
+    {"id": "p_szklarnia_back", "pos": [620, 720], "target": "ogrod", "spawn": "portal_b", "color": "#7cc46a"}
+  ],
+  "checkpoints": [
+    {"id": "cp_og_a", "pos": [-600, 210]},
+    {"id": "cp_og_b", "pos": [520, -90]},
+    {"id": "cp_og_c", "pos": [700, 950]}
+  ],
+  "chests": [
+    {"id": "og_c1", "pos": [-860, 330], "loot": {"eliksir": 1}, "xp": 15},
+    {"id": "og_c2", "pos": [1170, -400], "loot": {"krysztal": 1}, "xp": 20, "rare": true},
+    {"id": "og_c3", "pos": [1310, 1150], "loot": {"eliksir": 1, "krysztal": 1}, "xp": 25, "rare": true}
+  ],
+  "secrets": [
+    {"id": "og_s1", "pos": [-130, -360], "loot": {"krysztal": 1}, "xp": 15, "text": "Pod liśćmi błyszczał kryształ! Mgła nie zasłoni wszystkiego."},
+    {"id": "og_s2", "pos": [1320, 880], "loot": {"eliksir": 1}, "xp": 15, "text": "Ukryta nisza w krzakach z eliksirem. Dobre oko!"}
+  ],
+  "class_spots": [
+    {"id": "og_tkacz", "class": "tkacz", "pos": [-700, -320], "prompt": "Połącz runy", "text": "Runy układają się w poprawną instrukcję i kamień się otwiera. Tkacz Słów czyta stare polecenia jak książkę!", "loot": {"krysztal": 1}, "xp": 25},
+    {"id": "og_trop", "class": "tropiciel", "pos": [1150, -120], "prompt": "Zbadaj ślady", "text": "Ślady golema prowadzą do zgubionej sakwy. Tropiciel znalazł to, czego nikt nie szukał.", "loot": {"eliksir": 1}, "xp": 25}
+  ],
+  "lore": [
+    {"id": "og_lore", "pos": [-400, 260], "title": "Kamień Ogrodu", "text": "„Ziarno rośnie tak, jak je posadzisz. Polecenie działa tak, jak je napiszesz.”\n\nDobre polecenie mówi: CO zrobić, W JAKIEJ sytuacji, CZEGO unikać i W JAKIEJ formie oddać wynik."}
+  ],
+  "enemies": [
+    {"type": "szumik", "pos": [-330, -260], "chaos": true},
+    {"type": "szumik", "pos": [-280, 330]},
+    {"type": "szumik", "pos": [620, -290]},
+    {"type": "zaklocacz", "pos": [1050, -230]},
+    {"type": "szumik", "pos": [720, 60], "chaos": true},
+    {"type": "zaklocacz", "pos": [1120, 90]},
+    {"type": "zaklocacz", "pos": [1180, 1060]},
+    {"type": "szumik", "pos": [960, 1120]},
+    {"type": "szumik", "pos": [1260, 900], "chaos": true}
+  ],
+  "foreground": [
+    {"pos": [-930, -400], "type": "leaves"}, {"pos": [1240, -470], "type": "vines"}, {"pos": [1380, 1220], "type": "leaves"}
+  ],
+  "fog": {"count": 14, "until": "frag_jasnosc"}
+}

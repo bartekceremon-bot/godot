@@ -1,0 +1,114 @@
+{
+  "id": "archiwum",
+  "name": "Archiwum Echa",
+  "music": "archive",
+  "blik_enter": "Archiwum Echa… Tu echa powtarzają wszystko: prawdę i plotki. Pan Sowiński, archiwista, pomoże je odróżnić.",
+  "palette": {"ground": "#5e6a7a", "ground2": "#6c7890", "rim": "#a9b8d0", "grass": "#7a8aa8", "cliff": "#5a4a5a", "cliff2": "#251e28", "path": "#c9c1d9"},
+  "sky": {"top": "#141a33", "bottom": "#3a3f66", "cloud": "#d9d0f0"},
+  "islands": [
+    {"rect": [-950, -460, 1050, 920], "seed": 31},
+    {"rect": [420, -520, 950, 1040], "seed": 32},
+    {"rect": [1620, -420, 800, 820], "seed": 33},
+    {"rect": [1500, 640, 1000, 800], "seed": 34, "grass": 0}
+  ],
+  "bridges": [
+    {"id": "b_ab", "a": [60, 0], "b": [460, 0], "w": 110},
+    {"id": "b_bc", "a": [1330, 0], "b": [1660, 0], "w": 110, "flag": "haslo_done"},
+    {"id": "b_cd", "a": [2000, 360], "b": [2000, 680], "w": 120, "flag": "fakty_done"}
+  ],
+  "paths": [
+    [[-760, -60], [-400, -60], [-150, -120], [60, 0]],
+    [[460, 0], [650, 280]],
+    [[650, -100], [900, -330]],
+    [[1660, 0], [1800, -200], [2000, 300]]
+  ],
+  "spawns": {
+    "start": [-760, -60],
+    "cp_ar_a": [-620, 320],
+    "cp_ar_b": [560, 400],
+    "cp_ar_c": [1750, 280]
+  },
+  "props": [
+    {"type": "bookshelf", "pos": [-820, -340]}, {"type": "bookshelf", "pos": [-700, -360]},
+    {"type": "pillar", "pos": [-380, -380]}, {"type": "pillar", "pos": [-100, -380]},
+    {"type": "statue", "pos": [-850, 120]}, {"type": "crystal", "pos": [-300, 340]},
+    {"type": "archive_desk", "pos": [-600, 60]}, {"type": "lamp", "pos": [-260, 100]},
+    {"type": "pillar", "pos": [-60, 300]}, {"type": "bush", "pos": [-450, 380]},
+    {"type": "bookshelf", "pos": [480, -440]}, {"type": "bookshelf", "pos": [1300, -440]},
+    {"type": "pillar", "pos": [1300, 120]}, {"type": "statue", "pos": [500, 120]},
+    {"type": "lamp", "pos": [560, -150]}, {"type": "lamp", "pos": [1230, -150]},
+    {"type": "crystal", "pos": [1320, 430]}, {"type": "archive_desk", "pos": [1050, 420]},
+    {"type": "pillar", "pos": [470, 460]},
+    {"type": "bookshelf", "pos": [1720, -330], "lit": "fakty_done"}, {"type": "bookshelf", "pos": [1840, -350], "lit": "fakty_done"},
+    {"type": "bookshelf", "pos": [2160, -350], "lit": "fakty_done"}, {"type": "bookshelf", "pos": [2280, -330], "lit": "fakty_done"},
+    {"type": "lamp", "pos": [1700, 120]}, {"type": "statue", "pos": [2330, 60]},
+    {"type": "pillar", "pos": [1560, 760]}, {"type": "pillar", "pos": [2440, 760]},
+    {"type": "pillar", "pos": [1560, 1320]}, {"type": "pillar", "pos": [2440, 1320]},
+    {"type": "crystal", "pos": [1620, 1000]}, {"type": "crystal", "pos": [2380, 1000]}
+  ],
+  "objects": [
+    {"type": "fogwall", "pos": [260, 0], "size": [90, 180], "flag": "echa_done"},
+    {"type": "gate", "pos": [895, -60], "size": [1000, 44], "flag": "kruk_done"},
+    {"type": "shelves", "pos": [2000, -150], "size": [400, 220], "flag": "fakty_done"}
+  ],
+  "npcs": [
+    {"id": "sowa", "name": "Pan Sowiński", "look": "sowa", "pos": [-520, -120], "dialogs": [
+      {"requires": "!got_lupa", "id": "sowa_intro"},
+      {"requires": "!echa_done", "id": "sowa_hint"},
+      {"requires": "!kruk_done", "id": "sowa_2"},
+      {"requires": "!haslo_done", "id": "sowa_3"},
+      {"requires": "!fakty_done", "id": "sowa_4"},
+      {"requires": "!boss_defeated", "id": "sowa_5"},
+      {"id": "sowa_done"}
+    ]}
+  ],
+  "stations": [
+    {"mission": "m_echa", "pos": [-150, -170]},
+    {"mission": "m_kruk", "pos": [660, 300]},
+    {"mission": "m_haslo", "pos": [900, -360]},
+    {"mission": "m_fakty", "pos": [1800, -180]}
+  ],
+  "portals": [
+    {"id": "p_ar_back", "pos": [-860, -230], "target": "latarnia", "spawn": "from_archiwum", "color": "#3fd1c1"},
+    {"id": "p_ar_win", "pos": [2000, 1340], "target": "latarnia", "spawn": "from_archiwum", "requires": "boss_defeated", "color": "#e8b84a"}
+  ],
+  "boss": {"pos": [2000, 1000], "requires": "fakty_done", "until": "boss_defeated"},
+  "checkpoints": [
+    {"id": "cp_ar_a", "pos": [-620, 270]},
+    {"id": "cp_ar_b", "pos": [560, 350]},
+    {"id": "cp_ar_c", "pos": [1750, 230]}
+  ],
+  "chests": [
+    {"id": "ar_c1", "pos": [-880, 380], "loot": {"eliksir": 1}, "xp": 15},
+    {"id": "ar_c2", "pos": [1330, -300], "loot": {"krysztal": 1, "eliksir": 1}, "xp": 25, "rare": true},
+    {"id": "ar_c3", "pos": [2370, -200], "loot": {"eliksir": 2}, "xp": 25, "rare": true}
+  ],
+  "secrets": [
+    {"id": "ar_s1", "pos": [0, -390], "loot": {"krysztal": 1}, "xp": 15, "text": "Za kolumną leżała zapomniana księga z kryształem w okładce!"},
+    {"id": "ar_s2", "pos": [1300, 300], "loot": {"eliksir": 1}, "xp": 15, "text": "W szczelinie ściany ukryto eliksir. Archiwum ma swoje tajemnice."},
+    {"id": "ar_s3", "pos": [2350, 1360], "loot": {"krysztal": 1}, "xp": 20, "text": "Nawet w Sali Luster można znaleźć coś prawdziwego."}
+  ],
+  "class_spots": [
+    {"id": "ar_tkacz", "class": "tkacz", "pos": [-760, -200], "prompt": "Odczytaj runy", "text": "Runy układają się w zdanie: „Pytaj: kto, kiedy, skąd?”. Ukryta szuflada się otwiera!", "loot": {"krysztal": 1}, "xp": 25},
+    {"id": "ar_mech", "class": "mechanik", "pos": [2300, 250], "prompt": "Napraw mechanizm", "text": "Zębatki zaskakują na miejsce i ukryty schowek się otwiera. Dobra robota, Mechaniku!", "loot": {"eliksir": 1}, "xp": 25}
+  ],
+  "lore": [
+    {"id": "ar_lore", "pos": [-400, 320], "title": "Echo przeszłości", "text": "„Echo powtórzy wszystko — także kłamstwo. Dlatego słuchaj nie tylko tego, CO mówi, ale też KTO mówi, KIEDY i SKĄD to wie.”\n\nTe same pytania warto zadawać odpowiedziom AI."}
+  ],
+  "enemies": [
+    {"type": "zaklocacz", "pos": [-300, -300]},
+    {"type": "szumik", "pos": [-260, 280]},
+    {"type": "szumik", "pos": [-100, 160], "chaos": true},
+    {"type": "golem", "pos": [1100, 260]},
+    {"type": "zaklocacz", "pos": [1240, 380], "chaos": true},
+    {"type": "szumik", "pos": [700, -260]},
+    {"type": "zaklocacz", "pos": [1150, -380]},
+    {"type": "golem", "pos": [2200, 80]},
+    {"type": "zaklocacz", "pos": [2300, -260], "chaos": true},
+    {"type": "szumik", "pos": [1900, 180]}
+  ],
+  "foreground": [
+    {"pos": [-930, -440], "type": "crystals"}, {"pos": [2480, 1430], "type": "crystals"}, {"pos": [1380, -500], "type": "chains"}
+  ],
+  "fog": {"count": 16, "until": "boss_defeated"}
+}

@@ -1,0 +1,126 @@
+{
+  "blik": {
+    "respawn": "Uff, jestem tu! Nic nie straciłeś — zadania i wiedza zostają. Obserwuj czerwone zapowiedzi ataków i używaj uniku.",
+    "skill2": "Nowy poziom i nowa umiejętność! Spróbuj jej klawiszem R albo drugim przyciskiem umiejętności.",
+    "post_game": "Latarnia znów świeci! Możesz dalej zwiedzać Luminarę, szukać sekretów i powtarzać zadania. Mgła jest dużo słabsza."
+  },
+  "dialogs": {
+    "_actions": {
+      "lumi_intro": {"set_flags": ["talked_lumi"], "blik": "Szumiki na wschodzie placu! Atak: lewy przycisk myszy lub J. Unik: Spacja. Na telefonie: przyciski po prawej.", "mood": "surprised", "give": {"notes": 1}},
+      "sowa_intro": {"set_flags": ["got_lupa"], "give": {"lupa": 1}},
+      "miraz_defeated": {"blik": "Fragment Prawdy jest nasz! Portal do Latarni otworzył się na południu sali.", "mood": "cheer"},
+      "finale_ready": {"finale": true},
+      "tut_fight": {"set_flags": ["tut_fight_seen"]}
+    },
+    "intro_wake": [
+      {"who": "blik", "text": "Hej! Hej, Strażniku! Pobudka! Jestem BLIK, Twój świetlisty pomocnik.", "mood": "happy"},
+      {"who": "blik", "text": "Mgła Chaosu przygasiła Latarnię Wiedzy. Lumi, latarniczka, czeka na nas na placu. Podejdź do niej i porozmawiaj.", "mood": "thinking"},
+      {"who": "blik", "text": "Ruch: WASD lub strzałki (na telefonie: joystick po lewej). Interakcja: E lub przycisk „Użyj”.", "mood": "happy"},
+      {"who": "blik", "text": "Mała uwaga: działam na przygotowanych podpowiedziach. Nie jestem prawdziwym modelem AI — jestem robotem z tej gry!", "mood": "cheer"}
+    ],
+    "lumi_intro": [
+      {"who": "lumi", "text": "Witaj, {class}. Dobrze, że jesteś. Iskra w Latarni rozpadła się na trzy fragmenty, a Mgła Chaosu zamknęła drogi między wyspami."},
+      {"who": "lumi", "text": "Mgła miesza instrukcje, tworzy przekonujące, ale fałszywe informacje i psuje automaty. Na szczęście da się ją pokonać jasnym myśleniem."},
+      {"who": "player", "text": "Co mam zrobić najpierw?"},
+      {"who": "lumi", "text": "Z Mgły wyszły szumiki — na wschód od nas. Przegoń je. Potem uruchom lampę sygnałową na zachodzie placu — ona obudzi portal do Ogrodu Poleceń.", "by_class": {
+        "tkacz": "Twoje runy świetnie nadają się do porządkowania chaosu.",
+        "mechanik": "Twój klucz naprawi niejedną maszynę.",
+        "tropiciel": "Twoje oczy dostrzegą to, co Mgła chce ukryć.",
+        "straznik": "Twoja tarcza ochroni to, co cenne."
+      }},
+      {"who": "lumi", "text": "I pamiętaj: przy Kamieniach Iskry odpoczniesz i zapiszesz postęp. Przy Ołtarzu Klas obok mnie możesz zmienić klasę bez utraty postępu."}
+    ],
+    "lumi_tutorial": [
+      {"who": "lumi", "text": "Szumiki wciąż krążą na wschodzie placu. Uważaj: zanim skoczą, świecą na czerwono i rysują linię ataku. Wtedy zrób unik!"}
+    ],
+    "lumi_lamp": [
+      {"who": "lumi", "text": "Świetnie Ci poszło! Teraz lampa sygnałowa — stacja zadania jest na zachodzie placu. Automat latarni potrzebuje jasnej instrukcji."}
+    ],
+    "lumi_ogrod": [
+      {"who": "lumi", "text": "Portal do Ogrodu Poleceń jest otwarty. Ogrodniczka Fela na pewno Ci pomoże. Znajdź Fragment Jasności!"}
+    ],
+    "lumi_frag1": [
+      {"who": "lumi", "text": "Fragment Jasności! Czuję, jak Latarnia odzyskuje siły. Zostaw fragmenty u siebie — umieścisz je na ołtarzu, gdy zbierzesz wszystkie trzy."},
+      {"who": "lumi", "text": "Portal do Warsztatu Zależności właśnie się obudził — na północnym wschodzie placu. Tosia, mechaniczka, walczy tam z zepsutymi automatami."}
+    ],
+    "lumi_frag2": [
+      {"who": "lumi", "text": "Fragment Logiki… wspaniale. Został ostatni. Ma go Miraż, który ukrył się w Archiwum Echa. Portal jest na wschodzie placu."},
+      {"who": "lumi", "text": "Miraż tworzy kopie tak przekonujące, że trudno odróżnić prawdę od iluzji. Nie ufaj wyglądowi — szukaj dowodów."}
+    ],
+    "lumi_final": [
+      {"who": "lumi", "text": "Masz wszystkie trzy fragmenty! Połóż je na ołtarzu przed Latarnią. Czas przywrócić światło Luminarze."}
+    ],
+    "lumi_after": [
+      {"who": "lumi", "text": "Latarnia świeci jak dawniej. Dziękuję, Strażniku. Mgła jeszcze czai się po kątach — jeśli chcesz, szukaj dalej sekretów i ćwicz w zadaniach."}
+    ],
+    "tut_fight": [
+      {"who": "blik", "text": "Szumiki! Zanim skoczą, świecą na czerwono i rysują linię. To moment na unik (Spacja).", "mood": "surprised"},
+      {"who": "blik", "text": "Atakujesz lewym przyciskiem myszy lub klawiszem J; na telefonie dużym przyciskiem po prawej. Umiejętność: Q (lub prawy przycisk myszy).", "mood": "happy"}
+    ],
+    "fela_intro": [
+      {"who": "fela", "text": "Och, Strażnik! Mgła namieszała mojemu golemowi Brukowi w głowie. Miał zbudować most, a stoi i myśli o niebieskich migdałach."},
+      {"who": "fela", "text": "Golem robi dokładnie to, co mu się powie. Ułożysz mu instrukcję? Stacja jest przy zerwanym moście, na wschód stąd."}
+    ],
+    "fela_bridge": [
+      {"who": "fela", "text": "Most stoi! Za nim jest uśpiony portal do mojej Szklarni. Strażnik Portalu słucha tylko jasnych poleceń — z celem, kontekstem, ograniczeniami i formatem."}
+    ],
+    "fela_portal": [
+      {"who": "fela", "text": "W Szklarni mój automat-ogrodnik sortuje nasiona. Twierdzi, że robi to bezbłędnie… ale coś mi tu nie gra. Sprawdzisz jego pracę?"}
+    ],
+    "fela_done": [
+      {"who": "fela", "text": "Grządki kwitną jak nigdy! Dziękuję. I zapamiętaj: nawet najpewniejszy automat warto sprawdzić na kilku przykładach."}
+    ],
+    "tosia_intro": [
+      {"who": "tosia", "text": "Cześć! Jestem Tosia. Warsztat Zależności to miejsce, gdzie wszystko zależy od czegoś innego. Mgła poprzestawiała nam reguły."},
+      {"who": "tosia", "text": "Zacznij od nawadniania przy kanale. Reguła musi mówić: co mierzymy, kiedy działamy i kiedy przestajemy."}
+    ],
+    "tosia_2": [
+      {"who": "tosia", "text": "Kładka pływa! Na drugiej wyspie zepsuł się przenośnik — ktoś usunął z programu sprawdzanie warunków, żeby było szybciej."}
+    ],
+    "tosia_3": [
+      {"who": "tosia", "text": "Przejście wolne. Na południu stoi brama energii sterowana aplikacją Latarka-Plus. Ta aplikacja jest strasznie wścibska — uważaj, czego jej pozwalasz."}
+    ],
+    "tosia_4": [
+      {"who": "tosia", "text": "Za bramą stoi automat-tłumacz. Zanim mu coś wyślesz, zastanów się, które informacje są mu naprawdę potrzebne."}
+    ],
+    "tosia_done": [
+      {"who": "tosia", "text": "Warsztat znów działa! Wpadaj kiedy chcesz — maszyny lubią towarzystwo, a ja lubię dobrze ułożone reguły."}
+    ],
+    "sowa_intro": [
+      {"who": "sowa", "text": "Huu-huu… Gość w Archiwum Echa! Jestem Pan Sowiński, archiwista. Tutaj echa powtarzają wszystko, co kiedykolwiek powiedziano — prawdę i plotki."},
+      {"who": "sowa", "text": "Proszę, weź tę Lupę Źródeł. Przy każdej informacji zadawaj trzy pytania: kto to powiedział, kiedy i skąd to wie?"},
+      {"who": "sowa", "text": "Most na wschodzie spowija iluzja. Rozwiej ją, wybierając najbardziej wiarygodne echo."}
+    ],
+    "sowa_hint": [
+      {"who": "sowa", "text": "Kto, kiedy i skąd wie? Tych pytań nie zastąpi nawet najpewniejszy ton. Stacja jest przy zamglonym moście."}
+    ],
+    "sowa_2": [
+      {"who": "sowa", "text": "Brawo! W Sali Kruków listy przynoszą kruki pocztowe. Niektóre są… podejrzanie ponaglające. Uważaj na pilne prośby o hasło."}
+    ],
+    "sowa_3": [
+      {"who": "sowa", "text": "Skarbiec na północy Sali Kruków trzeba zabezpieczyć silnym hasłem. Długim i trudnym do zgadnięcia, ale łatwym do zapamiętania."}
+    ],
+    "sowa_4": [
+      {"who": "sowa", "text": "Regały Wiedzy na wschodzie są pomieszane: fakty z opiniami. Uporządkuj je, a otworzy się Sala Luster… gdzie czeka Miraż."}
+    ],
+    "sowa_5": [
+      {"who": "sowa", "text": "Miraż czeka w Sali Luster na południu. Pamiętaj: jedna wskazówka to za mało. Sprawdź kilka naraz, zanim uwierzysz w to, co widzisz."}
+    ],
+    "sowa_done": [
+      {"who": "sowa", "text": "Echa wreszcie mówią prawdę. Huu! Zapraszam częściej — Archiwum lubi ciekawskich."}
+    ],
+    "miraz_intro": [
+      {"who": "miraz", "text": "Strażnik… Po co ci prawda, skoro iluzja jest piękniejsza? Moje kopie wyglądają tak samo przekonująco jak ja."},
+      {"who": "blik", "text": "Nie daj się zwieść! Gdy Miraż się rozdzieli, przeczytaj Kamienie Prawdy po bokach sali. Unikaj fioletowych kul — zawsze widać, skąd polecą.", "mood": "worried"}
+    ],
+    "miraz_defeated": [
+      {"who": "miraz", "text": "Jak… jak mnie odróżniłeś? Byłem idealny…"},
+      {"who": "player", "text": "Nie patrzyłem tylko na wygląd. Sprawdziłem kilka wskazówek naraz."},
+      {"who": "blik", "text": "Fragment Prawdy wraca do nas! Wracamy do Latarni — portal pojawił się na południu sali.", "mood": "cheer"}
+    ],
+    "finale_ready": [
+      {"who": "lumi", "text": "Trzy fragmenty: Jasność, Logika i Prawda. Połóżmy je razem…"},
+      {"who": "blik", "text": "Gotów? Ja jestem gotów od zawsze! No, od rana.", "mood": "cheer"}
+    ]
+  }
+}

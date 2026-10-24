@@ -1,0 +1,392 @@
+{
+  "missions": [
+    {
+      "id": "m_lampa",
+      "area": "latarnia",
+      "title": "Lampa sygnałowa",
+      "topic": "kolejność kroków",
+      "goal": "Ułóż instrukcję dla automatu latarni tak, aby bezpiecznie zapalił lampę sygnałową i otworzył portal do Ogrodu.",
+      "intro": "Automat wykonuje polecenia [b]dosłownie i po kolei[/b]. Nie zgadnie, co miałeś na myśli.",
+      "type": "sequence",
+      "data": {
+        "program_label": "Instrukcja automatu (dotknij kroku, aby go usunąć):",
+        "blocks": [
+          {"id": "otworz", "text": "Otwórz pokrywę lampy", "order_hint": "Zanim cokolwiek włożysz, trzeba dostać się do środka."},
+          {"id": "wloz", "text": "Włóż kryształ Iskry do uchwytu", "order_hint": "Kryształ musi być na miejscu, zanim zamkniesz pokrywę."},
+          {"id": "zamknij", "text": "Zamknij pokrywę", "order_hint": "Pokrywa chroni kryształ — zamknij ją przed uruchomieniem."},
+          {"id": "dzwignia", "text": "Przestaw dźwignię zasilania", "order_hint": "Zasilanie na samym końcu, gdy wszystko jest gotowe."},
+          {"id": "zly1", "text": "Zrób, żeby było jasno", "why": "To życzenie, a nie krok. Automat nie wie, co dokładnie ma zrobić."},
+          {"id": "zly2", "text": "Dmuchnij w Mgłę", "why": "Nie ma związku z zapaleniem lampy — automat straciłby czas."}
+        ],
+        "answer": ["otworz", "wloz", "zamknij", "dzwignia"]
+      },
+      "hints": ["Pomyśl jak przy zmianie baterii w latarce: otwierasz, wkładasz, zamykasz, włączasz.", "Usuń kroki, które są życzeniem albo nie mają związku z lampą."],
+      "success": "Lampa świeci, a portal do Ogrodu Poleceń budzi się do życia! Automat zadziałał, bo dostał [b]konkretne kroki w dobrej kolejności[/b].",
+      "real_life": "Kiedy prosisz AI o pomoc w zadaniu wieloetapowym, opisz kroki albo poproś o plan krok po kroku. Ogólne życzenie („zrób, żeby było dobrze”) daje ogólną odpowiedź.",
+      "ai_note": "Automat w grze działa według prostych reguł. Prawdziwe modele AI rozumieją luźniejszy język, ale też potrafią źle zrozumieć niejasne polecenie.",
+      "lesson": "Konkretne kroki w dobrej kolejności działają lepiej niż ogólne życzenie.",
+      "where": "Stacja zadania na zachód od Latarni.",
+      "reward": {"xp": 20},
+      "world_flag": "lamp_lit",
+      "focus": [-560, 0],
+      "blik_after": "Portal do Ogrodu Poleceń jest otwarty — na zachodzie wyspy!"
+    },
+    {
+      "id": "m_most",
+      "area": "ogrod",
+      "title": "Most dla Golema",
+      "topic": "jasne instrukcje",
+      "goal": "Ułóż z klocków instrukcję, dzięki której golem-ogrodnik zbuduje most na drugą wyspę.",
+      "intro": "Golem Bruk jest silny, ale bardzo dosłowny. Mgła pomieszała mu instrukcje — wymieszała potrzebne kroki z bezużytecznymi.",
+      "type": "sequence",
+      "data": {
+        "blocks": [
+          {"id": "wez", "text": "Weź deskę ze stosu przy krawędzi", "order_hint": "Najpierw trzeba mieć materiał w rękach."},
+          {"id": "poloz", "text": "Połóż deskę na linach, tuż za poprzednią", "order_hint": "Deskę kładzie się dopiero, gdy się ją trzyma."},
+          {"id": "powtorz", "text": "Powtarzaj dwa poprzednie kroki, aż most dotknie drugiej wyspy", "order_hint": "Powtórzenie ma sens dopiero po opisaniu, co powtarzać."},
+          {"id": "sprawdz", "text": "Sprawdź stabilność: przejdź po moście z workiem kamieni", "order_hint": "Kontrolę robi się na końcu, gdy most jest gotowy."},
+          {"id": "zly1", "text": "Zbuduj coś ładnego", "why": "„Coś ładnego” nie mówi golemowi, CO ma zbudować ani JAK. To cel bez instrukcji."},
+          {"id": "zly2", "text": "Skacz na drugą wyspę", "why": "Golem waży tonę. Ten krok jest niebezpieczny i nie prowadzi do mostu."},
+          {"id": "zly3", "text": "Pomyśl o moście", "why": "Golem nie zbuduje mostu samym myśleniem — potrzebuje działań."}
+        ],
+        "answer": ["wez", "poloz", "powtorz", "sprawdz"]
+      },
+      "hints": ["Instrukcja powinna zawierać tylko działania, które golem może wykonać rękami.", "Na końcu warto dodać sprawdzenie efektu — nawet najlepszy plan trzeba przetestować."],
+      "success": "Golem Bruk kładzie deskę po desce. Most stoi! Zadziałało, bo instrukcja miała [b]konkretne działania, powtórzenie i kontrolę na końcu[/b].",
+      "real_life": "Prosząc AI o pomoc, opisuj działania i oczekiwany efekt („Napisz 5 punktów planu…”), a na końcu sprawdź wynik. Polecenia typu „zrób coś fajnego” dają przypadkowe rezultaty.",
+      "lesson": "Dobre polecenie opisuje konkretne działania i kończy się sprawdzeniem efektu.",
+      "where": "Stacja przy zerwanym moście w Ogrodzie Poleceń.",
+      "reward": {"xp": 30, "items": {"eliksir": 1}},
+      "world_flag": "bridge_ogrod",
+      "focus": [150, 0],
+      "blik_after": "Most gotowy! Druga wyspa czeka — uważaj na Zakłócacze."
+    },
+    {
+      "id": "m_portal",
+      "area": "ogrod",
+      "title": "Portal Doprecyzowania",
+      "topic": "cel, kontekst, ograniczenia, format",
+      "goal": "Portal do Szklarni otworzy się tylko przed jasnym poleceniem. Złóż polecenie z czterech części i poproś Strażnika Portalu o plan zbierania nasion.",
+      "intro": "Strażnik Portalu to automat-planista. Gdy polecenie jest mgliste, odpowiada byle czym — i portal pozostaje zamknięty.",
+      "type": "slots",
+      "data": {
+        "preview_label": "Twoje polecenie dla Strażnika Portalu:",
+        "slots": [
+          {"label": "Cel", "help": "Co dokładnie ma powstać?", "options": [
+            {"text": "Zaplanuj trasę zbierania nasion na dzisiejszy poranek.", "ok": true},
+            {"text": "Zrób coś z nasionami.", "ok": false, "why": "Nie wiadomo, czy chodzi o plan, listę, opis czy coś innego. Cel jest zbyt ogólny."},
+            {"text": "Ogród.", "ok": false, "why": "Jedno słowo to temat, a nie zadanie. Planista nie wie, czego od niego chcesz."}
+          ]},
+          {"label": "Kontekst", "help": "Co planista musi wiedzieć o sytuacji?", "options": [
+            {"text": "Mamy trzy grządki: róże, miętę i słoneczniki. Zbieramy od 9:00 do 11:00.", "ok": true},
+            {"text": "Przecież wiesz, o co chodzi.", "ok": false, "why": "Automat nie zna Twojego ogrodu. Bez faktów musi zgadywać."},
+            {"text": "Bardzo lubię ogrody.", "ok": false, "why": "To miła informacja, ale nie pomaga w zaplanowaniu trasy."}
+          ]},
+          {"label": "Ograniczenia", "help": "Czego unikać, jakie są zasady?", "options": [
+            {"text": "Pomiń grządkę z miętą — była zbierana wczoraj.", "ok": true},
+            {"text": "Rób, jak chcesz.", "ok": false, "why": "Brak ograniczeń to zaproszenie do pomyłek — planista może wysłać nas na wczorajszą grządkę."},
+            {"text": "Nigdy się nie myl.", "ok": false, "why": "Takie ograniczenie nic nie zmienia. Lepiej podać konkretną zasadę, którą da się spełnić."}
+          ]},
+          {"label": "Format", "help": "W jakiej postaci ma być odpowiedź?", "options": [
+            {"text": "Podaj listę kroków z godzinami.", "ok": true},
+            {"text": "Jakkolwiek.", "ok": false, "why": "Bez formatu odpowiedź może być długim opisem, w którym trudno znaleźć godziny."},
+            {"text": "Napisz o tym wiersz.", "ok": false, "why": "Wiersz bywa piękny, ale z wiersza trudno odczytać plan na poranek."}
+          ]}
+        ]
+      },
+      "hints": ["Każda część odpowiada na inne pytanie: CO zrobić? W JAKIEJ sytuacji? CZEGO unikać? W JAKIEJ formie?", "Odrzucaj opcje, które są zbyt ogólne albo zakładają, że automat czyta w myślach."],
+      "success": "Portal rozbłyskuje i otwiera drogę do Szklarni. Twoje polecenie miało [b]cel, kontekst, ograniczenia i format[/b] — dlatego odpowiedź była użyteczna.",
+      "real_life": "Ten sam schemat działa z prawdziwymi narzędziami AI, np.: „Zaplanuj naukę do sprawdzianu z biologii (cel). Mam 3 dni po godzinie dziennie (kontekst). Pomiń rozdział 1, umiem go (ograniczenie). Podaj tabelę dzień–temat (format).”",
+      "ai_note": "W grze odpowiedź portalu jest przygotowana z góry. Prawdziwe AI generuje ją na bieżąco — i nawet przy świetnym poleceniu warto ją sprawdzić.",
+      "lesson": "Dobre polecenie ma cztery części: cel, kontekst, ograniczenia i format.",
+      "where": "Stacja przy uśpionym portalu na drugiej wyspie Ogrodu.",
+      "reward": {"xp": 35, "items": {"krysztal": 1}},
+      "world_flag": "portal_ogrod",
+      "focus": [980, 230],
+      "blik_after": "Portal do Szklarni działa! Wejdź w niego."
+    },
+    {
+      "id": "m_ogrodnik",
+      "area": "ogrod",
+      "title": "Sprawdź automat-ogrodnika",
+      "topic": "kontrola wyników",
+      "goal": "Automat-ogrodnik twierdzi, że posortował nasiona bezbłędnie. Sprawdź próbki i zaznacz te, które trafiły do złej skrzynki.",
+      "intro": "Zasada sortowania: nasiona [b]dużych kwiatów[/b] trafiają do [color=#4aa8e8]niebieskiej skrzynki[/color], a nasiona [b]ziół[/b] — do [color=#5aa854]zielonej skrzynki[/color].",
+      "type": "marks",
+      "data": {
+        "mode": "verify",
+        "context": "[b]Raport automatu:[/b] „Posortowałem wszystkie nasiona. Pewność: 100%.”",
+        "instruction": "Zaznacz próbki posortowane BŁĘDNIE:",
+        "missed_text": "Automat pomylił się w większej liczbie miejsc.",
+        "items": [
+          {"text": "Słonecznik → niebieska skrzynka", "target": false, "why": "słonecznik to duży kwiat, niebieska skrzynka jest właściwa."},
+          {"text": "Mięta → niebieska skrzynka", "target": true, "why": "mięta to zioło, powinna trafić do zielonej skrzynki."},
+          {"text": "Bazylia → zielona skrzynka", "target": false, "why": "bazylia to zioło, więc zielona skrzynka jest dobra."},
+          {"text": "Róża → zielona skrzynka", "target": true, "why": "róża to duży kwiat — jej miejsce jest w niebieskiej skrzynce."},
+          {"text": "Tymianek → zielona skrzynka", "target": false, "why": "tymianek to zioło, tu wszystko się zgadza."},
+          {"text": "Piwonia → niebieska skrzynka", "target": false, "why": "piwonia to duży kwiat, niebieska skrzynka jest prawidłowa."}
+        ]
+      },
+      "hints": ["Sprawdzaj każdą próbkę osobno według zasady, zamiast ufać „pewności 100%”.", "Zioła to m.in. mięta, bazylia, tymianek. Duże kwiaty to np. róża, słonecznik, piwonia."],
+      "success": "Znalazłeś dwa błędy, mimo że automat był „pewny na 100%”. Grządki rozkwitają, a w kwiatach błyszczy [b]Fragment Iskry: Jasność[/b]!",
+      "real_life": "AI potrafi brzmieć bardzo pewnie i jednocześnie się mylić. Gdy korzystasz z jego pomocy — przy obliczeniach, tłumaczeniu czy streszczeniu — sprawdź kilka fragmentów samodzielnie.",
+      "ai_note": "Pewny ton nie jest dowodem. Prawdziwe modele AI też nie zawsze wiedzą, kiedy się mylą.",
+      "lesson": "Sprawdzaj wynik automatu na przykładach — pewny ton nie oznacza poprawności.",
+      "where": "Szklarnia w Ogrodzie Poleceń (przez portal).",
+      "reward": {"xp": 40, "items": {"frag_jasnosc": 1}},
+      "world_flag": "flowers_ogrod",
+      "focus": [1000, 900],
+      "blik_after": "Fragment Jasności zdobyty! Zanieś go do Latarni — otworzy się też droga do Warsztatu."
+    },
+    {
+      "id": "m_nawadnianie",
+      "area": "warsztat",
+      "title": "Nawadnianie Warsztatu",
+      "topic": "czujnik, warunek, akcja",
+      "goal": "Połącz czujnik, warunek i akcję w regułę, która sama podleje zielnik — i podniesie pływającą kładkę na kanale.",
+      "intro": "Automatyzacja to reguły typu [b]KIEDY coś mierzymy → JEŚLI spełniony warunek → TO wykonaj akcję[/b]. Zła reguła może zalać warsztat albo zostawić rośliny bez wody.",
+      "type": "slots",
+      "data": {
+        "preview_label": "Twoja reguła:",
+        "joiner": "  ",
+        "slots": [
+          {"label": "KIEDY (czujnik)", "options": [
+            {"text": "KIEDY czujnik wilgotności gleby wykona pomiar", "ok": true},
+            {"text": "KIEDY czujnik światła wykona pomiar", "ok": false, "why": "Światło nie mówi, czy gleba jest sucha. Potrzebny czujnik, który mierzy to, o co nam chodzi."},
+            {"text": "KIEDY zegar w kuchni zadzwoni", "ok": false, "why": "Kuchenny zegar nie ma związku z roślinami — reguła działałaby przypadkowo."}
+          ]},
+          {"label": "JEŚLI (warunek)", "options": [
+            {"text": "JEŚLI wilgotność spadnie poniżej 30%", "ok": true},
+            {"text": "JEŚLI jest wtorek", "ok": false, "why": "Rośliny nie wysychają według kalendarza. Warunek powinien wynikać z pomiaru."},
+            {"text": "JEŚLI cokolwiek", "ok": false, "why": "Warunek „zawsze” oznacza podlewanie bez przerwy — zielnik zostałby zalany."}
+          ]},
+          {"label": "TO (akcja)", "options": [
+            {"text": "TO otwórz zawór na 5 minut", "ok": true},
+            {"text": "TO otwórz zawór na zawsze", "ok": false, "why": "Akcja bez końca to powódź. Dobra automatyzacja ma jasne granice."},
+            {"text": "TO wyłącz wszystkie światła", "ok": false, "why": "Ta akcja nie rozwiązuje problemu suchej gleby."}
+          ]}
+        ]
+      },
+      "hints": ["Czujnik powinien mierzyć dokładnie to, od czego zależy decyzja.", "Akcja powinna mieć limit — co się stanie, jeśli warunek będzie spełniony bardzo długo?"],
+      "success": "Woda płynie kanałem tylko wtedy, gdy trzeba, a pływająca kładka unosi się na powierzchni. Reguła [b]czujnik → warunek → akcja z limitem[/b] działa!",
+      "real_life": "Takie reguły działają w inteligentnych domach, aplikacjach do automatyzacji i grach. Ustawiając automat, zawsze pytaj: co mierzę, kiedy działam i kiedy przestaję?",
+      "lesson": "Automatyzacja to: czujnik mierzy, warunek decyduje, akcja działa w określonych granicach.",
+      "where": "Stacja przy suchym kanale w Warsztacie Zależności.",
+      "reward": {"xp": 35, "items": {"eliksir": 1}},
+      "world_flag": "water_on",
+      "focus": [240, -150],
+      "blik_after": "Kładka na kanale się uniosła — przejdziesz na drugą wyspę Warsztatu!"
+    },
+    {
+      "id": "m_przenosnik",
+      "area": "warsztat",
+      "title": "Zepsuty przenośnik",
+      "topic": "kolejność i warunki",
+      "goal": "Ułóż program przenośnika tak, aby bezpiecznie przewiózł skrzynie blokujące przejście na południe.",
+      "intro": "Ktoś „przyspieszył” program, usuwając sprawdzanie warunków. Teraz dźwig próbuje podnieść skrzynię, zanim ona dojedzie.",
+      "type": "sequence",
+      "data": {
+        "blocks": [
+          {"id": "zasilanie", "text": "Włącz zasilanie przenośnika", "order_hint": "Bez zasilania nic nie ruszy — to pierwszy krok."},
+          {"id": "pusta", "text": "Sprawdź, czy na taśmie nikt nie stoi", "order_hint": "Bezpieczeństwo sprawdza się PRZED uruchomieniem taśmy."},
+          {"id": "start", "text": "Uruchom taśmę", "order_hint": "Taśmę uruchamia się po sprawdzeniu, że jest bezpiecznie."},
+          {"id": "czujnik", "text": "JEŚLI czujnik wykryje skrzynię na końcu → zatrzymaj taśmę", "order_hint": "Warunek musi działać, zanim dźwig spróbuje cokolwiek podnieść."},
+          {"id": "dzwig", "text": "Podnieś skrzynię dźwigiem i odłóż na półkę", "order_hint": "Dźwig działa dopiero, gdy skrzynia stoi nieruchomo."},
+          {"id": "zly1", "text": "Wyłącz czujnik, żeby było szybciej", "why": "Bez czujnika dźwig nie wie, kiedy skrzynia dojechała. „Szybciej” nie znaczy „lepiej”."},
+          {"id": "zly2", "text": "Uruchom dźwig od razu na starcie", "why": "Dźwig chwyciłby powietrze albo zderzył się ze skrzynią w ruchu."}
+        ],
+        "answer": ["zasilanie", "pusta", "start", "czujnik", "dzwig"]
+      },
+      "hints": ["Zanim coś ruszy, sprawdź bezpieczeństwo. Zanim coś podniesiesz, poczekaj, aż się zatrzyma.", "Warunek „JEŚLI czujnik wykryje…” musi być przed krokiem, który z niego korzysta."],
+      "success": "Taśma rusza, skrzynie odjeżdżają na półki, a przejście na południe jest wolne. [b]Kolejność i warunki[/b] zapobiegły awarii.",
+      "real_life": "W programowaniu, przepisach kulinarnych i procedurach bezpieczeństwa kolejność ma znaczenie. Usuwanie „zbędnych” kontroli dla szybkości często kończy się błędami.",
+      "lesson": "Kontrole bezpieczeństwa i warunki muszą być przed krokami, które od nich zależą.",
+      "where": "Stacja przy przenośniku na drugiej wyspie Warsztatu.",
+      "reward": {"xp": 35},
+      "world_flag": "conveyor_on",
+      "focus": [850, 100],
+      "blik_after": "Skrzynie odjechały! Przejście na południe jest otwarte."
+    },
+    {
+      "id": "m_uprawnienia",
+      "area": "warsztat",
+      "title": "Brama Uprawnień",
+      "topic": "uprawnienia aplikacji",
+      "goal": "Aplikacja „Latarka-Plus” otwiera bramę energii, ale prosi o dostęp do wielu rzeczy. Włącz tylko te uprawnienia, których naprawdę potrzebuje.",
+      "intro": "Zasada najmniejszych uprawnień: aplikacja powinna mieć dostęp tylko do tego, czego potrzebuje do działania.",
+      "type": "marks",
+      "data": {
+        "mode": "toggles",
+        "context": "[b]Latarka-Plus[/b] — „Świeci jasnym światłem i otwiera bramy energii. Najlepsza latarka w Luminarze!”",
+        "instruction": "Włącz tylko potrzebne uprawnienia:",
+        "missed_text": "Bez jednego z uprawnień latarka nie zadziała.",
+        "items": [
+          {"text": "Sterowanie diodą latarki", "target": true, "why": "latarka musi włączać światło — to jej podstawowa funkcja."},
+          {"text": "Dostęp do kontaktów", "target": false, "why": "latarka nie potrzebuje listy Twoich znajomych. To nadmiarowe uprawnienie."},
+          {"text": "Dostęp do mikrofonu", "target": false, "why": "do świecenia nie trzeba słuchać otoczenia. Mikrofon to wrażliwe uprawnienie."},
+          {"text": "Dokładna lokalizacja", "target": false, "why": "latarka działa tak samo w każdym miejscu — nie musi wiedzieć, gdzie jesteś."},
+          {"text": "Wysyłanie wiadomości SMS", "target": false, "why": "aplikacja wysyłająca SMS-y bez potrzeby może narazić Cię na koszty lub spam."}
+        ]
+      },
+      "hints": ["Zapytaj przy każdym uprawnieniu: czy latarka przestanie świecić, jeśli tego nie dam?", "Tylko jedno uprawnienie jest naprawdę niezbędne."],
+      "success": "Brama energii otwiera się, a Latarka-Plus działa bez wglądu w Twoje kontakty, mikrofon i lokalizację. Tak działa [b]zasada najmniejszych uprawnień[/b].",
+      "real_life": "Instalując aplikację lub rozszerzenie (także narzędzia AI), sprawdzaj, o jakie uprawnienia prosi. Gra albo latarka nie potrzebuje kontaktów czy mikrofonu. Uprawnienia można też później wyłączyć w ustawieniach telefonu.",
+      "lesson": "Dawaj aplikacjom tylko te uprawnienia, których naprawdę potrzebują.",
+      "where": "Stacja przy bramie energii na południowej wyspie Warsztatu.",
+      "reward": {"xp": 35, "items": {"krysztal": 1}},
+      "world_flag": "gate_warsztat",
+      "focus": [1000, 800],
+      "blik_after": "Brama otwarta! Za nią czeka automat-tłumacz."
+    },
+    {
+      "id": "m_redakcja",
+      "area": "warsztat",
+      "title": "Wiadomość dla tłumacza",
+      "topic": "dane prywatne",
+      "goal": "Automat-tłumacz przetłumaczy wiadomość na język Zachodnich Wysp. Zanim ją wyślesz, zakryj wszystkie dane prywatne, które nie są potrzebne do tłumaczenia.",
+      "intro": "Do przetłumaczenia potrzebne jest tylko zdanie o turnieju. Reszta to informacje, których obcy automat nie powinien dostać.",
+      "type": "marks",
+      "data": {
+        "mode": "redact",
+        "instruction": "Dotknij fragmentów, które chcesz zakryć:",
+        "items": [
+          {"text": "Cześć, jestem", "target": false, "why": "to zwykłe powitanie — nic prywatnego."},
+          {"text": "Ania Kowalska,", "target": true, "why": "imię i nazwisko to dane osobowe. Tłumaczowi nie są potrzebne."},
+          {"text": "mieszkam przy ul. Lipowej 12 w Gdyni.", "target": true, "why": "adres zamieszkania pozwala Cię odnaleźć. Nie przekazuj go bez potrzeby."},
+          {"text": "Mój numer to 600 123 456.", "target": true, "why": "numer telefonu to dane prywatne — zakryj go."},
+          {"text": "Przetłumacz proszę zdanie:", "target": false, "why": "to polecenie dla tłumacza — musi zostać."},
+          {"text": "„Nasza drużyna wygrała w sobotę turniej szachowy!”", "target": false, "why": "to właśnie ma zostać przetłumaczone. Bez tego tłumacz nie ma czego tłumaczyć."},
+          {"text": "Hasło do mojego dziennika to kotek2011.", "target": true, "why": "hasła nie podaje się nikomu, także automatom. Najlepiej w ogóle go nie wpisywać."},
+          {"text": "Dzięki!", "target": false, "why": "podziękowanie jest w porządku."}
+        ]
+      },
+      "hints": ["Zadaj sobie pytanie: czy ta informacja jest potrzebna do przetłumaczenia zdania o turnieju?", "Szukaj: imienia i nazwiska, adresu, numeru telefonu i hasła."],
+      "success": "Tłumacz dostaje tylko to, czego potrzebuje, a Twoje dane zostają bezpieczne. W skrzyni z tłumaczeniem czeka [b]Fragment Iskry: Logika[/b]!",
+      "real_life": "Zanim wkleisz tekst do czatu AI, tłumacza lub innej usługi online, usuń dane osobowe: nazwiska, adresy, numery, hasła, dane innych osób. Wiele usług przechowuje to, co wpisujesz.",
+      "ai_note": "Tłumacz w grze to prosta reguła. Prawdziwe usługi AI mogą zapisywać rozmowy, a ich pracownicy czasem je przeglądają — dlatego ostrożność ma sens.",
+      "lesson": "Przed wysłaniem tekstu do usługi online usuń dane prywatne, które nie są potrzebne.",
+      "where": "Stacja automatu-tłumacza za bramą energii.",
+      "reward": {"xp": 40, "items": {"frag_logika": 1}},
+      "world_flag": "warsztat_done",
+      "blik_after": "Fragment Logiki jest nasz! W Latarni otworzy się droga do Archiwum Echa."
+    },
+    {
+      "id": "m_echa",
+      "area": "archiwum",
+      "title": "Trzy Echa",
+      "topic": "porównywanie źródeł",
+      "goal": "Na moście wisi iluzja, a trzy echa mówią różne rzeczy. Porównaj komunikaty i ich źródła, wybierz najbardziej wiarygodny — iluzja zniknie.",
+      "type": "compare",
+      "data": {
+        "question": "Pytanie: Czy most do Sali Kruków jest dziś zamknięty?",
+        "sources": [
+          {"name": "Echo z tablicy ogłoszeń", "text": "Słyszałem, że most zawalił się NA ZAWSZE!!! Wszyscy mówią!!!", "meta": ["Autor: nieznany", "Data: brak", "Dowody: „wszyscy mówią”"], "ok": false, "why": "Brak autora, daty i dowodów, za to dużo emocji i wykrzykników. Tak często wyglądają plotki."},
+          {"name": "Komunikat Zarządcy Mostów", "text": "Most zamknięty dziś od 12:00 do 14:00 z powodu przeglądu. Objazd: brak — prosimy poczekać.", "meta": ["Autor: Zarządca Mostów Archiwum, podpisany", "Data: dzisiaj, 9:00", "Dowody: pieczęć urzędu, numer przeglądu"], "ok": true},
+          {"name": "Wpis automatu-pogodynki", "text": "Most jest piękny i na pewno otwarty, bo jest ładna pogoda.", "meta": ["Autor: automat generujący wpisy", "Data: brak", "Dowody: brak; wniosek z pogody"], "ok": false, "why": "Ładna pogoda nie mówi nic o przeglądzie mostu. Brzmi pewnie, ale nie podaje źródła ani faktów."}
+        ]
+      },
+      "hints": ["Przy każdym echu zapytaj: KTO to mówi? KIEDY? SKĄD to wie?", "Emocje i pewny ton nie zastąpią podpisu, daty i dowodu."],
+      "success": "Iluzja na moście rozwiewa się jak dym. Wybrałeś komunikat, który ma [b]znanego autora, datę i dowody[/b].",
+      "real_life": "W internecie i w odpowiedziach AI sprawdzaj: kto jest autorem, kiedy to napisano i na jakich dowodach się opiera. Jeśli to ważne — porównaj z drugim, niezależnym źródłem.",
+      "lesson": "Wiarygodne źródło ma znanego autora, datę i dowody — sam pewny ton nie wystarcza.",
+      "where": "Stacja przy zamglonym moście w Archiwum Echa.",
+      "reward": {"xp": 35, "items": {"eliksir": 1}},
+      "world_flag": "echa_done",
+      "focus": [245, 0],
+      "blik_after": "Most jest czysty! Sala Kruków przed nami."
+    },
+    {
+      "id": "m_kruk",
+      "area": "archiwum",
+      "title": "Fałszywy kruk pocztowy",
+      "topic": "phishing",
+      "goal": "Kruk przyniósł pilny list „od Latarni”. Wskaż wszystkie podejrzane elementy i wybierz bezpieczną reakcję.",
+      "type": "marks",
+      "data": {
+        "mode": "inspect",
+        "context": "[b]List przyniesiony przez kruka:[/b]",
+        "instruction": "Zaznacz podejrzane elementy listu:",
+        "items": [
+          {"text": "Od: latarnia-wiedzy@luminara-pomoc.xyz", "target": true, "why": "adres wygląda podobnie do prawdziwego, ale ma dziwną domenę. Oszuści podszywają się pod znane nazwy."},
+          {"text": "Temat: PILNE! Twoje konto Strażnika zostanie usunięte w 15 minut!", "target": true, "why": "presja czasu to typowa sztuczka — ma sprawić, że działasz bez zastanowienia."},
+          {"text": "Dzień dobry, piszemy z działu wsparcia.", "target": false, "why": "samo powitanie nie jest podejrzane."},
+          {"text": "Kliknij tutaj: latarnia-wiedzy.login-szybko.xyz", "target": true, "why": "link prowadzi na obcą stronę udającą logowanie."},
+          {"text": "Podaj hasło i kod z SMS-a, aby potwierdzić tożsamość.", "target": true, "why": "prawdziwa obsługa nigdy nie prosi o hasło ani kod z SMS-a."},
+          {"text": "Pozdrawiamy, Zespół Latarni", "target": false, "why": "podpis łatwo podrobić, ale sam w sobie nie jest dowodem oszustwa."}
+        ],
+        "choice_label": "Co robisz z listem?",
+        "choices": [
+          {"text": "Nie klikam linku i niczego nie podaję. Pytam Lumi przez znany, oficjalny kanał i zgłaszam list.", "ok": true},
+          {"text": "Odpisuję z hasłem — przecież to pilne.", "ok": false, "why": "Hasła i kody nie podaje się w odpowiedzi na wiadomość. Pilność to właśnie sygnał ostrzegawczy."},
+          {"text": "Klikam link, żeby tylko sprawdzić, co tam jest.", "ok": false, "why": "Sam link może prowadzić do strony wyłudzającej dane. Lepiej nie klikać i sprawdzić sprawę innym kanałem."}
+        ]
+      },
+      "hints": ["Szukaj: dziwnego adresu nadawcy, presji czasu, podejrzanego linku i prośby o hasło.", "Bezpieczna reakcja: nie klikać, nie podawać danych, sprawdzić u źródła innym kanałem."],
+      "success": "Fałszywy kruk rozpada się w piórka z Mgły, a drzwi Sali Kruków otwierają się. [b]Presja czasu, obcy adres, podejrzany link i prośba o hasło[/b] to klasyczne znaki phishingu.",
+      "real_life": "Phishing przychodzi e-mailem, SMS-em, w grach i komunikatorach. Coraz częściej jest też pisany przez AI, więc bywa bez literówek. Gdy ktoś pilnie prosi o hasło, kod lub kliknięcie — zatrzymaj się i sprawdź u źródła.",
+      "lesson": "Phishing poznasz po presji czasu, obcym adresie, podejrzanym linku i prośbie o hasło lub kod.",
+      "where": "Stacja w południowej części Sali Kruków.",
+      "reward": {"xp": 40},
+      "world_flag": "kruk_done",
+      "focus": [850, -60],
+      "blik_after": "Drzwi Sali Kruków otwarte! Na północy jest skarbiec."
+    },
+    {
+      "id": "m_haslo",
+      "area": "archiwum",
+      "title": "Skarbiec i silne hasło",
+      "topic": "silne hasła",
+      "goal": "Skarbiec Archiwum ma zabezpieczyć mapę do Sali Luster. Zbuduj silne hasło-frazę: co najmniej trzy niepowiązane słowa i 16 znaków, bez informacji o sobie.",
+      "intro": "Najlepsze hasła są [b]długie[/b] i [b]trudne do zgadnięcia, ale łatwe do zapamiętania[/b] — np. kilka przypadkowych słów połączonych razem.",
+      "type": "password",
+      "data": {
+        "min_words": 3,
+        "min_len": 16,
+        "words": [
+          {"w": "kaktus"}, {"w": "parasol"}, {"w": "księżyc"}, {"w": "trąbka"}, {"w": "szachownica"}, {"w": "żyrafa"},
+          {"w": "Burek", "personal": true}, {"w": "2011", "personal": true}, {"w": "Ania", "personal": true},
+          {"w": "123456", "common": true}, {"w": "haslo", "common": true}, {"w": "qwerty", "common": true}
+        ],
+        "extras": ["7", "!", "#", "42"]
+      },
+      "hints": ["Imię psa, rok urodzenia czy własne imię łatwo znaleźć w internecie — omijaj je.", "Połącz trzy lub cztery przypadkowe słowa, np. obraz, który łatwo zapamiętać: „żyrafa z parasolem pod księżycem”."],
+      "success": "Skarbiec zamyka się z cichym kliknięciem — i wysuwa kładkę do Regałów Wiedzy. Twoje hasło jest [b]długie, z niepowiązanych słów i bez danych osobistych[/b].",
+      "real_life": "Używaj długich haseł-fraz i innego hasła do każdego ważnego konta. Pomaga menedżer haseł oraz weryfikacja dwuetapowa. Nigdy nie wpisuj prawdziwych haseł do czatów i formularzy, którym nie ufasz.",
+      "lesson": "Silne hasło jest długie, złożone z niepowiązanych słów i nie zawiera danych o Tobie.",
+      "where": "Skarbiec w północnej części Sali Kruków.",
+      "reward": {"xp": 40, "items": {"krysztal": 1}},
+      "world_flag": "haslo_done",
+      "focus": [1400, 0],
+      "blik_after": "Kładka do Regałów Wiedzy wysunięta na wschodzie!"
+    },
+    {
+      "id": "m_fakty",
+      "area": "archiwum",
+      "title": "Regały Wiedzy",
+      "topic": "fakty i opinie",
+      "goal": "Mgła pomieszała księgi faktów z księgami opinii. Przyporządkuj zdania do właściwych regałów, aby odblokować drogę do Sali Luster.",
+      "intro": "[b]Fakt[/b] można sprawdzić (zmierzyć, policzyć, znaleźć w wiarygodnym źródle). [b]Opinia[/b] wyraża czyjąś ocenę, gust lub przekonanie.",
+      "type": "sort",
+      "data": {
+        "bins": ["Fakt", "Opinia"],
+        "items": [
+          {"text": "Woda wrze w temperaturze 100°C przy normalnym ciśnieniu.", "bin": "Fakt", "why": "to można zmierzyć i sprawdzić — to fakt."},
+          {"text": "Archiwum Echa to najnudniejsze miejsce w Luminarze.", "bin": "Opinia", "why": "„najnudniejsze” to czyjaś ocena — inni mogą je uwielbiać."},
+          {"text": "Latarnia Wiedzy ma siedem pięter.", "bin": "Fakt", "why": "piętra można policzyć — to sprawdzalna informacja."},
+          {"text": "Turkus to najpiękniejszy kolor.", "bin": "Opinia", "why": "to kwestia gustu, więc opinia."},
+          {"text": "Według komunikatu Zarządcy most był zamknięty od 12:00 do 14:00.", "bin": "Fakt", "why": "to informacja z podpisanego, datowanego źródła, którą da się sprawdzić."},
+          {"text": "Automaty zawsze mają rację.", "bin": "Opinia", "why": "to przekonanie — i to nieprawdziwe. Automaty, także AI, popełniają błędy."}
+        ]
+      },
+      "hints": ["Zapytaj: czy da się to zmierzyć, policzyć albo sprawdzić w wiarygodnym źródle?", "Słowa typu „najlepszy”, „najpiękniejszy”, „zawsze” często zdradzają opinię."],
+      "success": "Księgi wracają na półki i rozjaśniają się złotym światłem. Droga do Sali Luster stoi otworem. Umiesz już [b]oddzielić fakty od opinii[/b].",
+      "real_life": "Czytając artykuły, posty i odpowiedzi AI, oddzielaj fakty od opinii. Opinie mogą być ciekawe, ale decyzje warto opierać na sprawdzalnych faktach.",
+      "lesson": "Fakt da się sprawdzić; opinia wyraża ocenę lub gust.",
+      "where": "Stacja przy Regałach Wiedzy (wschodnia wyspa Archiwum).",
+      "reward": {"xp": 40, "items": {"eliksir": 1}},
+      "world_flag": "fakty_done",
+      "focus": [1900, 500],
+      "blik_after": "Kładka do Sali Luster gotowa — na południu czeka Miraż. Przygotuj się!"
+    }
+  ]
+}

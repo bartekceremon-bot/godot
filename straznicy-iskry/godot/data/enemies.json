@@ -1,0 +1,28 @@
+{
+  "enemies": {
+    "szumik": {"name": "Szumik", "desc": "Mała chmurka Mgły. Przed skokiem świeci na czerwono i rysuje linię ataku.", "hp": 34, "speed": 125, "damage": 9, "xp": 7, "radius": 16, "windup": 0.55, "cooldown": 1.4, "recover": 0.6, "aggro": 360, "drop": 0.3},
+    "zaklocacz": {"name": "Zakłócacz", "desc": "Unoszące się oko. Trzyma dystans; czerwona linia pokazuje, dokąd poleci pocisk.", "hp": 44, "speed": 70, "damage": 11, "xp": 11, "radius": 18, "windup": 0.85, "cooldown": 2.2, "recover": 0.5, "aggro": 420, "drop": 0.35},
+    "golem": {"name": "Mglisty Golem", "desc": "Automat przejęty przez Mgłę. Przed uderzeniem unosi ramiona, a na ziemi rośnie czerwony krąg.", "hp": 130, "speed": 58, "damage": 22, "xp": 22, "radius": 28, "windup": 1.0, "cooldown": 1.6, "recover": 1.0, "aggro": 340, "knock_resist": 0.8, "drop": 0.6},
+    "miraz": {
+      "name": "Miraż",
+      "illusions": [
+        {
+          "intro": "Miraż się rozdwoił… roztroił! Wyglądają tak samo. Przeczytaj Kamienie Prawdy po bokach sali i sprawdź kilka wskazówek naraz.",
+          "copies": [{"shadow": false, "blinks": true}, {"shadow": true, "blinks": false}],
+          "clues": [
+            "Iluzja nie zasłania światła, więc nie rzuca cienia. Spójrz pod stopy każdej postaci.",
+            "Kopia powtarza w kółko jeden ruch — jej oczy nigdy nie mrugają. Obserwuj chwilę maski."
+          ]
+        },
+        {
+          "intro": "Nowe iluzje, nowe sztuczki! Te kopie są sprytniejsze. Kamienie Prawdy znów podpowiedzą, czego szukać.",
+          "copies": [{"shadow": true, "blinks": true, "shimmer": true}, {"shadow": false, "blinks": true}],
+          "clues": [
+            "Wygenerowana kopia lekko migocze, jak obraz złożony w pośpiechu. Prawdziwy Miraż jest stabilny.",
+            "Nadal sprawdzaj cień: co nie zasłania światła, nie jest prawdziwe."
+          ]
+        }
+      ]
+    }
+  }
+}

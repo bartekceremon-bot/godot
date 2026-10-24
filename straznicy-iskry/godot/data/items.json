@@ -1,0 +1,11 @@
+{
+  "items": {
+    "eliksir": {"name": "Eliksir Światła", "desc": "Przywraca 50 punktów zdrowia. Skrót klawiszowy: H.", "use": "heal", "amount": 50},
+    "krysztal": {"name": "Kryształ Energii", "desc": "Przywraca 60 punktów energii na umiejętności.", "use": "energy", "amount": 60},
+    "frag_jasnosc": {"name": "Fragment Iskry: Jasność", "desc": "Odzyskany w Ogrodzie Poleceń. Przypomina, że dobre polecenie ma cel, kontekst, ograniczenia i format.", "key": true, "flag": "frag_jasnosc"},
+    "frag_logika": {"name": "Fragment Iskry: Logika", "desc": "Odzyskany w Warsztacie Zależności. Przypomina o kolejności, warunkach i ochronie danych.", "key": true, "flag": "frag_logika"},
+    "frag_prawda": {"name": "Fragment Iskry: Prawda", "desc": "Odebrany Mirażowi. Przypomina, by sprawdzać źródła i nie ufać samemu wyglądowi.", "key": true, "flag": "frag_prawda"},
+    "lupa": {"name": "Lupa Źródeł", "desc": "Prezent od Pana Sowińskiego. Pytania, które warto zadać każdej informacji: kto to napisał, kiedy i skąd to wie?", "key": true},
+    "notes": {"name": "Notes Strażnika", "desc": "Wszystko, czego się nauczysz, trafia do Dziennika w menu pauzy (zakładka Dziennik).", "key": true}
+  }
+}

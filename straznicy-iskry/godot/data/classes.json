@@ -1,0 +1,73 @@
+{
+  "order": ["tkacz", "mechanik", "tropiciel", "straznik"],
+  "classes": {
+    "tkacz": {
+      "name": "Tkacz Słów",
+      "title": "Mag precyzyjnych instrukcji",
+      "short": "Fiolet i złoto. Lewitująca księga i świetliste runy.",
+      "teaches": "cel, kontekst, ograniczenia i format odpowiedzi — jak pisać jasne polecenia dla AI.",
+      "basic": {"name": "Pocisk Runiczny", "desc": "Lekko naprowadzana runa. Znaczy trafionego przeciwnika.", "damage": 14, "cooldown": 0.36},
+      "skill1": {"name": "Łańcuch Poleceń", "desc": "Błyskawica przeskakuje między trzema przeciwnikami jak dobrze połączone kroki. Mocniej rani oznaczonych runą.", "cost": 25, "cooldown": 4.0},
+      "skill2": {"name": "Pole Doprecyzowania", "desc": "Krąg run spowalnia i stale rani przeciwników w środku.", "cost": 30, "cooldown": 7.0},
+      "passive": {"name": "Spójne Runy", "desc": "Pole Doprecyzowania działa o 40% dłużej, a runy znaczą cele dla Łańcucha."},
+      "world": "Ożywia kamienie z runami i odczytuje stare instrukcje.",
+      "path": {
+        "2": "Odblokowano Pole Doprecyzowania.",
+        "3": "Pocisk Runiczny zadaje o 25% więcej obrażeń.",
+        "4": "Łańcuch Poleceń przeskakuje na czwartego przeciwnika.",
+        "5": "Pole Doprecyzowania ma większy zasięg."
+      }
+    },
+    "mechanik": {
+      "name": "Mechanik Iskry",
+      "title": "Konstruktor i automatyk",
+      "short": "Bursztyn i turkus. Wielofunkcyjny klucz energetyczny.",
+      "teaches": "kolejność działań, warunki „jeśli… to…” i automatyzację.",
+      "basic": {"name": "Impuls Naprawczy", "desc": "Szeroka fala energii, przebija do trzech przeciwników.", "damage": 15, "cooldown": 0.42},
+      "skill1": {"name": "Dron Pomocnik", "desc": "Dron krąży wokół Ciebie i sam strzela do najbliższych celów.", "cost": 30, "cooldown": 9.0},
+      "skill2": {"name": "Wieżyczka Iskrowa", "desc": "Stawia wieżyczkę, która przez chwilę broni wybranego miejsca.", "cost": 35, "cooldown": 11.0},
+      "passive": {"name": "Sprawny Warsztat", "desc": "Konstrukcje regenerują się szybciej — odnowienie drona i wieżyczki jest o 25% krótsze."},
+      "world": "Naprawia zepsute urządzenia, mosty i przenośniki.",
+      "path": {
+        "2": "Odblokowano Wieżyczkę Iskrową.",
+        "3": "Impuls Naprawczy zadaje o 25% więcej obrażeń.",
+        "4": "Dron Pomocnik działa 14 sekund zamiast 10.",
+        "5": "Wieżyczka strzela podwójnie i działa dłużej."
+      }
+    },
+    "tropiciel": {
+      "name": "Tropiciel Prawdy",
+      "title": "Zwiadowca i badacz",
+      "short": "Zieleń i błękit. Łuk światła i skaner.",
+      "teaches": "weryfikowanie informacji, porównywanie źródeł, odróżnianie faktów od opinii.",
+      "basic": {"name": "Strzała Sygnału", "desc": "Szybka strzała o dużym zasięgu.", "damage": 13, "cooldown": 0.32},
+      "skill1": {"name": "Skan Źródła", "desc": "Fala skanera oznacza przeciwników (otrzymują +30% obrażeń), odsłania sekrety i prawdziwego Miraża.", "cost": 20, "cooldown": 6.0},
+      "skill2": {"name": "Przebłysk", "desc": "Błyskawiczny skok z rozbłyskiem raniącym przeciwników w miejscu startu.", "cost": 20, "cooldown": 4.0},
+      "passive": {"name": "Bystre Oko", "desc": "Ukryte wskazówki i sekrety ujawniają się z dużo większej odległości."},
+      "world": "Odczytuje ślady i demaskuje iluzje.",
+      "path": {
+        "2": "Odblokowano Przebłysk.",
+        "3": "Strzała Sygnału zadaje o 25% więcej obrażeń.",
+        "4": "Skan Źródła ma większy zasięg i dłużej oznacza cele.",
+        "5": "Przebłysk wybucha też w miejscu lądowania; Bystre Oko widzi jeszcze dalej."
+      }
+    },
+    "straznik": {
+      "name": "Strażnik Tarczy",
+      "title": "Obrońca prywatności",
+      "short": "Granat i srebro. Tarcza energii i młot.",
+      "teaches": "prywatność, uprawnienia aplikacji, silne hasła i rozpoznawanie phishingu.",
+      "basic": {"name": "Uderzenie Pieczęci", "desc": "Mocny cios młotem przed sobą, odpycha przeciwników.", "damage": 22, "cooldown": 0.5},
+      "skill1": {"name": "Kopuła Ochronna", "desc": "Kopuła zatrzymuje pociski i zmniejsza obrażenia o 70%.", "cost": 30, "cooldown": 10.0},
+      "skill2": {"name": "Oczyszczenie", "desc": "Fala światła rani i odrzuca przeciwników, kasuje pociski i lekko leczy.", "cost": 25, "cooldown": 6.0},
+      "passive": {"name": "Pierwsza Pieczęć", "desc": "Po 6 sekundach bez obrażeń pierwsze trafienie jest osłabione o 60%."},
+      "world": "Odpieczętowuje bezpieczne przejścia i skrytki.",
+      "path": {
+        "2": "Odblokowano Oczyszczenie.",
+        "3": "Uderzenie Pieczęci zadaje o 25% więcej obrażeń.",
+        "4": "Kopuła Ochronna działa 7 sekund.",
+        "5": "Oczyszczenie ma większy zasięg; Pierwsza Pieczęć pochłania 75%."
+      }
+    }
+  }
+}

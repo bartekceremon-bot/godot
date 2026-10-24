@@ -1,0 +1,104 @@
+{
+  "id": "warsztat",
+  "name": "Warsztat Zależności",
+  "music": "explore",
+  "blik_enter": "Warsztat Zależności! Tu każda maszyna zależy od innej. Tosia, mechaniczka, na pewno wie, od czego zacząć.",
+  "palette": {"ground": "#6a7a5a", "ground2": "#7d8c66", "rim": "#b8c48a", "grass": "#8aa868", "cliff": "#6b5a48", "cliff2": "#2e2620", "path": "#a9a08a"},
+  "sky": {"top": "#1c2a33", "bottom": "#55665d", "cloud": "#e8dcc0"},
+  "islands": [
+    {"rect": [-950, -420, 1050, 840], "seed": 21},
+    {"rect": [420, -520, 950, 760], "seed": 22},
+    {"rect": [380, 470, 1050, 700], "seed": 23}
+  ],
+  "bridges": [
+    {"id": "b_kladka", "a": [60, -150], "b": [460, -150], "w": 110, "flag": "water_on"},
+    {"id": "b_bc", "a": [850, 200], "b": [850, 510], "w": 120}
+  ],
+  "paths": [
+    [[-760, -40], [-450, -40], [-150, -150], [60, -150]],
+    [[460, -150], [700, -150], [850, 100]],
+    [[850, 510], [800, 700], [1200, 820]]
+  ],
+  "spawns": {
+    "start": [-760, -40],
+    "cp_ws_a": [-620, 290],
+    "cp_ws_b": [560, -20],
+    "cp_ws_c": [560, 1010]
+  },
+  "props": [
+    {"type": "machine", "pos": [-820, -300]}, {"type": "gear", "pos": [-380, -380], "collide": false},
+    {"type": "tank", "pos": [-60, -350], "lit": "water_on"}, {"type": "pipe", "pos": [-230, -390], "collide": false},
+    {"type": "crate", "pos": [-860, 160]}, {"type": "crate", "pos": [-820, 200], "scale": 0.8},
+    {"type": "tree", "pos": [-480, 350], "scale": 0.9}, {"type": "bush", "pos": [-160, 330]},
+    {"type": "rock", "pos": [-30, 200], "scale": 0.8}, {"type": "lamp", "pos": [-300, 120]},
+    {"type": "lamp", "pos": [0, -60]}, {"type": "gear", "pos": [-700, 330], "scale": 0.7},
+    {"type": "machine", "pos": [1250, -420], "lit": "conveyor_on"}, {"type": "crate", "pos": [500, -440]},
+    {"type": "pipe", "pos": [1150, 80], "collide": false}, {"type": "gear", "pos": [1300, -150], "scale": 0.8},
+    {"type": "lamp", "pos": [700, 60]}, {"type": "rock", "pos": [520, 120], "scale": 0.7},
+    {"type": "tank", "pos": [1300, 180], "lit": "conveyor_on"},
+    {"type": "machine", "pos": [480, 640], "scale": 0.8}, {"type": "crate", "pos": [700, 1100]},
+    {"type": "lamp", "pos": [940, 600]}, {"type": "lamp", "pos": [1060, 600]},
+    {"type": "tree", "pos": [1320, 1080], "scale": 0.9}, {"type": "gear", "pos": [1350, 600], "scale": 0.6},
+    {"type": "machine", "pos": [1250, 1000], "lit": "warsztat_done"}
+  ],
+  "objects": [
+    {"type": "water", "pos": [-380, -300], "size": [560, 70], "flag": "water_on"},
+    {"type": "conveyor", "pos": [880, -320], "size": [420, 64], "flag": "conveyor_on"},
+    {"type": "crates", "pos": [850, 175], "size": [320, 120], "flag": "conveyor_on"},
+    {"type": "gate", "pos": [1000, 820], "size": [44, 780], "flag": "gate_warsztat"}
+  ],
+  "npcs": [
+    {"id": "tosia", "name": "Tosia", "look": "tosia", "pos": [-500, -130], "dialogs": [
+      {"requires": "!water_on", "id": "tosia_intro"},
+      {"requires": "!conveyor_on", "id": "tosia_2"},
+      {"requires": "!gate_warsztat", "id": "tosia_3"},
+      {"requires": "!warsztat_done", "id": "tosia_4"},
+      {"id": "tosia_done"}
+    ]}
+  ],
+  "stations": [
+    {"mission": "m_nawadnianie", "pos": [-150, -220]},
+    {"mission": "m_przenosnik", "pos": [620, -360]},
+    {"mission": "m_uprawnienia", "pos": [800, 700]},
+    {"mission": "m_redakcja", "pos": [1200, 800]}
+  ],
+  "portals": [
+    {"id": "p_ws_back", "pos": [-860, -170], "target": "latarnia", "spawn": "from_warsztat", "color": "#3fd1c1"}
+  ],
+  "checkpoints": [
+    {"id": "cp_ws_a", "pos": [-620, 240]},
+    {"id": "cp_ws_b", "pos": [560, -70]},
+    {"id": "cp_ws_c", "pos": [560, 960]}
+  ],
+  "chests": [
+    {"id": "ws_c1", "pos": [-880, 330], "loot": {"eliksir": 1}, "xp": 15},
+    {"id": "ws_c2", "pos": [1310, -260], "loot": {"krysztal": 1}, "xp": 20, "rare": true},
+    {"id": "ws_c3", "pos": [1340, 1110], "loot": {"eliksir": 2}, "xp": 25, "rare": true}
+  ],
+  "secrets": [
+    {"id": "ws_s1", "pos": [30, 360], "loot": {"krysztal": 1}, "xp": 15, "text": "Zapomniana skrzynka z narzędziami! W środku kryształ energii."},
+    {"id": "ws_s2", "pos": [460, 1120], "loot": {"eliksir": 1}, "xp": 15, "text": "Za maszyną ktoś schował eliksir. Ciekawość popłaca."}
+  ],
+  "class_spots": [
+    {"id": "ws_mech", "class": "mechanik", "pos": [-640, -330], "prompt": "Napraw generator", "text": "Klucz energetyczny poprawia połączenia i generator znów mruczy. Mechanik Iskry w swoim żywiole!", "loot": {"krysztal": 1}, "xp": 25},
+    {"id": "ws_straz", "class": "straznik", "pos": [1300, 620], "prompt": "Odpieczętuj skrytkę", "text": "Pieczęć rozpoznaje Strażnika Tarczy. Skrytka z zapasami stoi otworem!", "loot": {"eliksir": 1}, "xp": 25}
+  ],
+  "lore": [
+    {"id": "ws_lore", "pos": [-400, 300], "title": "Tablica Warsztatu", "text": "„Każda maszyna pyta: KIEDY mam działać, JEŚLI co się stanie, i CO mam wtedy zrobić? Dobra reguła ma też koniec.”\n\nNajlepsze automaty dostają tylko te dane i uprawnienia, których naprawdę potrzebują."}
+  ],
+  "enemies": [
+    {"type": "szumik", "pos": [-300, 260]},
+    {"type": "golem", "pos": [-240, 120]},
+    {"type": "zaklocacz", "pos": [1200, -330]},
+    {"type": "golem", "pos": [1020, -60], "chaos": true},
+    {"type": "szumik", "pos": [700, -170]},
+    {"type": "szumik", "pos": [600, 820]},
+    {"type": "zaklocacz", "pos": [880, 1060], "chaos": true},
+    {"type": "golem", "pos": [1240, 1060]},
+    {"type": "szumik", "pos": [1150, 600]}
+  ],
+  "foreground": [
+    {"pos": [-930, -420], "type": "chains"}, {"pos": [1360, -500], "type": "chains"}, {"pos": [1400, 1180], "type": "vines"}
+  ],
+  "fog": {"count": 14, "until": "frag_logika"}
+}

@@ -1,0 +1,60 @@
+; Engine configuration file.
+; Projekt: AI Bliżej: Strażnicy Iskry
+; Wersja silnika: Godot 4.7.2.stable.official (renderer Compatibility)
+
+config_version=5
+
+[application]
+
+config/name="AI Bliżej: Strażnicy Iskry"
+config/description="Edukacyjna przygoda RPG o mądrym korzystaniu z AI, logice i bezpieczeństwie w sieci."
+config/version="1.0.0"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+boot_splash/bg_color=Color(0.039, 0.106, 0.090, 1)
+boot_splash/show_image=false
+config/icon="res://icon.svg"
+
+[audio]
+
+driver/mix_rate.web=44100
+
+[autoload]
+
+Data="*res://scripts/core/data.gd"
+Settings="*res://scripts/core/settings.gd"
+GameState="*res://scripts/core/game_state.gd"
+Audio="*res://scripts/core/audio.gd"
+Router="*res://scripts/core/router.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=6
+window/energy_saving/keep_screen_on=true
+
+[gui]
+
+theme/custom_font="res://assets/fonts/Nunito.ttf"
+common/snap_controls_to_pixels=true
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=false
+pointing/emulate_mouse_from_touch=true
+
+[physics]
+
+common/physics_interpolation=false
+2d/default_gravity=0.0
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=1
+environment/defaults/default_clear_color=Color(0.039, 0.106, 0.090, 1)
+2d/batching/item_buffer_size=16384

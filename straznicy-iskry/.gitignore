@@ -1,0 +1,4 @@
+# Pamięć podręczna edytora Godot (odtwarzana automatycznie)
+godot/.godot/
+# Pliki tymczasowe
+*.tmp
