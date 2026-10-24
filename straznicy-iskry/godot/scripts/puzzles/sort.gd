@@ -19,7 +19,7 @@ func build(d: Dictionary) -> void:
 		v.add_child(row)
 		var g := ButtonGroup.new()
 		for bi in bins.size():
-			var b := chip(bins[bi])
+			var b := chip(bins[bi], true, false)
 			b.button_group = g
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			var item_i := i

@@ -12,10 +12,11 @@ var _joy_center := Vector2.ZERO
 var _joy_pos := Vector2.ZERO
 var _joy_home := Vector2.ZERO
 var _narrow := false
+var _last_touch_ms := -100000
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build()
 	Settings.changed.connect(_update_visibility)
@@ -86,12 +87,16 @@ func reset() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+		_last_touch_ms = Time.get_ticks_msec()
 		if Settings.touch_mode == "auto" and not Settings.touch_active:
 			Settings.touch_active = true
 			Settings.changed.emit()
 			_update_visibility()
 	elif Settings.touch_mode == "auto" and Settings.touch_active:
-		# Prawdziwa mysz lub klawiatura — chowamy przyciski dotykowe.
+		# Prawdziwa mysz lub klawiatura — chowamy przyciski dotykowe. Przeglądarki po
+		# dotyku wysyłają też zgodnościowe zdarzenia myszy, więc przez chwilę je ignorujemy.
+		if Time.get_ticks_msec() - _last_touch_ms < 1500:
+			return
 		var real_mouse: bool = event is InputEventMouseMotion and event.device != InputEvent.DEVICE_ID_EMULATION and event.relative.length() > 6.0
 		if real_mouse or (event is InputEventKey and event.pressed):
 			Settings.touch_active = false

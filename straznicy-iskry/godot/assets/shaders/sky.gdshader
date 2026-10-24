@@ -11,9 +11,13 @@ float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 void fragment() {
 	vec4 c = mix(top, bottom, UV.y);
 	c.rgb += haze.rgb * 0.10 * smoothstep(0.55, 1.0, UV.y);
-	vec2 g = floor(UV * vec2(160.0, 90.0));
+	vec2 cells = vec2(120.0, 68.0);
+	vec2 g = floor(UV * cells);
 	float h = hash(g);
+	// Okrągła gwiazdka w losowym miejscu komórki, tylko w nielicznych komórkach.
+	vec2 local = fract(UV * cells) - vec2(0.3 + 0.4 * hash(g + 3.1), 0.3 + 0.4 * hash(g + 7.7));
+	float dotv = smoothstep(0.16, 0.0, length(local * vec2(1.0, 0.56)));
 	float tw = 0.5 + 0.5 * sin(TIME * (1.0 + h * 3.0) + h * 30.0);
-	c.rgb += vec3(step(0.992, h) * tw * 0.55 * stars * (1.0 - UV.y));
+	c.rgb += vec3(step(0.985, h) * dotv * tw * 0.7 * stars * (1.0 - UV.y));
 	COLOR = c;
 }

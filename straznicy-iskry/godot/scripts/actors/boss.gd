@@ -87,7 +87,8 @@ func _physics_process(delta: float) -> void:
 	match state:
 		"float":
 			if fmod(t, 3.5) < delta:
-				_move_to = arena + Vector2(randf_range(-220, 220), randf_range(-120, 120))
+				# Boss unosi się w środkowym pasie sali, żeby nie chował się pod interfejsem.
+				_move_to = arena + Vector2(randf_range(-220, 220), randf_range(-30, 110))
 			global_position = global_position.lerp(_move_to, clampf(delta * 1.2, 0.0, 1.0))
 			if _attack_cd <= 0.0 and p and not p.dead:
 				if phase >= 3 and randf() < 0.4:
@@ -183,7 +184,7 @@ func _begin_illusion(next_phase: int) -> void:
 	Audio.play("illusion")
 	World.current.shake(6.0)
 	World.current.clear_enemy_shots(global_position, 2000.0)
-	var spots := [arena + Vector2(-240, -40), arena + Vector2(0, -150), arena + Vector2(240, -40)]
+	var spots := [arena + Vector2(-250, 140), arena + Vector2(0, 100), arena + Vector2(250, 140)]
 	spots.shuffle()
 	var phase_def: Dictionary = Data.get_enemy("miraz").get("illusions", [])[next_phase - 2]
 	var copy_props: Array = phase_def.get("copies", [])

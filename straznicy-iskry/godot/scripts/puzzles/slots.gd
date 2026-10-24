@@ -17,13 +17,14 @@ func build(d: Dictionary) -> void:
 		header(s.get("label", "Część %d" % (si + 1)))
 		if s.has("help"):
 			add_child(UITheme.label(s["help"], "Small"))
-		var f := flow()
+		var f := VBoxContainer.new()
 		add_child(f)
 		var group := ButtonGroup.new()
 		group.allow_unpress = false
 		var opts: Array = shuffled(range(s["options"].size()), si * 17 + 5)
 		for oi in opts:
 			var b := chip(s["options"][oi]["text"])
+			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 			b.button_group = group
 			var slot_i := si
 			var opt_i: int = oi

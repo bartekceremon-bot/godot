@@ -4,7 +4,7 @@ extends "res://scripts/puzzles/puzzle_engine.gd"
 var program: Array = []          # wybrane identyfikatory
 var _blocks: Dictionary = {}
 var _program_box: VBoxContainer
-var _pool: HFlowContainer
+var _pool: VBoxContainer
 
 
 func build(d: Dictionary) -> void:
@@ -19,7 +19,7 @@ func build(d: Dictionary) -> void:
 	_program_box = VBoxContainer.new()
 	pc.add_child(_program_box)
 	header(d.get("pool_label", "Dostępne klocki (dotknij, aby dodać na koniec):"))
-	_pool = flow()
+	_pool = VBoxContainer.new()
 	add_child(_pool)
 	_refresh()
 
@@ -46,6 +46,7 @@ func _refresh() -> void:
 		if b["id"] in program:
 			continue
 		var c := chip(b["text"], false)
+		c.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		var bid: String = b["id"]
 		c.pressed.connect(func() -> void:
 			program.append(bid)
@@ -63,6 +64,8 @@ func check() -> Dictionary:
 		if i >= answer.size() or answer[i] != id:
 			var expected: Dictionary = _blocks[answer[i]] if i < answer.size() else {}
 			return {"ok": false, "msg": "Krok %d jest nie na swoim miejscu. %s" % [i + 1, expected.get("order_hint", "Pomyśl, co musi wydarzyć się wcześniej.")]}
+	if program.is_empty():
+		return {"ok": false, "msg": "Program jest pusty. Dotykaj klocków poniżej, aby ułożyć kroki we właściwej kolejności."}
 	if program.size() < answer.size():
 		return {"ok": false, "msg": "Program jest niepełny — po kroku %d wykonawca nie wie, co dalej. Brakuje jeszcze %d." % [program.size(), answer.size() - program.size()]}
 	return {"ok": true, "msg": ""}

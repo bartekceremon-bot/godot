@@ -39,6 +39,7 @@ var _travelling := false
 var _boss_awake := false
 var _play_acc := 0.0
 var _ui_layer: CanvasLayer
+var _rotate_hint_shown := false
 
 
 static func player() -> Node:
@@ -94,6 +95,7 @@ func _ready() -> void:
 		toast("Ta przeglądarka nie zapisuje danych na stałe. Postęp może zniknąć po zamknięciu karty — użyj eksportu zapisu w menu.", "warn")
 	if not GameState.has_flag("intro_seen_world"):
 		GameState.set_flag("intro_seen_world")
+		GameState.save_game()
 		await get_tree().create_timer(0.6).timeout
 		start_dialog("intro_wake")
 
@@ -103,7 +105,7 @@ func _build_sky() -> void:
 	layer.layer = -10
 	add_child(layer)
 	sky = ColorRect.new()
-	sky.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sky.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	sky.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var m := ShaderMaterial.new()
 	m.shader = preload("res://assets/shaders/sky.gdshader")
@@ -150,6 +152,8 @@ func _build_ui() -> void:
 	var theme := UITheme.build()
 	hud = HUD.new()
 	hud.theme = theme
+	# HUD animuje komunikaty także podczas pauzy (dialogi, menu).
+	hud.process_mode = Node.PROCESS_MODE_ALWAYS
 	_ui_layer.add_child(hud)
 	touch = TOUCH.new()
 	touch.theme = theme
@@ -178,10 +182,16 @@ func _on_layout(narrow: bool) -> void:
 	for c in [hud, touch, dialog, puzzle, menu, info]:
 		if c and c.has_method("apply_layout"):
 			c.apply_layout(narrow)
+	var vsz := get_viewport_rect().size
+	if vsz.y > vsz.x and not _rotate_hint_shown and hud:
+		_rotate_hint_shown = true
+		toast("Wskazówka: obróć telefon poziomo, aby widzieć więcej świata. W pionie też możesz grać.", "info")
 	if camera:
 		var vs := get_viewport_rect().size
 		# Na wąskich ekranach lekko oddalamy kamerę, żeby widzieć więcej świata.
 		var z := 1.0 if vs.x >= vs.y else 0.8
+		if vs.x >= vs.y and vs.y < 600.0:
+			z = 0.85
 		camera.zoom = Vector2(z, z)
 
 
@@ -287,10 +297,16 @@ func _process(delta: float) -> void:
 		return
 	_play_acc += delta
 	if _play_acc >= 1.0:
+		if OS.has_feature("web"):
+			# Pomiar wydajności dostępny dla testów (window.__fps) — bez analityki.
+			JavaScriptBridge.eval("window.__fps=%d" % Engine.get_frames_per_second(), true)
 		GameState.data["play_time"] = float(GameState.data["play_time"]) + _play_acc
 		_play_acc = 0.0
 	# Kamera
 	var target: Vector2 = hero.global_position + Vector2(0, -30)
+	if _boss_awake and area and is_instance_valid(area.boss) and area.boss.alive:
+		# W walce z bossem kamera obejmuje gracza i Miraża (oraz jego kopie).
+		target = target.lerp(area.boss.global_position + Vector2(0, -60), 0.5) + Vector2(0, -40)
 	if _cam_focus != null:
 		target = _cam_focus
 	camera.global_position = target

@@ -14,13 +14,13 @@ var _chars := 0.0
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new()
 	bg.color = Color("#07181a")
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	art = Control.new()
-	art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	art.draw.connect(_draw_art)
 	add_child(art)
@@ -123,14 +123,14 @@ func _draw_art() -> void:
 				var ip := c + Vector2((j - 1) * 330 * k + sin(t * 0.5 + j) * 6, (j % 2) * 60 * k + sin(t + j) * 8)
 				_island(ip, 120 * k, Color("#4f8a4a") if scene == "restored" or j == 1 else Color("#3d6b44"))
 			if scene == "restored":
-				_tower(c + Vector2(0, -20 * k), k, 1.0)
+				_tower(c + Vector2(0, 70 * k), k, 1.0)
 				var a := t * 0.7
-				art.draw_colored_polygon(PackedVector2Array([c + Vector2(0, -200 * k), c + Vector2(cos(a - 0.1), sin(a - 0.1) * 0.4) * 900, c + Vector2(cos(a + 0.1), sin(a + 0.1) * 0.4) * 900]), Color(Art.GOLD, 0.12))
+				art.draw_colored_polygon(PackedVector2Array([c + Vector2(0, -124 * k), c + Vector2(cos(a - 0.1), sin(a - 0.1) * 0.4) * 900, c + Vector2(cos(a + 0.1), sin(a + 0.1) * 0.4) * 900]), Color(Art.GOLD, 0.12))
 			else:
-				_tower(c + Vector2(0, -20 * k), k, 0.6)
+				_tower(c + Vector2(0, 70 * k), k, 0.6)
 		"fog":
 			_island(c, 160 * k, Color("#3d5a44"))
-			_tower(c + Vector2(0, -20 * k), k, 0.1)
+			_tower(c + Vector2(0, 20 * k), k, 0.1)
 			for j in 14:
 				var fp := c + Vector2(cos(j * 0.9 + t * 0.2) * (220 + j * 14) * k, sin(j * 1.3 + t * 0.3) * 120 * k)
 				Art.glow(art, fp + Vector2(drift, 0), 110 * k, Color("#8a5bbf", 0.35))
@@ -151,11 +151,12 @@ func _draw_art() -> void:
 			Art.blik(art, t, "cheer", 0.0)
 			art.draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 		"fragments":
-			_tower(c + Vector2(0, 40 * k), k, 0.4 + 0.2 * sin(t))
+			_island(c + Vector2(0, 90 * k), 170 * k, Color("#4f8a4a"))
+			_tower(c + Vector2(0, 90 * k), k, 0.4 + 0.2 * sin(t))
 			var cols := [Color("#ffd86b"), Art.TEAL, Color("#c89bff")]
 			for j in 3:
 				var a := t * 0.8 + j * TAU / 3
-				var fp := c + Vector2(cos(a) * 180 * k, sin(a) * 70 * k - 160 * k)
+				var fp := c + Vector2(cos(a) * 190 * k, sin(a) * 45 * k - 70 * k)
 				Art.glow(art, fp, 50 * k, Color(cols[j], 0.6))
 				Art.poly(art, PackedVector2Array([fp + Vector2(0, -22) * k, fp + Vector2(14, 0) * k, fp + Vector2(0, 22) * k, fp + Vector2(-14, 0) * k]), cols[j], Art.INK, 2.0)
 
@@ -167,7 +168,7 @@ func _island(p: Vector2, r: float, col: Color) -> void:
 
 
 func _tower(p: Vector2, k: float, power: float) -> void:
-	var h := 220.0 * k
+	var h := 170.0 * k
 	art.draw_colored_polygon(PackedVector2Array([p + Vector2(-34 * k, 0), p + Vector2(34 * k, 0), p + Vector2(22 * k, -h), p + Vector2(-22 * k, -h)]), Color("#efe6d2"))
 	for j in 3:
 		var y := -50 * k - j * 55 * k

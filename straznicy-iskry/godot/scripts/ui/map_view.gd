@@ -21,7 +21,7 @@ func _layout() -> Dictionary:
 	var out := {}
 	var map: Dictionary = Data.story.get("map", {})
 	var s := size
-	var k := minf(s.x / 760.0, s.y / 480.0)
+	var k := minf(s.x / 760.0, s.y / 580.0)
 	for id in map:
 		var p: Array = map[id]["pos"]
 		out[id] = s * 0.5 + Vector2(p[0], p[1]) * k
@@ -36,7 +36,7 @@ func _draw() -> void:
 		draw_line(Vector2(0, y), Vector2(s.x, y + 20), Color(1, 1, 1, 0.03), 18.0)
 	var pos := _layout()
 	var map: Dictionary = Data.story.get("map", {})
-	var k := minf(s.x / 760.0, s.y / 480.0)
+	var k := minf(s.x / 760.0, s.y / 580.0)
 	_hits.clear()
 	# Świetlne mosty między wyspami
 	for id in map:

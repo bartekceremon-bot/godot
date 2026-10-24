@@ -1,12 +1,16 @@
 extends Node
-## Punkt startowy: ustawia stan i przechodzi do ekranu tytułowego.
-## Parametr URL ?autotest=1 (tylko do testów) uruchamia automatyczny przegląd gry.
+## Punkt startowy: przechodzi do ekranu tytułowego.
+## Tylko w buildzie testowym (z katalogiem tests/): ?autotest=1 uruchamia
+## automatyczne przejście gry, a ?tour=1 wycieczkę po ekranach do zrzutów.
 
 
 func _ready() -> void:
+	var target := "res://scenes/title.tscn"
 	if OS.has_feature("web"):
 		var q: Variant = JavaScriptBridge.eval("window.location.search", true)
-		if typeof(q) == TYPE_STRING and str(q).contains("autotest=1"):
-			get_tree().change_scene_to_file.call_deferred("res://tests/autotest_scene.tscn")
-			return
-	get_tree().change_scene_to_file.call_deferred("res://scenes/title.tscn")
+		var query := str(q) if typeof(q) == TYPE_STRING else ""
+		if query.contains("autotest=1") and ResourceLoader.exists("res://tests/autotest_scene.tscn"):
+			target = "res://tests/autotest_scene.tscn"
+		elif query.contains("tour=1") and ResourceLoader.exists("res://tests/tour_scene.tscn"):
+			target = "res://tests/tour_scene.tscn"
+	get_tree().change_scene_to_file.call_deferred(target)

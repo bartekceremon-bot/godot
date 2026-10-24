@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b231d">
+<meta name="description" content="AI Bliżej: Strażnicy Iskry — edukacyjna przygoda RPG o mądrym korzystaniu z AI, logice i bezpieczeństwie w sieci. Gra w przeglądarce, bez instalacji.">
+<title>$GODOT_PROJECT_NAME</title>
+<style>
+:root {
+	--bg: #0b231d;
+	--panel: #123a30;
+	--cream: #f5ecd7;
+	--muted: #b9c9bf;
+	--teal: #3fd1c1;
+	--gold: #e8b84a;
+}
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	background: var(--bg);
+	color: var(--cream);
+	overflow: hidden;
+	overscroll-behavior: none;
+	touch-action: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+#canvas {
+	display: block;
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	outline: none;
+	touch-action: none;
+}
+#canvas:focus { outline: none; }
+/* Sonda bezpiecznych marginesów (wycięcia ekranu) odczytywana przez grę. */
+#safe-probe {
+	position: fixed; left: 0; top: 0; width: 0; height: 0; visibility: hidden; pointer-events: none;
+	padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+#status {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 18px;
+	padding: 24px;
+	background: radial-gradient(ellipse at 50% 35%, #1f4c4c 0%, var(--bg) 70%);
+	text-align: center;
+	z-index: 10;
+	transition: opacity .5s ease;
+}
+#status.hide { opacity: 0; pointer-events: none; }
+.brand { color: var(--teal); letter-spacing: .25em; font-size: 13px; font-weight: 700; }
+h1 {
+	margin: 0;
+	font-family: Georgia, "Times New Roman", serif;
+	font-weight: 700;
+	font-size: clamp(30px, 7vw, 56px);
+	color: var(--gold);
+	text-shadow: 0 3px 0 rgba(0,0,0,.35);
+}
+.tower { width: 74px; height: 110px; position: relative; }
+.tower .beam {
+	position: absolute; left: 50%; top: 18px; width: 260px; height: 26px; transform-origin: 0 50%;
+	background: linear-gradient(90deg, rgba(232,184,74,.45), rgba(232,184,74,0));
+	animation: sweep 3.6s linear infinite;
+	border-radius: 0 50% 50% 0;
+}
+@keyframes sweep { from { transform: rotate(-20deg); } 50% { transform: rotate(200deg); } to { transform: rotate(340deg); } }
+@media (prefers-reduced-motion: reduce) { .tower .beam { animation: none; transform: rotate(-15deg); } }
+#bar {
+	width: min(420px, 80vw);
+	height: 14px;
+	border-radius: 8px;
+	background: rgba(0,0,0,.45);
+	border: 2px solid rgba(63,209,193,.5);
+	overflow: hidden;
+}
+#bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, var(--teal), var(--gold)); transition: width .2s; }
+#label { color: var(--muted); font-size: 15px; min-height: 1.4em; }
+#notice {
+	display: none;
+	max-width: 560px;
+	background: var(--panel);
+	border: 2px solid rgba(232,184,74,.6);
+	border-radius: 16px;
+	padding: 18px 20px;
+	line-height: 1.5;
+	text-align: left;
+}
+#notice h2 { margin: 0 0 8px; color: var(--gold); font-size: 20px; }
+#notice code { color: var(--teal); }
+#notice button {
+	margin-top: 12px; padding: 12px 20px; border-radius: 12px; border: 2px solid var(--gold);
+	background: #c99a2e; color: #1a1306; font-weight: 800; font-size: 16px; cursor: pointer;
+}
+.small { color: var(--muted); font-size: 13px; max-width: 520px; }
+</style>
+$GODOT_HEAD_INCLUDE
+</head>
+<body>
+<canvas id="canvas" tabindex="0">Twoja przeglądarka nie obsługuje elementu canvas.</canvas>
+<div id="safe-probe"></div>
+<noscript><p style="padding:24px">Ta gra wymaga włączonej obsługi JavaScriptu.</p></noscript>
+
+<div id="status" role="status" aria-live="polite">
+	<div class="brand">AI BLIŻEJ</div>
+	<div class="tower" aria-hidden="true">
+		<div class="beam"></div>
+		<svg viewBox="0 0 74 110" width="74" height="110">
+			<path d="M20 108 L54 108 L48 40 L26 40 Z" fill="#efe6d2"/>
+			<rect x="27" y="58" width="20" height="6" fill="#2d6b5f"/>
+			<rect x="25" y="80" width="24" height="6" fill="#2d6b5f"/>
+			<rect x="22" y="22" width="30" height="20" rx="4" fill="#1d3b36"/>
+			<circle cx="37" cy="32" r="7" fill="#ffe39a"/>
+			<path d="M18 22 L56 22 L37 4 Z" fill="#c8553d"/>
+		</svg>
+	</div>
+	<h1>Strażnicy Iskry</h1>
+	<div id="bar" aria-hidden="true"><div></div></div>
+	<div id="label">Wczytywanie gry…</div>
+	<div id="notice"></div>
+	<div class="small">Gra działa w przeglądarce, bez instalacji. Postęp zapisuje się tylko na tym urządzeniu. Bez reklam i bez zbierania danych.</div>
+</div>
+
+<script src="$GODOT_URL"></script>
+<script>
+const GODOT_CONFIG = $GODOT_CONFIG;
+const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+	const status = document.getElementById('status');
+	const barFill = document.querySelector('#bar > div');
+	const label = document.getElementById('label');
+	const notice = document.getElementById('notice');
+	let done = false;
+
+	function showError(title, html) {
+		document.getElementById('bar').style.display = 'none';
+		label.textContent = '';
+		notice.innerHTML = '<h2>' + title + '</h2>' + html +
+			'<br><button type="button" onclick="location.reload()">Spróbuj ponownie</button>';
+		notice.style.display = 'block';
+		done = true;
+	}
+
+	function hasWebGL2() {
+		try {
+			const c = document.createElement('canvas');
+			return !!(window.WebGL2RenderingContext && c.getContext('webgl2'));
+		} catch (e) {
+			return false;
+		}
+	}
+
+	// Brak przewijania i powiększania strony podczas sterowania dotykiem.
+	document.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+	document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+	document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+	const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
+	if (!hasWebGL2()) {
+		missing.push('WebGL 2.0');
+	}
+	if (missing.length !== 0) {
+		showError('Ta przeglądarka nie uruchomi gry',
+			'<p>Brakuje funkcji: <code>' + missing.join(', ') + '</code>.</p>' +
+			'<p>Zaktualizuj przeglądarkę (np. Chrome, Edge, Firefox lub Safari w najnowszej wersji) i sprawdź, czy przyspieszenie sprzętowe grafiki jest włączone.</p>');
+		return;
+	}
+
+	engine.startGame({
+		onProgress: function (current, total) {
+			if (total > 0) {
+				const p = Math.min(100, Math.round(current / total * 100));
+				barFill.style.width = p + '%';
+				label.textContent = 'Wczytywanie gry… ' + p + '%';
+			} else {
+				label.textContent = 'Wczytywanie gry…';
+			}
+		},
+	}).then(function () {
+		done = true;
+		status.classList.add('hide');
+		setTimeout(function () { status.remove(); }, 600);
+		const canvas = document.getElementById('canvas');
+		canvas.focus();
+	}).catch(function (err) {
+		console.error(err);
+		const msg = (err && err.message) ? err.message : String(err);
+		showError('Nie udało się uruchomić gry',
+			'<p>' + msg.replace(/</g, '&lt;') + '</p>' +
+			'<p>Jeśli to Twój serwer: sprawdź, czy wszystkie pliki z paczki zostały wgrane do tego samego katalogu oraz czy pliki <code>.wasm</code> są wysyłane z typem MIME <code>application/wasm</code>. Gry nie da się uruchomić, otwierając plik bezpośrednio z dysku (file://).</p>');
+	});
+
+	setTimeout(function () {
+		if (!done) {
+			label.textContent = 'Wczytywanie trwa dłużej niż zwykle… Sprawdź połączenie z internetem.';
+		}
+	}, 25000);
+})();
+</script>
+</body>
+</html>

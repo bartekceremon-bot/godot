@@ -2,3 +2,5 @@
 godot/.godot/
 # Pliki tymczasowe
 *.tmp
+build-test/
+build-test2/

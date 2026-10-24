@@ -30,7 +30,7 @@ func _ready() -> void:
 	_fade = ColorRect.new()
 	_fade.color = Color(0.02, 0.07, 0.06, 0.0)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layer.add_child(_fade)
 	get_tree().root.size_changed.connect(_on_resize)
 	_on_resize()
@@ -47,7 +47,16 @@ func _on_resize() -> void:
 	var win := get_tree().root
 	_last_size = win.size
 	var portrait := win.size.y > win.size.x
-	var base := Vector2i(720, 1280) if portrait else Vector2i(1280, 720)
+	# Bazowa rozdzielczość zależy od rozmiaru ekranu w pikselach CSS: na telefonach
+	# zmniejszamy ją, żeby tekst i przyciski nie były skalowane poniżej ~80%.
+	var css := Vector2(win.size) / _device_ratio()
+	var base: Vector2i
+	if portrait:
+		var bw := clampf(css.x / 0.85, 400.0, 720.0)
+		base = Vector2i(roundi(bw), roundi(bw * 16.0 / 9.0))
+	else:
+		var bh := clampf(css.y / 0.8, 480.0, 720.0)
+		base = Vector2i(roundi(bh * 16.0 / 9.0), roundi(bh))
 	if win.content_scale_size != base:
 		win.content_scale_size = base
 	_update_safe_area()

@@ -173,6 +173,7 @@ static func hero(ci: CanvasItem, class_id: String, st: Dictionary) -> void:
 	var breath := sin(t * 2.4) * (0.8 if reduced else 1.6)
 	var bob := absf(sin(walk * 2.0)) * -3.0 if moving else breath * 0.5
 	var leg := sin(walk * 2.0) * 5.0 if moving else 0.0
+	ci.draw_set_transform_matrix(_parent)
 	shadow(ci, Vector2(0, 0), 15, 5.5)
 	var sq := Vector2(1.0 + dodge * 0.25, 1.0 - dodge * 0.3)
 	_base = _parent * Transform2D(dodge * TAU * face, Vector2(face * sq.x, sq.y), 0.0, Vector2(0, bob))

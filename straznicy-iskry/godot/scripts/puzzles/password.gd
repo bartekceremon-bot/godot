@@ -28,7 +28,7 @@ func build(d: Dictionary) -> void:
 	pv.add_child(_verdict)
 	var row := HBoxContainer.new()
 	pv.add_child(row)
-	var undo := chip("Cofnij ostatni element", false)
+	var undo := chip("Cofnij ostatni element", false, false)
 	undo.pressed.connect(func() -> void:
 		if not parts.is_empty():
 			parts.pop_back()
@@ -41,7 +41,7 @@ func build(d: Dictionary) -> void:
 	_extras = flow()
 	add_child(_extras)
 	for w in shuffled(d.get("words", []), 3):
-		var b := chip(w["w"], false)
+		var b := chip(w["w"], false, false)
 		var word: Dictionary = w
 		b.pressed.connect(func() -> void:
 			if parts.size() < 8:
@@ -49,7 +49,7 @@ func build(d: Dictionary) -> void:
 				_refresh())
 		_pool.add_child(b)
 	for e in d.get("extras", ["7", "!", "#", "42"]):
-		var b := chip(e, false)
+		var b := chip(e, false, false)
 		var ex: String = e
 		b.pressed.connect(func() -> void:
 			if parts.size() < 8:

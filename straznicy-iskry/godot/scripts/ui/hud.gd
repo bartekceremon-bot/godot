@@ -31,7 +31,7 @@ var _banner_tween: Tween
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_stats()
 	_build_top_buttons()
@@ -88,7 +88,7 @@ func _build_top_buttons() -> void:
 		b.focus_mode = Control.FOCUS_NONE
 		var icon_draw := Control.new()
 		icon_draw.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon_draw.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_draw.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		var ic: String = spec[0]
 		icon_draw.draw.connect(func() -> void: Icons.draw(icon_draw, ic, icon_draw.size * 0.5, 40, Art.CREAM))
 		b.add_child(icon_draw)
@@ -153,6 +153,7 @@ func _build_misc() -> void:
 	banner_title.add_theme_constant_override("outline_size", 10)
 	banner_title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 	banner_sub = UITheme.label("", "Bold")
+	banner_sub.custom_minimum_size.x = 300
 	banner_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	banner_sub.add_theme_constant_override("outline_size", 6)
 	banner_sub.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
@@ -162,7 +163,7 @@ func _build_misc() -> void:
 	boss_box = VBoxContainer.new()
 	boss_box.visible = false
 	boss_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var bl := UITheme.label("Miraż, Władca Iluzji", "Header", false)
+	var bl := UITheme.label("Miraż, Władca Iluzji", "Bold", false)
 	bl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	boss_box.add_child(bl)
 	boss_bar_pb = _bar(Color("#b06bff"), 20)
@@ -210,22 +211,39 @@ func apply_layout(narrow: bool) -> void:
 	stats.size = Vector2.ZERO
 	top_buttons.position = Vector2(vs.x - R - 138, T)
 	var bw := minf(vs.x - L - R, 620.0)
-	blik_box.custom_minimum_size = Vector2(bw, 0)
-	blik_box.size = Vector2(bw, 0)
+	var bpos := Vector2((vs.x - bw) * 0.5, T + 4)
 	if narrow and vs.y > vs.x:
 		# Pion: BLIK pod paskami, żeby nie zasłaniać środka ekranu.
-		blik_box.position = Vector2(L, T + 170)
-	else:
-		blik_box.position = Vector2((vs.x - bw) * 0.5, T + (90 if narrow else 4))
+		bpos = Vector2(L, T + 170)
+	elif narrow:
+		# Wąski poziom: między paskiem statystyk a przyciskami menu, przy górnej krawędzi.
+		var left := L + bar_w + 40.0
+		bw = maxf(300.0, vs.x - left - R - 150.0)
+		bpos = Vector2(left, T)
+	blik_box.custom_minimum_size = Vector2(bw, 0)
+	blik_box.size = Vector2(bw, 0)
+	blik_box.position = bpos
+	# Etykieta z zawijaniem musi znać szerokość, inaczej rośnie w pionie.
+	blik_label.custom_minimum_size.x = bw - 110.0
 	area_label.position = Vector2(0, vs.y * 0.18)
 	area_label.size = Vector2(vs.x, 60)
 	banner.position = Vector2(20, vs.y * 0.32)
 	banner.size = Vector2(vs.x - 40, 100)
-	boss_box.position = Vector2((vs.x - 420) * 0.5, T + (240 if narrow and vs.y > vs.x else 70))
-	boss_box.size = Vector2(420, 0)
-	boss_bar_pb.custom_minimum_size.x = 420
-	toasts.position = Vector2((vs.x - 560) * 0.5, vs.y * 0.45)
-	toasts.size = Vector2(560, 180)
+	# Kompaktowo przy dolnej krawędzi: góra sali (boss, kopie) zostaje odsłonięta.
+	var bbw := minf(420.0, vs.x - L - R - 20.0)
+	var by := vs.y - B - 64.0
+	if Settings.show_touch():
+		by = vs.y - B - 300.0 if not (narrow and vs.y > vs.x) else T + 300.0
+	boss_box.position = Vector2((vs.x - bbw) * 0.5, by)
+	boss_box.size = Vector2(bbw, 0)
+	boss_bar_pb.custom_minimum_size.x = bbw
+	var tw := minf(560.0, vs.x - 30.0)
+	# Komunikaty w dolnej części ekranu, nad podpowiedzią interakcji — nie zasłaniają postaci.
+	toasts.size = Vector2(tw, 180)
+	var ty := vs.y - B - 330.0
+	if narrow and vs.y > vs.x:
+		ty = T + 330.0
+	toasts.position = Vector2((vs.x - tw) * 0.5, ty)
 	skillbar.position = Vector2(vs.x - R - 4 * 64 - 3 * 14, vs.y - B - 76)
 	_on_settings()
 	_place_prompt()
@@ -241,12 +259,19 @@ func _place_prompt() -> void:
 	prompt.size = Vector2.ZERO
 	var w := prompt.get_combined_minimum_size().x
 	var y: float = vs.y - m["bottom"] - (150.0 if Settings.show_touch() else 96.0)
+	if boss_box.visible and not Settings.show_touch():
+		y -= 60.0
 	if Settings.show_touch() and _narrow and vs.y > vs.x:
 		y = vs.y - m["bottom"] - 420.0
 	prompt.position = Vector2((vs.x - w) * 0.5, y)
 
 
 func _process(delta: float) -> void:
+	# Kontener nie kurczy się sam po zmianie tekstu — dopasowujemy wysokość do treści.
+	if blik_box.visible:
+		var want := blik_box.get_combined_minimum_size().y
+		if absf(blik_box.size.y - want) > 1.0:
+			blik_box.size = Vector2(blik_box.custom_minimum_size.x, want)
 	if _blik_t > 0.0:
 		_blik_t -= delta
 		blik_face.queue_redraw()
@@ -317,6 +342,7 @@ func toast(text: String, kind := "info") -> void:
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var l := UITheme.label(text, "Bold")
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.custom_minimum_size.x = minf(520.0, get_viewport_rect().size.x - 60.0)
 	var col = {"key": Art.GOLD, "item": Art.CREAM, "warn": Color("#ffb36b"), "info": Color("#cfe8df")}.get(kind, Art.CREAM)
 	l.add_theme_color_override("font_color", col)
 	p.add_child(l)

@@ -22,12 +22,7 @@ func build(d: Dictionary) -> void:
 		c.add_child(UITheme.rich(d["context"]))
 	header(d.get("instruction", "Zaznacz elementy:"))
 	var items: Array = d.get("items", [])
-	var container: Container
-	if mode == "redact":
-		container = flow()
-		container.add_theme_constant_override("h_separation", 6)
-	else:
-		container = VBoxContainer.new()
+	var container := VBoxContainer.new()
 	add_child(container)
 	for i in items.size():
 		var it: Dictionary = items[i]
@@ -41,8 +36,7 @@ func build(d: Dictionary) -> void:
 			b = cb
 		else:
 			b = chip(it["text"])
-			if mode != "redact":
-				b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		var idx := i
 		b.toggled.connect(func(on: bool) -> void:
 			if on:
@@ -74,7 +68,7 @@ func _style(i: int) -> void:
 		return
 	var b: Button = _buttons[i]
 	var it: Dictionary = data["items"][i]
-	b.text = "█ ukryte █" if marked.has(i) else it["text"]
+	b.text = "[ ukryte ]" if marked.has(i) else it["text"]
 
 
 func _target(it: Dictionary) -> bool:

@@ -1,0 +1,23 @@
+# .htaccess dla katalogu /gra/ (Apache). Bloki <IfModule> są bezpieczne:
+# jeśli serwer nie ma danego modułu, reguła jest po prostu pomijana.
+
+# Poprawny typ MIME dla WebAssembly (wymagany do szybkiego uruchamiania gry).
+<IfModule mod_mime.c>
+	AddType application/wasm .wasm
+	AddType application/octet-stream .pck
+	AddType text/javascript .js
+</IfModule>
+
+# Kompresja — plik .wasm (~39 MB) kurczy się do ok. 10 MB.
+<IfModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE application/wasm application/octet-stream text/javascript application/javascript text/html
+</IfModule>
+
+# Pamięć podręczna: przeglądarka może trzymać pliki, ale przed użyciem pyta serwer,
+# czy się nie zmieniły (no-cache = rewalidacja). Dzięki temu po wgraniu nowej wersji
+# gracze nie dostaną starego index.pck z nowym index.html.
+<IfModule mod_headers.c>
+	<FilesMatch "\.(html|wasm|pck|js|png)$">
+		Header set Cache-Control "no-cache"
+	</FilesMatch>
+</IfModule>

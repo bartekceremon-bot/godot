@@ -25,12 +25,16 @@ func solve() -> void:
 	pass
 
 
-func chip(text: String, toggle := true) -> Button:
+func chip(text: String, toggle := true, wrap := true) -> Button:
+	## wrap=true tylko dla przycisków w kontenerach o znanej szerokości (VBox) —
+	## w HFlowContainer zawijany przycisk zapadłby się do zerowej szerokości.
 	var b := Button.new()
 	b.text = text
 	b.theme_type_variation = "Chip"
 	b.toggle_mode = toggle
-	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if wrap:
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.custom_minimum_size = Vector2(0, 52)
 	b.focus_mode = Control.FOCUS_ALL
 	b.pressed.connect(func() -> void: Audio.play("click", 0.08, -10.0))

@@ -15,10 +15,10 @@ var _beam := 0.0
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	theme = UITheme.build()
 	var sky := ColorRect.new()
-	sky.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sky.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var m := ShaderMaterial.new()
 	m.shader = preload("res://assets/shaders/sky.gdshader")
 	m.set_shader_parameter("top", Color("#06171c"))
@@ -26,7 +26,7 @@ func _ready() -> void:
 	sky.material = m
 	add_child(sky)
 	art = Control.new()
-	art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	art.draw.connect(_draw_art)
 	add_child(art)
@@ -107,6 +107,16 @@ func _layout() -> void:
 	menu.position = Vector2((vs.x - w) * 0.5 if portrait else vs.x * 0.56, vs.y * (0.40 if portrait else 0.16))
 	if not portrait and menu.position.x + w > vs.x - 20:
 		menu.position.x = vs.x - w - 20
+	# Na niskich ekranach (telefon poziomo) zmniejszamy menu, żeby się zmieściło.
+	var h := menu.get_combined_minimum_size().y
+	var avail := vs.y - menu.position.y - 12.0
+	if not portrait and h > avail:
+		menu.position.y = 12.0
+		avail = vs.y - 24.0
+	var k := clampf(avail / maxf(h, 1.0), 0.6, 1.0)
+	menu.scale = Vector2(k, k)
+	if k < 1.0 and not portrait:
+		menu.position.x = vs.x - w * k - 20
 	var ow := minf(vs.x - 24, 900.0)
 	var oh := minf(vs.y - 24, 760.0)
 	overlay.position = (vs - Vector2(ow, oh)) * 0.5

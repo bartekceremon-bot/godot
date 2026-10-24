@@ -119,12 +119,12 @@
         "instruction": "Zaznacz próbki posortowane BŁĘDNIE:",
         "missed_text": "Automat pomylił się w większej liczbie miejsc.",
         "items": [
-          {"text": "Słonecznik → niebieska skrzynka", "target": false, "why": "słonecznik to duży kwiat, niebieska skrzynka jest właściwa."},
-          {"text": "Mięta → niebieska skrzynka", "target": true, "why": "mięta to zioło, powinna trafić do zielonej skrzynki."},
-          {"text": "Bazylia → zielona skrzynka", "target": false, "why": "bazylia to zioło, więc zielona skrzynka jest dobra."},
-          {"text": "Róża → zielona skrzynka", "target": true, "why": "róża to duży kwiat — jej miejsce jest w niebieskiej skrzynce."},
-          {"text": "Tymianek → zielona skrzynka", "target": false, "why": "tymianek to zioło, tu wszystko się zgadza."},
-          {"text": "Piwonia → niebieska skrzynka", "target": false, "why": "piwonia to duży kwiat, niebieska skrzynka jest prawidłowa."}
+          {"text": "Słonecznik: niebieska skrzynka", "target": false, "why": "słonecznik to duży kwiat, niebieska skrzynka jest właściwa."},
+          {"text": "Mięta: niebieska skrzynka", "target": true, "why": "mięta to zioło, powinna trafić do zielonej skrzynki."},
+          {"text": "Bazylia: zielona skrzynka", "target": false, "why": "bazylia to zioło, więc zielona skrzynka jest dobra."},
+          {"text": "Róża: zielona skrzynka", "target": true, "why": "róża to duży kwiat — jej miejsce jest w niebieskiej skrzynce."},
+          {"text": "Tymianek: zielona skrzynka", "target": false, "why": "tymianek to zioło, tu wszystko się zgadza."},
+          {"text": "Piwonia: niebieska skrzynka", "target": false, "why": "piwonia to duży kwiat, niebieska skrzynka jest prawidłowa."}
         ]
       },
       "hints": ["Sprawdzaj każdą próbkę osobno według zasady, zamiast ufać „pewności 100%”.", "Zioła to m.in. mięta, bazylia, tymianek. Duże kwiaty to np. róża, słonecznik, piwonia."],
@@ -144,7 +144,7 @@
       "title": "Nawadnianie Warsztatu",
       "topic": "czujnik, warunek, akcja",
       "goal": "Połącz czujnik, warunek i akcję w regułę, która sama podleje zielnik — i podniesie pływającą kładkę na kanale.",
-      "intro": "Automatyzacja to reguły typu [b]KIEDY coś mierzymy → JEŚLI spełniony warunek → TO wykonaj akcję[/b]. Zła reguła może zalać warsztat albo zostawić rośliny bez wody.",
+      "intro": "Automatyzacja to reguły typu [b]KIEDY coś mierzymy, JEŚLI spełniony jest warunek, TO wykonaj akcję[/b]. Zła reguła może zalać warsztat albo zostawić rośliny bez wody.",
       "type": "slots",
       "data": {
         "preview_label": "Twoja reguła:",
@@ -168,7 +168,7 @@
         ]
       },
       "hints": ["Czujnik powinien mierzyć dokładnie to, od czego zależy decyzja.", "Akcja powinna mieć limit — co się stanie, jeśli warunek będzie spełniony bardzo długo?"],
-      "success": "Woda płynie kanałem tylko wtedy, gdy trzeba, a pływająca kładka unosi się na powierzchni. Reguła [b]czujnik → warunek → akcja z limitem[/b] działa!",
+      "success": "Woda płynie kanałem tylko wtedy, gdy trzeba, a pływająca kładka unosi się na powierzchni. Reguła [b]czujnik, warunek i akcja z limitem[/b] działa!",
       "real_life": "Takie reguły działają w inteligentnych domach, aplikacjach do automatyzacji i grach. Ustawiając automat, zawsze pytaj: co mierzę, kiedy działam i kiedy przestaję?",
       "lesson": "Automatyzacja to: czujnik mierzy, warunek decyduje, akcja działa w określonych granicach.",
       "where": "Stacja przy suchym kanale w Warsztacie Zależności.",
@@ -190,7 +190,7 @@
           {"id": "zasilanie", "text": "Włącz zasilanie przenośnika", "order_hint": "Bez zasilania nic nie ruszy — to pierwszy krok."},
           {"id": "pusta", "text": "Sprawdź, czy na taśmie nikt nie stoi", "order_hint": "Bezpieczeństwo sprawdza się PRZED uruchomieniem taśmy."},
           {"id": "start", "text": "Uruchom taśmę", "order_hint": "Taśmę uruchamia się po sprawdzeniu, że jest bezpiecznie."},
-          {"id": "czujnik", "text": "JEŚLI czujnik wykryje skrzynię na końcu → zatrzymaj taśmę", "order_hint": "Warunek musi działać, zanim dźwig spróbuje cokolwiek podnieść."},
+          {"id": "czujnik", "text": "JEŚLI czujnik wykryje skrzynię na końcu, TO zatrzymaj taśmę", "order_hint": "Warunek musi działać, zanim dźwig spróbuje cokolwiek podnieść."},
           {"id": "dzwig", "text": "Podnieś skrzynię dźwigiem i odłóż na półkę", "order_hint": "Dźwig działa dopiero, gdy skrzynia stoi nieruchomo."},
           {"id": "zly1", "text": "Wyłącz czujnik, żeby było szybciej", "why": "Bez czujnika dźwig nie wie, kiedy skrzynia dojechała. „Szybciej” nie znaczy „lepiej”."},
           {"id": "zly2", "text": "Uruchom dźwig od razu na starcie", "why": "Dźwig chwyciłby powietrze albo zderzył się ze skrzynią w ruchu."}

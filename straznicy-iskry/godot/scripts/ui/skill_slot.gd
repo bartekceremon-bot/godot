@@ -118,9 +118,10 @@ func _draw() -> void:
 		draw_string_outline(font, c + Vector2(-radius, radius * 0.15), s, HORIZONTAL_ALIGNMENT_CENTER, radius * 2, 14, 4, Art.INK)
 		draw_string(font, c + Vector2(-radius, radius * 0.15), s, HORIZONTAL_ALIGNMENT_CENTER, radius * 2, 14, Art.CREAM)
 	if key_text != "" and not touch_mode:
-		var kp := c + Vector2(radius * 0.45, radius * 0.95)
-		draw_circle(kp + Vector2(0, -5), 12, Art.INK)
-		draw_string(font, kp + Vector2(-20, 0), key_text, HORIZONTAL_ALIGNMENT_CENTER, 40, 13, Art.GOLD)
+		var tw := font.get_string_size(key_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
+		var badge := Rect2(c.x - tw * 0.5 - 6, c.y + radius - 8, tw + 12, 18)
+		draw_colored_polygon(Art.rrect(badge, 7), Art.INK)
+		draw_string(font, Vector2(badge.position.x + 6, badge.position.y + 14), key_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Art.GOLD)
 	if label_text != "":
 		draw_string_outline(font, Vector2(c.x - 90, c.y + radius + 18), label_text, HORIZONTAL_ALIGNMENT_CENTER, 180, 15, 4, Art.INK)
 		draw_string(font, Vector2(c.x - 90, c.y + radius + 18), label_text, HORIZONTAL_ALIGNMENT_CENTER, 180, 15, Art.CREAM)

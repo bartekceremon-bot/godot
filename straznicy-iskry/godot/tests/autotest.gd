@@ -18,6 +18,11 @@ func _ready() -> void:
 	await get_tree().process_frame
 	var classes: Array = Data.class_order
 	var only: String = OS.get_environment("AUTOTEST_CLASS")
+	if OS.has_feature("web"):
+		var q := str(JavaScriptBridge.eval("window.location.search", true))
+		for c in Data.class_order:
+			if q.contains("class=" + c):
+				only = c
 	if only != "":
 		classes = [only]
 	for cid in classes:
@@ -272,7 +277,7 @@ func _run_class(cid: String) -> void:
 	var done_before: int = GameState.data["missions_done"].size()
 	World.current.change_class(other)
 	_ok(GameState.class_id() == other and GameState.data["missions_done"].size() == done_before, "zmiana klasy zachowuje postęp")
-	_log("Czas symulacji %s: zadania=%d poziom=%d PD=%d" % [cid, done_before, GameState.level(), GameState.data["xp"]])
+	_log("Podsumowanie %s: zadania=%d poziom=%d PD=%d" % [cid, done_before, GameState.level(), GameState.data["xp"]])
 
 
 func _boss_fight(boss: Node) -> void:

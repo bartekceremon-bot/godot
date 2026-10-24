@@ -3,7 +3,7 @@
   "name": "Archiwum Echa",
   "music": "archive",
   "blik_enter": "Archiwum Echa… Tu echa powtarzają wszystko: prawdę i plotki. Pan Sowiński, archiwista, pomoże je odróżnić.",
-  "palette": {"ground": "#5e6a7a", "ground2": "#6c7890", "rim": "#a9b8d0", "grass": "#7a8aa8", "cliff": "#5a4a5a", "cliff2": "#251e28", "path": "#c9c1d9"},
+  "palette": {"ground": "#5e6a7a", "ground2": "#6c7890", "rim": "#a9b8d0", "grass": "#7a8aa8", "cliff": "#5a4a5a", "cliff2": "#251e28", "path": "#8f89a8"},
   "sky": {"top": "#141a33", "bottom": "#3a3f66", "cloud": "#d9d0f0"},
   "islands": [
     {"rect": [-950, -460, 1050, 920], "seed": 31},
